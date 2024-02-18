@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/GrzegorzServer.iml" filepath="$PROJECT_DIR$/GrzegorzServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/database.iml" filepath="$PROJECT_DIR$/database.iml" />
+      <module fileurl="file://$PROJECT_DIR$/logic.iml" filepath="$PROJECT_DIR$/logic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/routes.iml" filepath="$PROJECT_DIR$/routes.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src.iml" filepath="$PROJECT_DIR$/src.iml" />
+    </modules>
+  </component>
+</project>

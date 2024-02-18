@@ -1,0 +1,26 @@
+{
+  "name": "gmmail",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "node": "RUNTIME=NODE node --experimental-specifier-resolution=node --loader ts-node/esm ./src/main.ts",
+    "node:dev": "nodemon --exec \"npm run node\" --watch ./src --ext ts",
+    "bun": "RUNTIME=BUN bun ./src/main.ts",
+    "bun:dev": "RUNTIME=BUN nodemon --exec \"npm run bun\" --watch ./src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.9",
+    "bun-types": "^1.0.6",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "email-validator-pro": "^1.0.1",
+    "fastify": "^4.26.1"
+  }
+}
