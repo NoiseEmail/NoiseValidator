@@ -1,6 +1,6 @@
 import Router from "./router";
 import {RouterTypes} from "./types";
-
+import Binder from "./binder";
 
 
 export default class Route {
@@ -12,12 +12,12 @@ export default class Route {
     private _router_instance: Router;
     private _configuration: RouterTypes.RouteConfiguration;
 
-    private _binders: Array<RouterTypes.Binder.GenericParameters> = [];
+    private _binders: Array<RouterTypes.Binder.Generic> = [];
     private _router_map: RouterTypes.Router.RouteMap = new Map();
 
     public constructor(
         configuration: RouterTypes.RouteConfiguration,
-        ...binders: Array<RouterTypes.Binder.GenericParameters>
+        ...binders: Array<RouterTypes.Binder.Generic>
     ) {
         this._path = configuration.path;
         this._friendly_name = configuration.friendly_name;
@@ -29,7 +29,7 @@ export default class Route {
 
     public static new = (
         configuration: RouterTypes.RouteConfiguration,
-        ...binders: Array<RouterTypes.Binder.GenericParameters>
+        ...binders: Array<RouterTypes.Binder.Generic>
     ): Route => new Route(
         configuration,
         ...binders
@@ -37,36 +37,21 @@ export default class Route {
 
 
 
-    public static Binder =<
-        Body extends RouterTypes.Binder.RequiredBody,
-        Query extends RouterTypes.Binder.RequiredQuery,
-        Headers extends RouterTypes.Binder.RequiredHeaders
-    >(
-        binder: RouterTypes.NewBinder<Body, Query, Headers>
-    ): RouterTypes.Binder.GenericParameters => {
-        // @ts-ignore
-        return binder;
-    }
-
 
     /**
      * @name bind
      * Binds a 'Binder' object to the route instance, allowing traffic
      * that matches the binder to be routed to that binder's handler.
      *
-     * @param {RouterTypes.Binder.GenericParameters} parameters - The parameters to bind
+     * @param {typeof Binder} binder - The binder to bind to the route
      * @returns {Route} - Returns the route instance (For chaining)
      */
-    public bind = <
-        Body extends RouterTypes.Binder.RequiredBody,
-        Query extends RouterTypes.Binder.RequiredQuery,
-        Headers extends RouterTypes.Binder.RequiredHeaders
-    >(
-        parameters: RouterTypes.NewBinder<Body, Query, Headers>
+    public bind =(
+        binder: RouterTypes.Binder.Generic
     ): this => {
-        if (!this._router_map.has(parameters.method)) this._router_map.set(parameters.method, [])
-        // @ts-ignore
-        this._router_map.get(parameters.method)?.push(parameters);
+        if (!this._router_map.has(binder.method)) this._router_map.set(binder.method, []);
+        this._router_map.get(binder.method)?.push(binder);
+        this._binders.push(binder);
         return this;
     }
 
@@ -84,14 +69,14 @@ export default class Route {
      * @param {object} query - The query to find a route for
      * @param {object} headers - The headers to find a route for
      *
-     * @returns {Promise<RouterTypes.Binder.GenericParameters | null>} - Returns a promise that resolves to either a route or null
+     * @returns {Promise<RouterTypes.Binder.Generic | null>} - Returns a promise that resolves to either a route or null
      */
     private async _find_compatible_route(
         method: RouterTypes.Method,
         body: object,
         query: object,
         headers: object
-    ): Promise<RouterTypes.Binder.GenericParameters | null> {
+    ): Promise<RouterTypes.Binder.Generic | null> {
 
         const routes = this._router_map.get(method);
         if (!routes) return null;

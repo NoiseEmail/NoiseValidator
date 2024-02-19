@@ -1,4 +1,5 @@
 import Fastify, {FastifyReply, FastifyRequest} from "fastify";
+import BinderClass from "./binder";
 
 declare namespace RouterTypes {
 
@@ -14,15 +15,10 @@ declare namespace RouterTypes {
         'DELETE' |
         'PATCH';
 
-    export type NewBinder<
-        Body extends Binder.RequiredBody,
-        Query extends Binder.RequiredQuery,
-        Headers extends Binder.RequiredHeaders
-    > = Binder.Parameters<Body, Query, Headers>;
 
     export namespace Router {
 
-        export type RouteMap = Map<Method, Array<Binder.GenericParameters>>
+        export type RouteMap = Map<Method, Array<RouterTypes.Binder.Generic>>
 
     }
 
@@ -55,8 +51,13 @@ declare namespace RouterTypes {
             Type extends 'string' ? String :
             Type extends 'number' ? Number :
             Type extends 'boolean' ? Boolean :
+
             Type extends `Optional<${string}>` ?
                     ConvertStringToType<ExtractOptionalType<Type>> | undefined :
+
+            Type extends String ? String :
+            Type extends Number ? Number :
+            Type extends Boolean ? Boolean :
             never;
 
 
@@ -84,6 +85,12 @@ declare namespace RouterTypes {
 
                 // -- Nested objects (Recursion is typescript is so weird, but cool)
                 Object[Key] extends object ? ConvertObjectToType<Object[Key]> :
+
+                // -- These need to be here are all of the above are strings, therefore
+                //     if this is first, it will always be true
+                Object[Key] extends String ? String :
+                Object[Key] extends Number ? Number :
+                Object[Key] extends Boolean ? Boolean :
                 never;
         };
 
@@ -125,39 +132,26 @@ declare namespace RouterTypes {
         };
 
 
-        export interface Parameters<
-            Body,
-            Query,
-            Headers
-        > {
-            method: Method;
-            handler?: (request: Request<
-                ConvertObjectToType<Body>,
-                ConvertObjectToType<Query>,
-                ConvertHeaderObjectToType<Headers>
-            >) => Promise<any> | any;
-
-            middleware?: Array<Function>;
-
-            required_headers?: Headers;
-            required_body?: Body;
-            required_query?: Query;
-        }
-
-        export type GenericParameters = Parameters<
+        export type Generic = BinderClass<
             RequiredBody,
             RequiredQuery,
-            RequiredHeaders
+            RequiredHeaders,
+            Request<
+                ConvertObjectToType<RequiredBody>,
+                ConvertObjectToType<RequiredQuery>,
+                ConvertHeaderObjectToType<RequiredHeaders>
+            >
         >;
 
 
         export type OptionalDecorator = `Optional<${BaseParameter}>`;
         export type BaseParameter = 'string' | 'number' | 'boolean';
+        export type TypeParameter = String | Number | Boolean;
         export type CustomValidator<Returnable = unknown> = (
             value: unknown,
             reject: (reason: string | Error | null | undefined) => void,
         ) => Returnable;
-        export type Parameter = BaseParameter | OptionalDecorator | CustomValidator;
+        export type Parameter = BaseParameter | TypeParameter| OptionalDecorator | CustomValidator;
 
 
         export type RequiredHeaders = { [key: string]: boolean; }
