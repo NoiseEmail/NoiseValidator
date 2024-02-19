@@ -7,22 +7,6 @@ declare namespace RouterTypes {
         friendly_name: String;
     }
 
-    export interface NewRouteParameters<
-        Body extends Binder.RequiredBody,
-        Query extends Binder.RequiredQuery,
-        Headers extends Binder.RequiredHeaders
-    > {
-        binders: Array<Binder.Parameters<Body, Query, Headers>>;
-        configuration: RouteConfiguration;
-    }
-
-    export type GenericRouteParameters = NewRouteParameters<
-        Binder.RequiredBody,
-        Binder.RequiredQuery,
-        Binder.RequiredHeaders
-    >;
-
-
     export type Method =
         'GET' |
         'POST' |
@@ -30,11 +14,15 @@ declare namespace RouterTypes {
         'DELETE' |
         'PATCH';
 
-
+    export type NewBinder<
+        Body extends Binder.RequiredBody,
+        Query extends Binder.RequiredQuery,
+        Headers extends Binder.RequiredHeaders
+    > = Binder.Parameters<Body, Query, Headers>;
 
     export namespace Router {
 
-        export type RouteMap = Map<Method, Array<GenericRouteParameters>>
+        export type RouteMap = Map<Method, Array<Binder.GenericParameters>>
 
     }
 
@@ -155,6 +143,12 @@ declare namespace RouterTypes {
             required_body?: Body;
             required_query?: Query;
         }
+
+        export type GenericParameters = Parameters<
+            RequiredBody,
+            RequiredQuery,
+            RequiredHeaders
+        >;
 
 
         export type OptionalDecorator = `Optional<${BaseParameter}>`;
