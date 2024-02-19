@@ -43,7 +43,6 @@ router.add_route(Route.new({
 
             handler(request) {
                 const a = request.headers.test2;
-
                 Log.info(a);
             }
         }

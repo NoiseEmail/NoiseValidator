@@ -1,4 +1,7 @@
 import Router from "./router";
+import {RouterTypes} from "./types";
+
+
 
 export default class Route {
 

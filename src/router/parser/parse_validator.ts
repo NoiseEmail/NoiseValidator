@@ -1,5 +1,8 @@
 import Log from "../../logger/log";
 import {base_validator} from "./base_validator";
+import {RouterTypes} from "../types";
+
+
 
 export const parse_validator = (
     validator: RouterTypes.Binder.Parameter,
