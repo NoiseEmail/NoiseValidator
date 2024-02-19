@@ -48,7 +48,7 @@ const obj = validate_object({
     'test': 'string',
     'test2': 'Optional<string>',
     'a': {
-        'test': 'number',
+        'test': 'boolean',
         'test2': 'Optional<number>',
         'custom': (value, reject): boolean => {
             console.log(13234623456345263456);
@@ -59,8 +59,7 @@ const obj = validate_object({
     'test': 'asdasd',
     'test2': 'asdasd',
     'a': {
-        'test': 'v',
-        'test2': 2,
+        'test': true,
         'custom': 'a'
     }
 }).then((result) => {
