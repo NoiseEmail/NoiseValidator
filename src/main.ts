@@ -74,3 +74,11 @@ const basic_bind = new Binder(
 );
 
 route.bind(basic_bind);
+
+
+const other_bind = Binder.new({
+    method: 'GET',
+    handler(request) {
+        Log.info(request.body.balls);
+    },
+});

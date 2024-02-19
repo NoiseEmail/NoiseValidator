@@ -32,6 +32,31 @@ export default class Binder<
     }
 
 
+    public static new = <
+        Body extends RouterTypes.Binder.RequiredBody,
+        Query extends RouterTypes.Binder.RequiredQuery,
+        Headers extends RouterTypes.Binder.RequiredHeaders,
+        Request extends RouterTypes.Binder.Request<
+            RouterTypes.Binder.ConvertObjectToType<Body>,
+            RouterTypes.Binder.ConvertObjectToType<Query>,
+            RouterTypes.Binder.ConvertHeaderObjectToType<Headers>
+        >
+    >(
+        parameters: {
+            method: RouterTypes.Method,
+            handler: (request: Request) => Promise<any> | any,
+            required_body?: Body,
+            required_query?: Query,
+            required_headers?: Headers
+        }
+    ): Binder<Body, Query, Headers, Request> => new Binder(
+        parameters.method,
+        parameters.handler,
+        parameters.required_body || {} as Body,
+        parameters.required_query || {} as Query,
+        parameters.required_headers || {} as Headers
+    );
+
     public get method(): RouterTypes.Method { return this._method; }
     public get required_body(): Body { return this._required_body; }
     public get required_query(): Query { return this._required_query; }
