@@ -27,7 +27,7 @@ export const validate_object = async<
 ): Promise<
     RouterTypes.Binder.ConvertObjectToType<Input> |
     RouterTypes.Binder.ParserError
-> => {
+> => new Promise(async(resolve, reject) => {
 
     let error: RouterTypes.Binder.ParserError | null = null;
 
@@ -87,6 +87,6 @@ export const validate_object = async<
 
     // -- Validate the object
     const result = await walk(validator, input, {});
-    if (error) return error;
-    return result;
-};
+    if (error) return reject(error);
+    return resolve(result);
+});

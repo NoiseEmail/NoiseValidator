@@ -4,7 +4,7 @@ import {base_validator} from "./base_validator";
 export const parse_validator = (
     validator: RouterTypes.Binder.Parameter,
     input: any
-): Promise<RouterTypes.Binder.ParserParameterDetailed> => new Promise(async(resolve) => {
+): Promise<RouterTypes.Binder.ParsedParameter> => new Promise(async(resolve) => {
     switch (typeof validator) {
         case 'string':
             const is_optional = validator.startsWith('Optional<'),

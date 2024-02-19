@@ -23,6 +23,12 @@ router.add_route(Route.new({
         {
             method: 'GET',
 
+            required_headers: {
+                'test': true,
+                'test2': false,
+                'a': true
+            },
+
             required_query: {
                 'test': 'string',
                 'test2': 'Optional<string>',
@@ -36,32 +42,10 @@ router.add_route(Route.new({
             },
 
             handler(request) {
-                const a = request.query.a.test2;
+                const a = request.headers.test2;
+
                 Log.info(a);
             }
         }
     ]
 }));
-
-
-const obj = validate_object({
-    'test': 'string',
-    'test2': 'Optional<string>',
-    'a': {
-        'test': 'boolean',
-        'test2': 'Optional<number>',
-        'custom': (value, reject): boolean => {
-            console.log(13234623456345263456);
-            return true;
-        }
-    }
-}, {
-    'test': 'asdasd',
-    'test2': 'asdasd',
-    'a': {
-        'test': true,
-        'custom': 'a'
-    }
-}).then((result) => {
-    Log.info(result);
-});

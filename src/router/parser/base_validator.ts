@@ -4,7 +4,7 @@ export const base_validator = (
     base_parameter: RouterTypes.Binder.BaseParameter,
     is_optional: boolean,
     input: any
-): RouterTypes.Binder.ParserParameterDetailed => {
+): RouterTypes.Binder.ParsedParameter => {
 
     // -- If the input is empty and the parameter
     //    is optional, return a valid object
