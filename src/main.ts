@@ -2,7 +2,7 @@ import Log from './logger/log';
 import Fastify from 'fastify';
 import Router from "./router/router";
 import Route from "./router/route";
-import {validate_object} from "./router/parser";
+import {validate_object} from "./router/parser/parser";
 
 
 const router = Router.instance;
