@@ -1,5 +1,5 @@
 import {RouterTypes} from "./types";
-import {FastifyRequest} from "fastify";
+import {FastifyReply, FastifyRequest} from "fastify";
 import ParserError from "./parser/parser_error";
 import {validate_object} from "./parser/validate_object";
 
@@ -7,6 +7,11 @@ export default class Binder<
     Body extends RouterTypes.Binder.RequiredBody,
     Query extends RouterTypes.Binder.RequiredQuery,
     Headers extends RouterTypes.Binder.RequiredHeaders,
+
+    ParsedBody extends RouterTypes.Binder.ConvertObjectToType<Body>,
+    ParsedQuery extends RouterTypes.Binder.ConvertObjectToType<Query>,
+    ParsedHeaders extends RouterTypes.Binder.ConvertHeaderObjectToType<Headers>,
+
     Request extends RouterTypes.Binder.Request<
         RouterTypes.Binder.ConvertObjectToType<Body>,
         RouterTypes.Binder.ConvertObjectToType<Query>,
@@ -41,6 +46,11 @@ export default class Binder<
         Body extends RouterTypes.Binder.RequiredBody,
         Query extends RouterTypes.Binder.RequiredQuery,
         Headers extends RouterTypes.Binder.RequiredHeaders,
+
+        BodyParsed extends RouterTypes.Binder.ConvertObjectToType<Body>,
+        QueryParsed extends RouterTypes.Binder.ConvertObjectToType<Query>,
+        HeadersParsed extends RouterTypes.Binder.ConvertHeaderObjectToType<Headers>,
+
         Request extends RouterTypes.Binder.Request<
             RouterTypes.Binder.ConvertObjectToType<Body>,
             RouterTypes.Binder.ConvertObjectToType<Query>,
@@ -54,7 +64,7 @@ export default class Binder<
             required_query?: Query,
             required_headers?: Headers
         }
-    ): Binder<Body, Query, Headers, Request> => new Binder(
+    ): Binder<Body, Query, Headers, BodyParsed, QueryParsed, HeadersParsed, Request> => new Binder(
         parameters.method,
         parameters.handler,
         parameters.required_body || {} as Body,
@@ -66,7 +76,12 @@ export default class Binder<
 
     public async validate(
         fastify_request: FastifyRequest
-    ): Promise<void | ParserError> {
+    ): Promise<ParserError | {
+        body: ParsedBody,
+        query: ParsedQuery,
+        headers: ParsedHeaders,
+        binder: Binder<Body, Query, Headers, ParsedBody, ParsedQuery, ParsedHeaders, Request>
+    }> {
 
         // -- TODO: Check the headers for a content-type and validate the body based on that
         //    If no content-type is found, return a ParserError
@@ -86,8 +101,39 @@ export default class Binder<
             fastify_request.query as object
         ).catch((error) => error);
         if (query instanceof ParserError) return query;
+
+
+        // -- TODO: Validate the headers
+
+
+        return {
+            body: body as ParsedBody,
+            query: query as ParsedQuery,
+            headers: {} as ParsedHeaders,
+            binder: this
+        }
     }
 
+
+
+    public process = async(
+        fastify_request: FastifyRequest,
+        fastify_reply: FastifyReply,
+        body: ParsedBody,
+        query: ParsedQuery,
+        headers: ParsedHeaders
+    ): Promise<any> => {
+        // @ts-ignore
+        return this._handler({
+            body: body,
+            query: query,
+            headers: headers,
+            fastify: {
+                request: fastify_request,
+                reply: fastify_reply
+            }
+        });
+    }
 
 
 

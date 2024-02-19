@@ -76,5 +76,6 @@ export default class Router {
         // -- Add the route
         Log.debug(`Adding route: ${route.friendly_name} (/${route.computed_path})`);
         this._routes.set(route.computed_path, route);
+        route.listen(this._server);
     }
 }

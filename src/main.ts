@@ -22,63 +22,15 @@ const route = Route.new({
     friendly_name: 'Test'
 });
 
-//
-// const basic = route.bind({
-//     method: 'GET',
-//
-//     required_headers: {
-//         'test': true,
-//         'test2': false,
-//         'a': true
-//     },
-//
-//     required_query: {
-//         'test': 'string',
-//         'test2': 'Optional<string>',
-//         'a': {
-//             'test': 'number',
-//             'test2': 'Optional<number>',
-//             'custom': (value, reject): boolean => {
-//                 return true;
-//             }
-//         }
-//     },
-//
-//     handler(request) {
-//         const a = request.body.ddddd;
-//         request.headers.test2;
-//         Log.info(a);
-//     }
-// })
-//
-//
-// route.bind(basic);
-// route.bind({
-//     method: 'GET',
-//     required_headers: { 'test': true },
-//     handler(request) {
-//         Log.info(request.headers.test);
-//     }
-// })
-
-const basic_bind = new Binder(
-    'GET',
-    (request) => {
-        Log.info(request.body.balls);
-    },
-    {
-        balls: (value, reject):boolean => { return true; }
-    },
-    {},
-    {}
-);
-
-route.bind(basic_bind);
-
 
 const other_bind = Binder.new({
     method: 'GET',
     handler(request) {
-        Log.info(request.body.balls);
+        Log.info('Test');
+
+        return { hello: 'world' }
     },
 });
+
+route.bind(other_bind);
+router.add_route(route);

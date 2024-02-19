@@ -20,6 +20,7 @@ declare namespace RouterTypes {
 
         export type RouteMap = Map<Method, Array<RouterTypes.Binder.Generic>>
 
+
     }
 
 
@@ -136,12 +137,22 @@ declare namespace RouterTypes {
             RequiredBody,
             RequiredQuery,
             RequiredHeaders,
+            ConvertObjectToType<RequiredBody>,
+            ConvertObjectToType<RequiredQuery>,
+            ConvertHeaderObjectToType<RequiredHeaders>,
             Request<
                 ConvertObjectToType<RequiredBody>,
                 ConvertObjectToType<RequiredQuery>,
                 ConvertHeaderObjectToType<RequiredHeaders>
             >
         >;
+
+        export interface RouteCompatibleObject {
+            body: ConvertObjectToType<RequiredBody>;
+            query: ConvertObjectToType<RequiredQuery>;
+            headers: ConvertHeaderObjectToType<RequiredHeaders>;
+            binder: Generic;
+        }
 
 
         export type OptionalDecorator = `Optional<${BaseParameter}>`;
