@@ -1,5 +1,6 @@
-import {parse_validator} from "./validator";
 import {RouterTypes} from "../types";
+import ParserError from "./parser_error";
+import {parse_validator} from "./parse_validator";
 
 
 
@@ -27,10 +28,10 @@ export const validate_object = async<
     input: object
 ): Promise<
     RouterTypes.Binder.ConvertObjectToType<Input> |
-    RouterTypes.Binder.ParserError
+    ParserError
 > => new Promise(async(resolve, reject) => {
 
-    let error: RouterTypes.Binder.ParserError | null = null;
+    let error: ParserError | null = null;
 
 
     const walk = async(
@@ -42,7 +43,7 @@ export const validate_object = async<
         path: Array<String> = []
     ): Promise<
         RouterTypes.Binder.ConvertObjectToType<Input> |
-        RouterTypes.Binder.ParserError
+        ParserError
     > => {
 
         // -- Iterate over the keys of the validator object
@@ -51,7 +52,7 @@ export const validate_object = async<
 
             // -- If the key is not a property of the object, skip it
             if (!Object.prototype.hasOwnProperty.call(validator_obj, key)) continue;
-            const value = validator_obj[key];
+            const value: any = validator_obj[key] as any;
 
 
             // -- If the value is an object, we need to walk it
@@ -64,7 +65,10 @@ export const validate_object = async<
             // -- If the value is a string, we need to validate it
             else if (
                 typeof value === 'string' ||
-                typeof value === 'function'
+                typeof value === 'function' ||
+                value instanceof String ||
+                value instanceof Number ||
+                value instanceof Boolean
             ) {
                 // -- Validate the parameter
                 const result = await parse_validator(value, input_obj[key]);
@@ -72,8 +76,10 @@ export const validate_object = async<
 
                 else {
                     // -- Set the error
-                    error = { message: 'Invalid parameter',  parameter: value,
-                        input: input_obj[key],  details: result, path: [...path, key] };
+                    error = new ParserError(
+                        [...path, key], 'Invalid parameter',
+                        value, input_obj[key], result
+                    );
 
                     // -- And quit the function
                     return error;

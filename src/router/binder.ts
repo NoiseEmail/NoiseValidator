@@ -1,4 +1,7 @@
 import {RouterTypes} from "./types";
+import {FastifyRequest} from "fastify";
+import ParserError from "./parser/parser_error";
+import {validate_object} from "./parser/validate_object";
 
 export default class Binder<
     Body extends RouterTypes.Binder.RequiredBody,
@@ -17,6 +20,7 @@ export default class Binder<
     private readonly _required_headers: Headers;
 
 
+
     public constructor(
         method: RouterTypes.Method,
         handler: (request: Request) => Promise<any> | any,
@@ -30,6 +34,7 @@ export default class Binder<
         this._required_headers = required_headers;
         this._handler = handler;
     }
+
 
 
     public static new = <
@@ -56,6 +61,35 @@ export default class Binder<
         parameters.required_query || {} as Query,
         parameters.required_headers || {} as Headers
     );
+
+
+
+    public async validate(
+        fastify_request: FastifyRequest
+    ): Promise<void | ParserError> {
+
+        // -- TODO: Check the headers for a content-type and validate the body based on that
+        //    If no content-type is found, return a ParserError
+        //    If the content-type is not supported, return a ParserError
+
+        // -- Validate Body
+        const body = await validate_object(
+            this._required_body,
+            fastify_request.body as object
+        ).catch((error) => error);
+        if (body instanceof ParserError) return body;
+
+
+        // -- Validate Headers
+        const query = await validate_object(
+            this._required_query,
+            fastify_request.query as object
+        ).catch((error) => error);
+        if (query instanceof ParserError) return query;
+    }
+
+
+
 
     public get method(): RouterTypes.Method { return this._method; }
     public get required_body(): Body { return this._required_body; }

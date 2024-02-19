@@ -165,14 +165,6 @@ declare namespace RouterTypes {
             optional: boolean;
             valid: boolean;
         }
-
-        export interface ParserError {
-            path: Array<String>;
-            message: String;
-            parameter: Parameter;
-            input: any;
-            details: ParsedParameter;
-        }
     }
 }
 
