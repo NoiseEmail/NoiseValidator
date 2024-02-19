@@ -1,4 +1,4 @@
-import {RouterTypes} from "../types";
+import {RouterTypes} from "../router/types";
 
 export default class ParserError {
 

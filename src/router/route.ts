@@ -1,9 +1,9 @@
 import Router from "./router";
 import {RouterTypes} from "./types";
-import Binder from "./binder";
-import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
-import ParserError from "./parser/parser_error";
+import {FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods} from "fastify";
 import Log from "../logger/log";
+import Binder from "./binder";
+import ParserError from "../parser/error";
 
 
 export default class Route {
@@ -66,16 +66,16 @@ export default class Route {
      * Finds a route that is compatible with the given method
      * Body, Query and headers.
      *
-     * @param {RouterTypes.Method} method - The method to find a route for
+     * @param {HTTPMethods} method - The method to find a route for
      * @param {FastifyRequest} fastify_request - The request to find a route for
      *
      * @returns {Promise<RouterTypes.Binder.Generic | null | ParserError>} - Returns a promise that resolves to either a route or null
      */
     private async _find_compatible_route(
-        method: RouterTypes.Method,
+        method: HTTPMethods,
         fastify_request: FastifyRequest
     ): Promise<
-        RouterTypes.Binder.RouteCompatibleObject |
+        RouterTypes.Router.RouteCompatibleObject |
         null |
         ParserError
     > {
@@ -97,29 +97,71 @@ export default class Route {
 
 
 
+    private _process = async(
+        method: HTTPMethods,
+        fastify_request: FastifyRequest,
+        fastify_reply: FastifyReply,
+    ): Promise<any> => {
+        const result = await this._find_compatible_route(method, fastify_request);
+
+        if (!result) return fastify_reply.code(404).send({error: 'No route found'});
+        if (result instanceof ParserError) return fastify_reply.code(400).send({error: result.message});
+
+        // -- Process the route
+        let processed_request: RouterTypes.Router.ExecutableReturnable | null = null;
+        try {
+            processed_request = await result.binder.process(
+                fastify_request,
+                fastify_reply,
+                result.body,
+                result.query,
+                result.headers
+            );
+        }
+
+        catch (error) {
+            Log.error('Error processing request:', error);
+            return fastify_reply.code(500).send({error: 'Internal Server Error'});
+        }
+
+        // -- Check if the response was used up
+        if (fastify_reply.sent) {
+            Log.warn('Response was already sent, server will not respond in expected manner');
+            return;
+        }
+
+        // -- Ensure a response is sent
+        let response: RouterTypes.Router.ReturnableObject;
+        if (processed_request) response = processed_request;
+        else response = Binder.respond('200_OK', {});
+
+        // -- Send the response
+        if (response.content_type) fastify_reply.header('Content-Type', response.content_type);
+        fastify_reply.code(Binder.response_code(response.status)).send(response.body);
+    }
+
+
+
+    /**
+     * @name listen
+     * Adds the route to the fastify instance
+     *
+     * @param {FastifyInstance} fastify_instance - The fastify instance to add the route to
+     *
+     * @returns {void} - Nothing
+     */
     public listen = (
         fastify_instance: FastifyInstance
     ): void => {
 
-        const process = async(
-            method: RouterTypes.Method,
-            fastify_request: FastifyRequest,
-            fastify_reply: FastifyReply,
-        ): Promise<any> => {
-            const result = await this._find_compatible_route(method, fastify_request);
+        const path = this._computed_path,
+            methods: Array<HTTPMethods> = ['GET', 'POST', 'PUT', 'DELETE'];
 
-            if (!result) return fastify_reply.code(404).send({error: 'No route found'});
-            if (result instanceof ParserError) return fastify_reply.code(400).send({error: result.message});
-
-            return result.binder.process(fastify_request, fastify_reply, result.body, result.query, result.headers);
-        }
-
-
-        const path = this._computed_path;
-        fastify_instance.route({ method: 'GET', url: `/${path}`, handler: async (request, reply) => process('GET', request, reply) });
-        fastify_instance.route({ method: 'POST', url: `/${path}`, handler: async (request, reply) => process('POST', request, reply) });
-        fastify_instance.route({ method: 'PUT', url: `/${path}`, handler: async (request, reply) => process('PUT', request, reply) });
-        fastify_instance.route({ method: 'DELETE', url: `/${path}`, handler: async (request, reply) => process('DELETE', request, reply) });
+        methods.forEach(method => fastify_instance.route({ 
+            method: method, 
+            url: `/${path}`, 
+            handler: async (request, reply) => this._process(method, request, reply) 
+        }));
 
         Log.info(`Route: ${path} has been added to the router`);
     };

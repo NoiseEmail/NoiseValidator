@@ -1,7 +1,7 @@
-import {RouterTypes} from "../types";
-import ParserError from "./parser_error";
+import {RouterTypes} from "../router/types";
+import ParserError from "./error";
 
-export const validate_headers = (
+export const headers = (
     headers: any,
     required_headers: RouterTypes.Binder.RequiredHeaders
 ): ParserError | null => {

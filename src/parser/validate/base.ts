@@ -1,8 +1,19 @@
 import Log from "../../logger/log";
-import {RouterTypes} from "../types";
+import {RouterTypes} from "../../router/types";
 
 
 
+/**
+ * @name base_validator
+ * Validates the base parameter types (string, number, boolean)
+ * and returns a parsed parameter object.
+ *
+ * @param {RouterTypes.Binder.BaseParameter} base_parameter - The base parameter type to validate.
+ * @param {boolean} is_optional - Whether the parameter is optional.
+ * @param {any} input - The input to validate.
+ *
+ * @returns {RouterTypes.Binder.ParsedParameter} - Returns a parsed parameter object.
+ */
 export const base_validator = (
     base_parameter: RouterTypes.Binder.BaseParameter,
     is_optional: boolean,

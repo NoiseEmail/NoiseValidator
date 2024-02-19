@@ -1,9 +1,9 @@
 import {RouterTypes} from "./types";
 import {FastifyReply, FastifyRequest} from "fastify";
-import ParserError from "./parser/parser_error";
-import {validate_object} from "./parser/validate_object";
+import {object} from "../parser/object";
 import Log from "../logger/log";
-import {validate_headers} from "./parser/validate_headers";
+import {headers} from "../parser/headers";
+import ParserError from "../parser/error";
 
 export default class Binder<
     Body extends RouterTypes.Binder.RequiredBody,
@@ -21,7 +21,7 @@ export default class Binder<
     >
 >{
     private readonly _method: RouterTypes.Method;
-    private readonly _handler: (request: Request) => Promise<any> | any;
+    private readonly _handler: RouterTypes.Router.Executable<Request> = async() => {};
     private readonly _required_body: Body;
     private readonly _required_query: Query;
     private readonly _required_headers: Headers;
@@ -61,7 +61,7 @@ export default class Binder<
     >(
         parameters: {
             method: RouterTypes.Method,
-            handler: (request: Request) => Promise<any> | any,
+            handler: RouterTypes.Router.Executable<Request>,
             required_body?: Body,
             required_query?: Query,
             required_headers?: Headers
@@ -90,7 +90,7 @@ export default class Binder<
         //    If the content-type is not supported, return a ParserError
 
         // -- Validate Body
-        const body = await validate_object(
+        const body = await object(
             this._required_body,
             fastify_request.body as object
         ).catch((error) => error);
@@ -98,7 +98,7 @@ export default class Binder<
 
 
         // -- Validate Headers
-        const query = await validate_object(
+        const query = await object(
             this._required_query,
             fastify_request.query as object
         ).catch((error) => error);
@@ -106,7 +106,7 @@ export default class Binder<
 
 
         // -- Validate Headers
-        const headers_error = validate_headers(fastify_request.headers, this._required_headers);
+        const headers_error = headers(fastify_request.headers, this._required_headers);
         if (headers_error) return headers_error;
 
 
@@ -126,7 +126,7 @@ export default class Binder<
         body: ParsedBody,
         query: ParsedQuery,
         headers: ParsedHeaders
-    ): Promise<any> => {
+    ): Promise<RouterTypes.Router.ExecutableReturnable> => {
         // @ts-ignore
         return this._handler({
             body: body,
@@ -135,8 +135,68 @@ export default class Binder<
             fastify: {
                 request: fastify_request,
                 reply: fastify_reply
-            }
+            },
+
+            set_header: (key: string, value: string) => Binder._set_header(fastify_reply, key, value),
+            set_headers: (headers: [string, string][]) => Binder._set_headers(fastify_reply, headers),
+            remove_header: (key: string) => Binder._remove_header(fastify_reply, key),
+            remove_headers: (keys: Array<string>) => Binder._remove_headers(fastify_reply, keys),
         });
+    }
+
+
+    public static respond = (
+        response_code: RouterTypes.Router.StatusBuilder.Status | number,
+        response_body?: any,
+        content_type?: string
+    ): RouterTypes.Router.ReturnableObject => {
+        return {
+            status: response_code,
+            body: response_body || {},
+            content_type: content_type
+        }
+    }
+
+
+
+    public static response_code = (
+        response_code: RouterTypes.Router.StatusBuilder.Status | number
+    ): number => {
+        if (typeof response_code === 'string') return Number(response_code.split('_')[0]);
+        return response_code;
+    }
+
+    private static _set_header = (
+        fastify_reply: FastifyReply,
+        key: string,
+        value: string
+    ): void => {
+        if (fastify_reply.sent) Log.warn('Response was already sent, server will not respond in expected manner');
+        else fastify_reply.header(key, value);
+    }
+
+    private static _remove_header = (
+        fastify_reply: FastifyReply,
+        key: string
+    ): void => {
+        if (fastify_reply.sent) Log.warn('Response was already sent, server will not respond in expected manner');
+        else fastify_reply.removeHeader(key);
+    }
+
+    private static _remove_headers = (
+        fastify_reply: FastifyReply,
+        keys: Array<string>
+    ): void => {
+        if (fastify_reply.sent) Log.warn('Response was already sent, server will not respond in expected manner');
+        else for (const key of keys) fastify_reply.removeHeader(key);
+    }
+
+    private static _set_headers = (
+        fastify_reply: FastifyReply,
+        headers: [string, string][]
+    ): void => {
+        if (fastify_reply.sent) Log.warn('Response was already sent, server will not respond in expected manner');
+        else for (const [key, value] of Object.entries(headers)) fastify_reply.header(key, value);
     }
 
 

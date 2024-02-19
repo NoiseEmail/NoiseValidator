@@ -33,7 +33,9 @@ const other_bind = Binder.new({
     handler(request) {
         Log.info('Query:', request.query);
 
-        return { hello: 'world' }
+        request.set_header('test', 'test');
+
+        return Binder.respond('200_OK', 'test');
     },
 });
 

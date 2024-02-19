@@ -1,11 +1,11 @@
-import {RouterTypes} from "../types";
-import ParserError from "./parser_error";
-import {parse_validator} from "./parse_validator";
+import {RouterTypes} from "../router/types";
+import ParserError from "./error";
+import {validate} from "./validate/validate";
 
 
 
 /**
- * @name validate_object
+ * @name object
  * @async
  *
  * Validates user input against a given validation object.
@@ -18,7 +18,7 @@ import {parse_validator} from "./parse_validator";
  *  RouterTypes.Binder.ParserError
  * >} - Returns a promise that resolves to either a converted object or a parser error.
  */
-export const validate_object = async<
+export const object = async<
     Input extends (
         RouterTypes.Binder.RequiredBody |
         RouterTypes.Binder.RequiredQuery
@@ -72,7 +72,7 @@ export const validate_object = async<
             ) {
                 // -- Validate the parameter
                 let result: RouterTypes.Binder.ParsedParameter;
-                try { result = await parse_validator(value, input_obj[key]); }
+                try { result = await validate(value, input_obj[key]); }
                 catch (e) { result = { type: 'custom', optional: false, valid: false, value: null }; }
                 if (result.valid) built_obj[key] = result.value;
 

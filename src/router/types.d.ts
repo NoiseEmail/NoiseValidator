@@ -1,4 +1,4 @@
-import Fastify, {FastifyReply, FastifyRequest} from "fastify";
+import {FastifyReply, FastifyRequest, HTTPMethods} from "fastify";
 import BinderClass from "./binder";
 
 declare namespace RouterTypes {
@@ -8,19 +8,130 @@ declare namespace RouterTypes {
         friendly_name: String;
     }
 
-    export type Method =
-        'GET' |
-        'POST' |
-        'PUT' |
-        'DELETE' |
-        'PATCH';
-
-
     export namespace Router {
 
-        export type RouteMap = Map<Method, Array<RouterTypes.Binder.Generic>>
+        export type RouteMap = Map<HTTPMethods, Array<RouterTypes.Binder.Generic>>
+
+        export interface RouteCompatibleObject {
+            body: Binder.ConvertObjectToType<Binder.RequiredBody>;
+            query: Binder.ConvertObjectToType<Binder.RequiredQuery>;
+            headers: Binder.ConvertHeaderObjectToType<Binder.RequiredHeaders>;
+            binder: Binder.Generic;
+        }
+
+        export interface ReturnableObject {
+            status: StatusBuilder.Status | number;
+            body?: any;
+            content_type?: string;
+        }
+
+        export type ExecutableReturnable =
+            Promise<ReturnableObject> |
+            Promise<void> |
+            ReturnableObject |
+            void;
+
+        export type Executable<
+            Request extends Binder.Request<any, any, any>
+        > = (request: Request) => ExecutableReturnable;
+
+        export namespace StatusBuilder {
+
+            export type Category =
+                'SUCCESS' |
+                'REDIRECT' |
+                'CLIENT_ERROR' |
+                'CLIENT' |
+                'SERVER_ERROR' |
+                'SERVER';
+
+            export type SuccessStatus =
+                { code: 200, name: 'OK' } |
+                { code: 201, name: 'CREATED' } |
+                { code: 202, name: 'ACCEPTED' } |
+                { code: 204, name: 'NO_CONTENT' } |
+                { code: 205, name: 'RESET_CONTENT' } |
+                { code: 206, name: 'PARTIAL_CONTENT' } |
+                { code: 207, name: 'MULTI_STATUS' } |
+                { code: 208, name: 'ALREADY_REPORTED' };
+
+            export type RedirectStatus =
+                { code: 300, name: 'MULTIPLE_CHOICES' } |
+                { code: 301, name: 'MOVED_PERMANENTLY' } |
+                { code: 302, name: 'FOUND' } |
+                { code: 303, name: 'SEE_OTHER' } |
+                { code: 304, name: 'NOT_MODIFIED' } |
+                { code: 305, name: 'USE_PROXY' } |
+                { code: 306, name: 'SWITCH_PROXY' } |
+                { code: 307, name: 'TEMPORARY_REDIRECT' } |
+                { code: 308, name: 'PERMANENT_REDIRECT' };
+
+            export type ClientErrorStatus =
+                { code: 400, name: 'BAD_REQUEST' } |
+                { code: 401, name: 'UNAUTHORIZED' } |
+                { code: 402, name: 'PAYMENT_REQUIRED' } |
+                { code: 403, name: 'FORBIDDEN' } |
+                { code: 404, name: 'NOT_FOUND' } |
+                { code: 405, name: 'METHOD_NOT_ALLOWED' } |
+                { code: 406, name: 'NOT_ACCEPTABLE' } |
+                { code: 407, name: 'PROXY_AUTHENTICATION_REQUIRED' } |
+                { code: 408, name: 'REQUEST_TIMEOUT' } |
+                { code: 409, name: 'CONFLICT' } |
+                { code: 410, name: 'GONE' } |
+                { code: 411, name: 'LENGTH_REQUIRED' } |
+                { code: 412, name: 'PRECONDITION_FAILED' } |
+                { code: 413, name: 'PAYLOAD_TOO_LARGE' } |
+                { code: 414, name: 'URI_TOO_LONG' } |
+                { code: 415, name: 'UNSUPPORTED_MEDIA_TYPE' } |
+                { code: 416, name: 'RANGE_NOT_SATISFIABLE' } |
+                { code: 417, name: 'EXPECTATION_FAILED' } |
+                { code: 418, name: 'IM_A_TEAPOT' } |
+                { code: 421, name: 'MISDIRECTED_REQUEST' } |
+                { code: 422, name: 'UNPROCESSABLE_ENTITY' } |
+                { code: 423, name: 'LOCKED' } |
+                { code: 424, name: 'FAILED_DEPENDENCY' } |
+                { code: 425, name: 'TOO_EARLY' } |
+                { code: 426, name: 'UPGRADE_REQUIRED' } |
+                { code: 428, name: 'PRECONDITION_REQUIRED' } |
+                { code: 429, name: 'TOO_MANY_REQUESTS' } |
+                { code: 431, name: 'REQUEST_HEADER_FIELDS_TOO_LARGE' } |
+                { code: 451, name: 'UNAVAILABLE_FOR_LEGAL_REASONS' };
+
+            export type ServerErrorStatus =
+                { code: 500, name: 'INTERNAL_SERVER_ERROR' } |
+                { code: 501, name: 'NOT_IMPLEMENTED' } |
+                { code: 502, name: 'BAD_GATEWAY' } |
+                { code: 503, name: 'SERVICE_UNAVAILABLE' } |
+                { code: 504, name: 'GATEWAY_TIMEOUT' } |
+                { code: 505, name: 'HTTP_VERSION_NOT_SUPPORTED' } |
+                { code: 506, name: 'VARIANT_ALSO_NEGOTIATES' } |
+                { code: 507, name: 'INSUFFICIENT_STORAGE' } |
+                { code: 508, name: 'LOOP_DETECTED' } |
+                { code: 510, name: 'NOT_EXTENDED' } |
+                { code: 511, name: 'NETWORK_AUTHENTICATION_REQUIRED' };
 
 
+
+            export type Success =
+                `${SuccessStatus['code']}_${SuccessStatus['name']}`;
+
+            export type Redirect =
+                `${RedirectStatus['code']}_${RedirectStatus['name']}`;
+
+            export type ClientError =
+                `${ClientErrorStatus['code']}_${ClientErrorStatus['name']}`;
+
+            export type ServerError =
+                `${ServerErrorStatus['code']}_${ServerErrorStatus['name']}`;
+
+
+
+            export type Status =
+                Success |
+                Redirect |
+                ClientError |
+                ServerError;
+        }
     }
 
 
@@ -126,6 +237,11 @@ declare namespace RouterTypes {
             body: Body;
             query: Query;
 
+            set_header: (key: string, value: string) => void;
+            set_headers: ([key, value]: [string, string]) => void;
+            remove_header: (key: string) => void;
+            remove_headers: (keys: Array<string>) => void;
+
             fastify: {
                 request: FastifyRequest;
                 reply: FastifyReply;
@@ -146,13 +262,6 @@ declare namespace RouterTypes {
                 ConvertHeaderObjectToType<RequiredHeaders>
             >
         >;
-
-        export interface RouteCompatibleObject {
-            body: ConvertObjectToType<RequiredBody>;
-            query: ConvertObjectToType<RequiredQuery>;
-            headers: ConvertHeaderObjectToType<RequiredHeaders>;
-            binder: Generic;
-        }
 
 
         export type OptionalDecorator = `Optional<${BaseParameter}>`;
