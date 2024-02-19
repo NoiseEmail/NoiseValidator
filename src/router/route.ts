@@ -1,11 +1,9 @@
 import Router from "./router";
-import {RouterTypes} from "./types";
 
 export default class Route {
 
     private _computed_path: String;
     private _path: Array<String>
-    private _route_instance: typeof this;
 
     protected _router_instance: Router;
     private _friendly_name: String;
@@ -21,10 +19,6 @@ export default class Route {
         this._router_instance = Router.instance;
         this._configuration = configuration;
     }
-
-
-
-    private Get = (): void => {};
 
 
 

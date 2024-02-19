@@ -1,8 +1,8 @@
-export namespace RouterTypes {
+declare namespace RouterTypes {
 
     export interface RouteConfiguration {
         path: Array<String>;
-        friendly_name?: String;
+        friendly_name: String;
     }
 
     export interface NewRouteParameters<
@@ -68,16 +68,13 @@ export namespace RouterTypes {
             Query,
         > {
             method: Method;
-            handler?: (
-                request: Request<
-                    ConvertObjectToType<Body>,
-                    ConvertObjectToType<Query>
-                >
-            ) => Promise<any> | any;
+            handler?: (request: Request<
+                ConvertObjectToType<Body>,
+                ConvertObjectToType<Query>
+            >) => Promise<any> | any;
 
             middleware?: Array<Function>;
             required_headers?: RequiredHeaders;
-
             required_body?: Body;
             required_query?: Query;
         }
@@ -105,6 +102,32 @@ export namespace RouterTypes {
 
         export interface RequiredQuery {
             [key: string]: Parameter | RequiredQuery;
+        }
+
+
+        export interface ParserParameterBasic {
+            type: BaseParameter | 'custom';
+            optional: boolean;
+            valid: boolean;
+        }
+
+        export type ParserStringDetails = ParserParameterBasic & { value: String; };
+        export type ParserNumberDetails = ParserParameterBasic & { value: Number; };
+        export type ParserBooleanDetails = ParserParameterBasic & { value: Boolean; };
+        export type ParserCustomDetails<Returnable> = ParserParameterBasic & { value: Returnable; };
+
+        export type ParserParameterDetailed<Returnable = unknown> =
+            ParserStringDetails |
+            ParserNumberDetails |
+            ParserBooleanDetails |
+            ParserCustomDetails<Returnable>;
+
+        export interface ParserError {
+            path: Array<String>;
+            message: String;
+            parameter: Parameter;
+            input: any;
+            details: ParserParameterDetailed;
         }
     }
 }
