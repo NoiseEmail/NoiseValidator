@@ -71,14 +71,16 @@ export const validate_object = async<
                 value instanceof Boolean
             ) {
                 // -- Validate the parameter
-                const result = await parse_validator(value, input_obj[key]);
+                let result: RouterTypes.Binder.ParsedParameter;
+                try { result = await parse_validator(value, input_obj[key]); }
+                catch (e) { result = { type: 'custom', optional: false, valid: false, value: null }; }
                 if (result.valid) built_obj[key] = result.value;
 
                 else {
                     // -- Set the error
                     error = new ParserError(
                         [...path, key], 'Invalid parameter',
-                        value, input_obj[key], result
+                        value, result.value, result
                     );
 
                     // -- And quit the function

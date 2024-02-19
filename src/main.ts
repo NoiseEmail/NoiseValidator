@@ -25,8 +25,13 @@ const route = Route.new({
 
 const other_bind = Binder.new({
     method: 'GET',
+
+    required_query: {
+
+    },
+
     handler(request) {
-        Log.info('Test');
+        Log.info('Query:', request.query);
 
         return { hello: 'world' }
     },

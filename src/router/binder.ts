@@ -2,6 +2,8 @@ import {RouterTypes} from "./types";
 import {FastifyReply, FastifyRequest} from "fastify";
 import ParserError from "./parser/parser_error";
 import {validate_object} from "./parser/validate_object";
+import Log from "../logger/log";
+import {validate_headers} from "./parser/validate_headers";
 
 export default class Binder<
     Body extends RouterTypes.Binder.RequiredBody,
@@ -103,7 +105,9 @@ export default class Binder<
         if (query instanceof ParserError) return query;
 
 
-        // -- TODO: Validate the headers
+        // -- Validate Headers
+        const headers_error = validate_headers(fastify_request.headers, this._required_headers);
+        if (headers_error) return headers_error;
 
 
         return {

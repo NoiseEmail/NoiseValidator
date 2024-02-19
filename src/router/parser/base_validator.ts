@@ -37,7 +37,7 @@ export const base_validator = (
         case 'number':
             try {
                 returnable.value = Number(input);
-                returnable.valid = true;
+                returnable.valid = !isNaN(returnable.value);
             } catch (e) {
                 returnable.valid = false;
                 returnable.value = null;

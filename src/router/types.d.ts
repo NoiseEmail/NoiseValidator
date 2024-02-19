@@ -167,7 +167,7 @@ declare namespace RouterTypes {
 
         export type RequiredHeaders = { [key: string]: boolean; }
         export interface RequiredBody { [key: string]: Parameter | RequiredBody; }
-        export interface RequiredQuery { [key: string]: Parameter | RequiredQuery; }
+        export interface RequiredQuery { [key: string]: Parameter; }
 
 
         export interface ParsedParameter {
