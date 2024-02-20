@@ -4,6 +4,7 @@ import {FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods} from "fastif
 import Log from "../logger/log";
 import Binder from "./binder";
 import ParserError from "../parser/error";
+import RouterError from "./error";
 
 
 export default class Route {
@@ -132,7 +133,12 @@ export default class Route {
 
         // -- Ensure a response is sent
         let response: RouterTypes.Router.ReturnableObject;
-        if (processed_request) response = processed_request;
+
+        if (processed_request instanceof RouterError) {
+            processed_request.path = this._path;
+            response = Binder.respond(processed_request.serialized.code, processed_request.serialized);
+        }
+        else if (processed_request) response = processed_request;
         else response = Binder.respond('200_OK', {});
 
         // -- Send the response
@@ -157,7 +163,7 @@ export default class Route {
         const path = this._computed_path,
             methods: Array<HTTPMethods> = ['GET', 'POST', 'PUT', 'DELETE'];
 
-        methods.forEach(method => fastify_instance.route({ 
+        methods.forEach(method => fastify_instance.route({
             method: method, 
             url: `/${path}`, 
             handler: async (request, reply) => this._process(method, request, reply) 

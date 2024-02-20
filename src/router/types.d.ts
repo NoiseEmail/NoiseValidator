@@ -1,5 +1,6 @@
 import {FastifyReply, FastifyRequest, HTTPMethods} from "fastify";
 import BinderClass from "./binder";
+import RouterError from "./error";
 
 declare namespace RouterTypes {
 
@@ -27,8 +28,10 @@ declare namespace RouterTypes {
 
         export type ExecutableReturnable =
             Promise<ReturnableObject> |
+            Promise<RouterError> |
             Promise<void> |
             ReturnableObject |
+            RouterError |
             void;
 
         export type Executable<

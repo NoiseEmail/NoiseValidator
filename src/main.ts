@@ -35,7 +35,9 @@ const other_bind = Binder.new({
 
         request.set_header('test', 'test');
 
-        return Binder.respond('200_OK', 'test');
+        return Binder.error(500, 'Not found', {
+            test: 'test'
+        })
     },
 });
 

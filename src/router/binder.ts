@@ -1,9 +1,10 @@
 import {RouterTypes} from "./types";
-import {FastifyReply, FastifyRequest} from "fastify";
+import {FastifyReply, FastifyRequest, HTTPMethods} from "fastify";
 import {object} from "../parser/object";
 import Log from "../logger/log";
 import {headers} from "../parser/headers";
 import ParserError from "../parser/error";
+import RouterError from "./error";
 
 export default class Binder<
     Body extends RouterTypes.Binder.RequiredBody,
@@ -20,7 +21,7 @@ export default class Binder<
         RouterTypes.Binder.ConvertHeaderObjectToType<Headers>
     >
 >{
-    private readonly _method: RouterTypes.Method;
+    private readonly _method: HTTPMethods;
     private readonly _handler: RouterTypes.Router.Executable<Request> = async() => {};
     private readonly _required_body: Body;
     private readonly _required_query: Query;
@@ -29,7 +30,7 @@ export default class Binder<
 
 
     public constructor(
-        method: RouterTypes.Method,
+        method: HTTPMethods,
         handler: (request: Request) => Promise<any> | any,
         required_body: Body,
         required_query: Query,
@@ -60,7 +61,7 @@ export default class Binder<
         >
     >(
         parameters: {
-            method: RouterTypes.Method,
+            method: HTTPMethods,
             handler: RouterTypes.Router.Executable<Request>,
             required_body?: Body,
             required_query?: Query,
@@ -157,6 +158,12 @@ export default class Binder<
         }
     }
 
+    public static error = (
+        response_code: RouterTypes.Router.StatusBuilder.Status | number,
+        message: String,
+        data?: any
+    ): RouterError => new RouterError(response_code, message, data);
+
 
 
     public static response_code = (
@@ -201,7 +208,7 @@ export default class Binder<
 
 
 
-    public get method(): RouterTypes.Method { return this._method; }
+    public get method(): HTTPMethods { return this._method; }
     public get required_body(): Body { return this._required_body; }
     public get required_query(): Query { return this._required_query; }
     public get required_headers(): Headers { return this._required_headers; }
