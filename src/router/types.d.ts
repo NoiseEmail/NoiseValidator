@@ -1,32 +1,33 @@
 import {FastifyReply, FastifyRequest, HTTPMethods} from "fastify";
 import BinderClass from "./binder";
 import RouterError from "./error";
+import exp from "node:constants";
 
 declare namespace RouterTypes {
 
-    export interface RouteConfiguration {
+    interface RouteConfiguration {
         path: Array<String>;
         friendly_name: String;
     }
 
-    export namespace Router {
+    namespace Router {
 
-        export type RouteMap = Map<HTTPMethods, Array<RouterTypes.Binder.Generic>>
+        type RouteMap = Map<HTTPMethods, Array<RouterTypes.Binder.Generic>>
 
-        export interface RouteCompatibleObject {
+        interface RouteCompatibleObject {
             body: Binder.ConvertObjectToType<Binder.RequiredBody>;
             query: Binder.ConvertObjectToType<Binder.RequiredQuery>;
             headers: Binder.ConvertHeaderObjectToType<Binder.RequiredHeaders>;
             binder: Binder.Generic;
         }
 
-        export interface ReturnableObject {
+        interface ReturnableObject {
             status: StatusBuilder.Status | number;
             body?: any;
             content_type?: string;
         }
 
-        export type ExecutableReturnable =
+        type ExecutableReturnable =
             Promise<ReturnableObject> |
             Promise<RouterError> |
             Promise<void> |
@@ -34,13 +35,13 @@ declare namespace RouterTypes {
             RouterError |
             void;
 
-        export type Executable<
+        type Executable<
             Request extends Binder.Request<any, any, any>
         > = (request: Request) => ExecutableReturnable;
 
-        export namespace StatusBuilder {
+        namespace StatusBuilder {
 
-            export type Category =
+            type Category =
                 'SUCCESS' |
                 'REDIRECT' |
                 'CLIENT_ERROR' |
@@ -48,7 +49,7 @@ declare namespace RouterTypes {
                 'SERVER_ERROR' |
                 'SERVER';
 
-            export type SuccessStatus =
+            type SuccessStatus =
                 { code: 200, name: 'OK' } |
                 { code: 201, name: 'CREATED' } |
                 { code: 202, name: 'ACCEPTED' } |
@@ -58,7 +59,7 @@ declare namespace RouterTypes {
                 { code: 207, name: 'MULTI_STATUS' } |
                 { code: 208, name: 'ALREADY_REPORTED' };
 
-            export type RedirectStatus =
+            type RedirectStatus =
                 { code: 300, name: 'MULTIPLE_CHOICES' } |
                 { code: 301, name: 'MOVED_PERMANENTLY' } |
                 { code: 302, name: 'FOUND' } |
@@ -69,7 +70,7 @@ declare namespace RouterTypes {
                 { code: 307, name: 'TEMPORARY_REDIRECT' } |
                 { code: 308, name: 'PERMANENT_REDIRECT' };
 
-            export type ClientErrorStatus =
+            type ClientErrorStatus =
                 { code: 400, name: 'BAD_REQUEST' } |
                 { code: 401, name: 'UNAUTHORIZED' } |
                 { code: 402, name: 'PAYMENT_REQUIRED' } |
@@ -100,7 +101,7 @@ declare namespace RouterTypes {
                 { code: 431, name: 'REQUEST_HEADER_FIELDS_TOO_LARGE' } |
                 { code: 451, name: 'UNAVAILABLE_FOR_LEGAL_REASONS' };
 
-            export type ServerErrorStatus =
+            type ServerErrorStatus =
                 { code: 500, name: 'INTERNAL_SERVER_ERROR' } |
                 { code: 501, name: 'NOT_IMPLEMENTED' } |
                 { code: 502, name: 'BAD_GATEWAY' } |
@@ -115,21 +116,21 @@ declare namespace RouterTypes {
 
 
 
-            export type Success =
+            type Success =
                 `${SuccessStatus['code']}_${SuccessStatus['name']}`;
 
-            export type Redirect =
+            type Redirect =
                 `${RedirectStatus['code']}_${RedirectStatus['name']}`;
 
-            export type ClientError =
+            type ClientError =
                 `${ClientErrorStatus['code']}_${ClientErrorStatus['name']}`;
 
-            export type ServerError =
+            type ServerError =
                 `${ServerErrorStatus['code']}_${ServerErrorStatus['name']}`;
 
 
 
-            export type Status =
+            type Status =
                 Success |
                 Redirect |
                 ClientError |
@@ -138,7 +139,33 @@ declare namespace RouterTypes {
     }
 
 
-    export namespace Binder {
+
+    namespace DynamicURL {
+
+        type StartsWithColon<str extends string> =
+            str extends `:${infer _}` ? true : false;
+
+        type RemoveStartingColons<str extends string> =
+            StartsWithColon<str> extends true ?
+            str extends `:${infer right}` ? RemoveStartingColons<right> :
+            str : str;
+
+        type HasColonLeft<str extends string> =
+            str extends `${infer _}:${infer __}` ? true : false;
+
+        type Extract<str extends string, res extends Array<string> = []> =
+            HasColonLeft<str> extends false ? res :
+            str extends `${infer l}:${infer r}` ?
+            HasColonLeft<r> extends false ? [...res, r] :
+            StartsWithColon<r> extends true ? Extract<RemoveStartingColons<r>, res> :
+            r extends `${infer l2}:${infer r2}` ? Extract<`:${r2}`, [...res, l2]> :
+            never : never;
+
+
+        type test = Extract<'ss:aaa::bbb:cccc'>
+    }
+
+    namespace Binder {
 
 
 
@@ -150,7 +177,7 @@ declare namespace RouterTypes {
          * @param {Type} Type - The type to extract from
          * @returns {String} - Returns the type without the `Optional` wrapper
          */
-        export type ExtractOptionalType<Type> = Type extends `Optional<${infer U}>` ? U : never;
+        type ExtractOptionalType<Type> = Type extends `Optional<${infer U}>` ? U : never;
 
 
 
@@ -162,7 +189,7 @@ declare namespace RouterTypes {
          * @param {Type} Type - The string representation of the type
          * @returns {String | Number | Boolean | undefined} - Returns the type
          */
-        export type ConvertStringToType<Type> =
+        type ConvertStringToType<Type> =
             Type extends 'string' ? String :
             Type extends 'number' ? Number :
             Type extends 'boolean' ? Boolean :
@@ -187,7 +214,7 @@ declare namespace RouterTypes {
          * @param {Object} Object - The object to convert
          * @returns {Object} - Returns the converted object
          */
-        export type ConvertObjectToType<Object> = {
+        type ConvertObjectToType<Object> = {
             [Key in keyof Object]:
                 // -- Base types
                 Object[Key] extends 'string' ? String :
@@ -222,7 +249,7 @@ declare namespace RouterTypes {
          * @param {Object} Object - The object to convert
          * @returns {Object} - Returns the converted object
          */
-        export type ConvertHeaderObjectToType<Object> = {
+        type ConvertHeaderObjectToType<Object> = {
             [Key in keyof Object]:
             Object[Key] extends true ? String :
             Object[Key] extends false ? String | undefined :
@@ -231,7 +258,7 @@ declare namespace RouterTypes {
 
 
 
-        export type Request<
+        type Request<
             Body,
             Query,
             Headers
@@ -252,7 +279,7 @@ declare namespace RouterTypes {
         };
 
 
-        export type Generic = BinderClass<
+        type Generic = BinderClass<
             RequiredBody,
             RequiredQuery,
             RequiredHeaders,
@@ -266,23 +293,26 @@ declare namespace RouterTypes {
             >
         >;
 
+        type Any = BinderClass<any, any, any, any, any, any, any>
 
-        export type OptionalDecorator = `Optional<${BaseParameter}>`;
-        export type BaseParameter = 'string' | 'number' | 'boolean';
-        export type TypeParameter = String | Number | Boolean;
-        export type CustomValidator<Returnable = unknown> = (
+
+
+        type OptionalDecorator = `Optional<${BaseParameter}>`;
+        type BaseParameter = 'string' | 'number' | 'boolean';
+        type TypeParameter = String | Number | Boolean;
+        type CustomValidator<Returnable = unknown> = (
             value: unknown,
             reject: (reason: string | Error | null | undefined) => void,
         ) => Returnable;
-        export type Parameter = BaseParameter | TypeParameter| OptionalDecorator | CustomValidator;
+        type Parameter = BaseParameter | TypeParameter| OptionalDecorator | CustomValidator;
 
 
-        export type RequiredHeaders = { [key: string]: boolean; }
-        export interface RequiredBody { [key: string]: Parameter | RequiredBody; }
-        export interface RequiredQuery { [key: string]: Parameter; }
+        type RequiredHeaders = { [key: string]: boolean; }
+        interface RequiredBody { [key: string]: Parameter | RequiredBody; }
+        interface RequiredQuery { [key: string]: Parameter; }
 
 
-        export interface ParsedParameter {
+        interface ParsedParameter {
             type: BaseParameter | 'custom';
             value: String | Number | Boolean | unknown;
             optional: boolean;
