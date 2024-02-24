@@ -5,20 +5,20 @@ import exp from "node:constants";
 
 declare namespace RouterTypes {
 
-    interface RouteConfiguration {
-        path: Array<String>;
+    type RouteConfiguration<path extends string> = {
+        path: path;
         friendly_name: String;
     }
 
     namespace Router {
 
-        type RouteMap = Map<HTTPMethods, Array<RouterTypes.Binder.Generic>>
+        type RouteMap = Map<HTTPMethods, Array<RouterTypes.Binder.Any>>
 
         interface RouteCompatibleObject {
             body: Binder.ConvertObjectToType<Binder.RequiredBody>;
             query: Binder.ConvertObjectToType<Binder.RequiredQuery>;
             headers: Binder.ConvertHeaderObjectToType<Binder.RequiredHeaders>;
-            binder: Binder.Generic;
+            binder: Binder.Any;
         }
 
         interface ReturnableObject {
@@ -36,7 +36,7 @@ declare namespace RouterTypes {
             void;
 
         type Executable<
-            Request extends Binder.Request<any, any, any>
+            Request extends Binder.Request<any, any, any, any>
         > = (request: Request) => ExecutableReturnable;
 
         namespace StatusBuilder {
@@ -161,9 +161,9 @@ declare namespace RouterTypes {
             r extends `${infer l2}:${infer r2}` ? Extract<`:${r2}`, [...res, l2]> :
             never : never;
 
-
-        type test = Extract<'ss:aaa::bbb:cccc'>
     }
+
+
 
     namespace Binder {
 
@@ -258,7 +258,21 @@ declare namespace RouterTypes {
 
 
 
+        /**
+         * @name ArrayToObject
+         * Converts an array of strings to an object
+         *
+         * @param {Array<string>} Array - The array to convert
+         * @returns {Object} - Returns the converted object
+         */
+        type ArrayToObject<Arr extends Array<string>> = {
+            [Key in Arr[number]]: string;
+        }
+
+
+
         type Request<
+            DynamicUrl,
             Body,
             Query,
             Headers
@@ -266,6 +280,7 @@ declare namespace RouterTypes {
             headers: Headers;
             body: Body;
             query: Query;
+            dynamic_url: DynamicUrl;
 
             set_header: (key: string, value: string) => void;
             set_headers: ([key, value]: [string, string]) => void;
@@ -279,7 +294,10 @@ declare namespace RouterTypes {
         };
 
 
-        type Generic = BinderClass<
+        type Generic<
+            Path extends string
+        > = BinderClass<
+            Path,
             RequiredBody,
             RequiredQuery,
             RequiredHeaders,
@@ -287,13 +305,14 @@ declare namespace RouterTypes {
             ConvertObjectToType<RequiredQuery>,
             ConvertHeaderObjectToType<RequiredHeaders>,
             Request<
+                ArrayToObject<DynamicURL.Extract<Path>>,
                 ConvertObjectToType<RequiredBody>,
                 ConvertObjectToType<RequiredQuery>,
                 ConvertHeaderObjectToType<RequiredHeaders>
             >
         >;
 
-        type Any = BinderClass<any, any, any, any, any, any, any>
+        type Any = BinderClass<any, any, any, any, any, any, any, any>
 
 
 

@@ -7,38 +7,38 @@ import ParserError from "../parser/error";
 import RouterError from "./error";
 
 
-export default class Route {
+export default class Route<
+    Path extends string,
+    Configuration extends RouterTypes.RouteConfiguration<Path>
+> {
 
     private readonly _friendly_name: String;
-    private readonly _computed_path: String;
-    private readonly _path: Array<String>
+    private readonly _path: String;
 
     private _router_instance: Router;
-    private _configuration: RouterTypes.RouteConfiguration;
+    private _configuration: Configuration;
 
-    private _binders: Array<RouterTypes.Binder.Generic> = [];
+    private _binders: Array<RouterTypes.Binder.Any> = [];
     private _router_map: RouterTypes.Router.RouteMap = new Map();
 
     public constructor(
-        configuration: RouterTypes.RouteConfiguration,
-        ...binders: Array<RouterTypes.Binder.Generic>
+        configuration: Configuration,
+        ...binders: Array<RouterTypes.Binder.Any>
     ) {
         this._path = configuration.path;
         this._friendly_name = configuration.friendly_name;
-        this._computed_path = this._compute_path();
         this._router_instance = Router.instance;
         this._configuration = configuration;
         this._binders = binders;
     }
 
-    public static new = (
-        configuration: RouterTypes.RouteConfiguration,
-        ...binders: Array<RouterTypes.Binder.Generic>
-    ): Route => new Route(
+    public static new = <path extends string>(
+        configuration: RouterTypes.RouteConfiguration<path>,
+        ...binders: Array<RouterTypes.Binder.Generic<path>>
+    ): Route<path, RouterTypes.RouteConfiguration<path>> => new Route(
         configuration,
         ...binders
     );
-
 
 
     /**
@@ -49,15 +49,14 @@ export default class Route {
      * @param {typeof Binder} binder - The binder to bind to the route
      * @returns {Route} - Returns the route instance (For chaining)
      */
-    public bind =(
-        binder: RouterTypes.Binder.Generic
+    public bind = (
+        binder: RouterTypes.Binder.Any
     ): this => {
         if (!this._router_map.has(binder.method)) this._router_map.set(binder.method, []);
         this._router_map.get(binder.method)?.push(binder);
         this._binders.push(binder);
         return this;
     }
-
 
 
     /**
@@ -97,8 +96,7 @@ export default class Route {
     }
 
 
-
-    private _process = async(
+    private _process = async (
         method: HTTPMethods,
         fastify_request: FastifyRequest,
         fastify_reply: FastifyReply,
@@ -118,9 +116,7 @@ export default class Route {
                 result.query,
                 result.headers
             );
-        }
-
-        catch (error) {
+        } catch (error) {
             Log.error('Error processing request:', error);
             return fastify_reply.code(500).send({error: 'Internal Server Error'});
         }
@@ -135,17 +131,15 @@ export default class Route {
         let response: RouterTypes.Router.ReturnableObject;
 
         if (processed_request instanceof RouterError) {
-            processed_request.path = this._path;
+            // processed_request.path = this._path;
             response = Binder.respond(processed_request.serialized.code, processed_request.serialized);
-        }
-        else if (processed_request) response = processed_request;
+        } else if (processed_request) response = processed_request;
         else response = Binder.respond('200_OK', {});
 
         // -- Send the response
         if (response.content_type) fastify_reply.header('Content-Type', response.content_type);
         fastify_reply.code(Binder.response_code(response.status)).send(response.body);
     }
-
 
 
     /**
@@ -160,29 +154,24 @@ export default class Route {
         fastify_instance: FastifyInstance
     ): void => {
 
-        const path = this._computed_path,
+        const path = this._path,
             methods: Array<HTTPMethods> = ['GET', 'POST', 'PUT', 'DELETE'];
 
         methods.forEach(method => fastify_instance.route({
-            method: method, 
-            url: `/${path}`, 
-            handler: async (request, reply) => this._process(method, request, reply) 
+            method: method,
+            url: `/${path}`,
+            handler: async (request, reply) => this._process(method, request, reply)
         }));
 
         Log.info(`Route: ${path} has been added to the router`);
     };
 
 
-
-    private _compute_path(): String {
-        return this._path.join('/');
-    }
-
     public get friendly_name(): String {
         return this._friendly_name;
     }
 
-    public get computed_path(): String {
-        return this._computed_path;
+    public get path(): String {
+        return this._path;
     }
 }

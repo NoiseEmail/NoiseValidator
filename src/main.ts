@@ -17,13 +17,11 @@ router.start();
 //     friendly_name: 'Test'
 // }));
 
+
 const route = Route.new({
-    path: ['test'],
+    path: '/test:dynamic_url',
     friendly_name: 'Test'
-});
-
-
-const other_bind = Binder.new({
+}, Binder.new({
     method: 'GET',
 
     required_query: {
@@ -32,6 +30,9 @@ const other_bind = Binder.new({
 
     handler(request) {
         Log.info('Query:', request.query);
+        let a = request.dynamic_url = {
+            dynamic_url: 'test'
+        }
 
         request.set_header('test', 'test');
 
@@ -39,7 +40,23 @@ const other_bind = Binder.new({
             test: 'test'
         })
     },
-});
+}));
 
-route.bind(other_bind);
+Binder.new({
+    method: 'GET',
+
+    required_query: {
+
+    },
+
+    handler(request) {
+        Log.info('Query:', request.query);
+        request.set_header('test', 'test');
+
+        return Binder.error(500, 'Not found', {
+            test: 'test'
+        })
+    },
+})
+
 router.add_route(route);

@@ -7,6 +7,8 @@ import ParserError from "../parser/error";
 import RouterError from "./error";
 
 export default class Binder<
+    Path extends string,
+
     Body extends RouterTypes.Binder.RequiredBody,
     Query extends RouterTypes.Binder.RequiredQuery,
     Headers extends RouterTypes.Binder.RequiredHeaders,
@@ -46,6 +48,8 @@ export default class Binder<
 
 
     public static new = <
+        Path extends string,
+
         Body extends RouterTypes.Binder.RequiredBody,
         Query extends RouterTypes.Binder.RequiredQuery,
         Headers extends RouterTypes.Binder.RequiredHeaders,
@@ -67,7 +71,7 @@ export default class Binder<
             required_query?: Query,
             required_headers?: Headers
         }
-    ): Binder<Body, Query, Headers, BodyParsed, QueryParsed, HeadersParsed, Request> => new Binder(
+    ): Binder<Path, Body, Query, Headers, BodyParsed, QueryParsed, HeadersParsed, Request> => new Binder(
         parameters.method,
         parameters.handler,
         parameters.required_body || {} as Body,
@@ -83,7 +87,7 @@ export default class Binder<
         body: ParsedBody,
         query: ParsedQuery,
         headers: ParsedHeaders,
-        binder: Binder<Body, Query, Headers, ParsedBody, ParsedQuery, ParsedHeaders, Request>
+        binder: RouterTypes.Binder.Any
     }> {
 
         // -- TODO: Check the headers for a content-type and validate the body based on that

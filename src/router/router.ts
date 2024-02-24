@@ -5,7 +5,7 @@ import Fastify, {FastifyInstance} from 'fastify';
 export default class Router {
 
     private static _instance: Router;
-    private _routes: Map<String, Route>;
+    private _routes: Map<String, Route<any, any>>;
     private _server: FastifyInstance;
 
 
@@ -29,11 +29,15 @@ export default class Router {
      * @name start
      * Starts the server (Or unpauses it)
      *
+     * @param {number} [port=3000] - The port to start the server on (Default: 3000)
+     *
      * @returns {void} - Nothing
      */
-    public start(): void {
+    public start(
+        port: number = 3000
+    ): void {
         Log.info('Starting server...');
-        this._server.listen({port: 3000}, (err, address) => {
+        this._server.listen({port}, (err, address) => {
             if (err) {
                 Log.error(err);
                 process.exit(1);
@@ -65,17 +69,17 @@ export default class Router {
      *
      * @returns {void} - Nothing
      */
-    public add_route(route: Route): void {
+    public add_route(route: Route<any, any>): void {
 
         // -- Don't add the route if it already exists
-        if (this._routes.has(route.computed_path)) {
+        if (this._routes.has(route.path)) {
             Log.warn(`Route ${route.friendly_name} already exists!`);
             return;
         }
 
         // -- Add the route
-        Log.debug(`Adding route: ${route.friendly_name} (/${route.computed_path})`);
-        this._routes.set(route.computed_path, route);
+        Log.debug(`Adding route: ${route.friendly_name} (/${route.path})`);
+        this._routes.set(route.path, route);
         route.listen(this._server);
     }
 }
