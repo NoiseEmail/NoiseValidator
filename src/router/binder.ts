@@ -5,6 +5,7 @@ import Log from "../logger/log";
 import {headers} from "../parser/headers";
 import ParserError from "../parser/error";
 import RouterError from "./error";
+import Route from "./route";
 
 export default class Binder<
     Path extends string,
@@ -18,11 +19,13 @@ export default class Binder<
     ParsedHeaders extends RouterTypes.Binder.ConvertHeaderObjectToType<Headers>,
 
     Request extends RouterTypes.Binder.Request<
+        RouterTypes.Binder.ArrayToObject<RouterTypes.DynamicURL.Extract<Path>>,
         RouterTypes.Binder.ConvertObjectToType<Body>,
         RouterTypes.Binder.ConvertObjectToType<Query>,
         RouterTypes.Binder.ConvertHeaderObjectToType<Headers>
     >
 >{
+    private readonly _id: String = Math.random().toString(36).substring(7);
     private readonly _method: HTTPMethods;
     private readonly _handler: RouterTypes.Router.Executable<Request> = async() => {};
     private readonly _required_body: Body;
@@ -32,6 +35,7 @@ export default class Binder<
 
 
     public constructor(
+        route: Route<Path, RouterTypes.RouteConfiguration<Path>>,
         method: HTTPMethods,
         handler: (request: Request) => Promise<any> | any,
         required_body: Body,
@@ -43,6 +47,8 @@ export default class Binder<
         this._required_query = required_query;
         this._required_headers = required_headers;
         this._handler = handler;
+
+        route.bind(this);
     }
 
 
@@ -59,11 +65,13 @@ export default class Binder<
         HeadersParsed extends RouterTypes.Binder.ConvertHeaderObjectToType<Headers>,
 
         Request extends RouterTypes.Binder.Request<
+            RouterTypes.Binder.ArrayToObject<RouterTypes.DynamicURL.Extract<Path>>,
             RouterTypes.Binder.ConvertObjectToType<Body>,
             RouterTypes.Binder.ConvertObjectToType<Query>,
             RouterTypes.Binder.ConvertHeaderObjectToType<Headers>
         >
     >(
+        route: Route<Path, RouterTypes.RouteConfiguration<Path>>,
         parameters: {
             method: HTTPMethods,
             handler: RouterTypes.Router.Executable<Request>,
@@ -72,6 +80,7 @@ export default class Binder<
             required_headers?: Headers
         }
     ): Binder<Path, Body, Query, Headers, BodyParsed, QueryParsed, HeadersParsed, Request> => new Binder(
+        route,
         parameters.method,
         parameters.handler,
         parameters.required_body || {} as Body,
@@ -137,6 +146,8 @@ export default class Binder<
             body: body,
             query: query,
             headers: headers,
+            dynamic_url: fastify_request.params,
+
             fastify: {
                 request: fastify_request,
                 reply: fastify_reply
@@ -212,6 +223,7 @@ export default class Binder<
 
 
 
+    public get id(): String { return this._id; }
     public get method(): HTTPMethods { return this._method; }
     public get required_body(): Body { return this._required_body; }
     public get required_query(): Query { return this._required_query; }

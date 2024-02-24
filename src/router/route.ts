@@ -18,26 +18,22 @@ export default class Route<
     private _router_instance: Router;
     private _configuration: Configuration;
 
-    private _binders: Array<RouterTypes.Binder.Any> = [];
+    private _binders: Map<String, RouterTypes.Binder.Any> = new Map();
     private _router_map: RouterTypes.Router.RouteMap = new Map();
 
     public constructor(
         configuration: Configuration,
-        ...binders: Array<RouterTypes.Binder.Any>
     ) {
         this._path = configuration.path;
         this._friendly_name = configuration.friendly_name;
         this._router_instance = Router.instance;
         this._configuration = configuration;
-        this._binders = binders;
     }
 
     public static new = <path extends string>(
         configuration: RouterTypes.RouteConfiguration<path>,
-        ...binders: Array<RouterTypes.Binder.Generic<path>>
     ): Route<path, RouterTypes.RouteConfiguration<path>> => new Route(
         configuration,
-        ...binders
     );
 
 
@@ -52,9 +48,10 @@ export default class Route<
     public bind = (
         binder: RouterTypes.Binder.Any
     ): this => {
+        if (this._binders.has(binder.id)) throw new Error(`Binder with id: ${binder.id} already exists`);
         if (!this._router_map.has(binder.method)) this._router_map.set(binder.method, []);
         this._router_map.get(binder.method)?.push(binder);
-        this._binders.push(binder);
+        this._binders.set(binder.id, binder);
         return this;
     }
 
@@ -159,7 +156,7 @@ export default class Route<
 
         methods.forEach(method => fastify_instance.route({
             method: method,
-            url: `/${path}`,
+            url: `${path}`,
             handler: async (request, reply) => this._process(method, request, reply)
         }));
 

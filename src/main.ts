@@ -3,7 +3,6 @@ import Router from "./router/router";
 import Route from "./router/route";
 import Binder from "./router/binder";
 
-
 const router = Router.instance;
 router.start();
 
@@ -19,9 +18,11 @@ router.start();
 
 
 const route = Route.new({
-    path: '/test:dynamic_url',
+    path: '/what/:digit(^\\d+).png:balls',
     friendly_name: 'Test'
-}, Binder.new({
+});
+
+Binder.new(route, {
     method: 'GET',
 
     required_query: {
@@ -29,33 +30,10 @@ const route = Route.new({
     },
 
     handler(request) {
-        Log.info('Query:', request.query);
-        let a = request.dynamic_url = {
-            dynamic_url: 'test'
-        }
-
+        Log.info('Query:', request.dynamic_url);
         request.set_header('test', 'test');
 
-        return Binder.error(500, 'Not found', {
-            test: 'test'
-        })
-    },
-}));
-
-Binder.new({
-    method: 'GET',
-
-    required_query: {
-
-    },
-
-    handler(request) {
-        Log.info('Query:', request.query);
-        request.set_header('test', 'test');
-
-        return Binder.error(500, 'Not found', {
-            test: 'test'
-        })
+        return Binder.respond(200, 'Balls')
     },
 })
 

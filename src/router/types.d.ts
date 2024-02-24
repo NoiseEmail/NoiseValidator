@@ -153,12 +153,20 @@ declare namespace RouterTypes {
         type HasColonLeft<str extends string> =
             str extends `${infer _}:${infer __}` ? true : false;
 
+        type RemoveRegex<str extends string> =
+        // -- Regex params look like this :param(regex)whatever
+        //    So we need to remove the regex part and everything after it
+        //    so were left with :param
+        str extends `${infer left}(${infer _})${infer __}`
+            ? left
+            : str;
+
         type Extract<str extends string, res extends Array<string> = []> =
             HasColonLeft<str> extends false ? res :
             str extends `${infer l}:${infer r}` ?
-            HasColonLeft<r> extends false ? [...res, r] :
+            HasColonLeft<r> extends false ? [...res, RemoveRegex<r>] :
             StartsWithColon<r> extends true ? Extract<RemoveStartingColons<r>, res> :
-            r extends `${infer l2}:${infer r2}` ? Extract<`:${r2}`, [...res, l2]> :
+            r extends `${infer l2}:${infer r2}` ? Extract<`:${r2}`, [...res, RemoveRegex<l2>]> :
             never : never;
 
     }
