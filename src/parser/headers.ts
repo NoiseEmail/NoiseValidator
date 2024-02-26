@@ -10,7 +10,7 @@ export const headers = (
 
         // -- Check if the header is present
         const exists = Object.prototype.hasOwnProperty.call(headers, key);
-        if (!exists) return new ParserError(
+        if (!exists && value === true) return new ParserError(
             ['headers', key], 'Header is missing', key, null,
             { type: 'string', optional: false, valid: false, value: null }
         );
