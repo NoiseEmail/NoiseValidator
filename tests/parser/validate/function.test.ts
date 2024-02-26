@@ -2,6 +2,8 @@ import { describe, expect, test } from '@jest/globals';
 import { function_validator } from '../../../src/parser/validate/function';
 import { RouterTypes } from '../../../src/router/types';
 
+
+
 test('Function valid', () => {
     const validator: RouterTypes.Binder.Parameter = (input, rejection) => {
         return input;
@@ -16,6 +18,7 @@ test('Function valid', () => {
         optional: false
     });
 });
+
 
 
 test('Function invalid', () => {
@@ -35,6 +38,8 @@ test('Function invalid', () => {
 });
 
 
+
+
 test('Function error', () => {
     const validator: RouterTypes.Binder.Parameter = (input, rejection) => {
         throw new Error('Error');
@@ -51,6 +56,7 @@ test('Function error', () => {
 });
 
 
+
 test('Async function valid', () => {
     const validator: RouterTypes.Binder.Parameter = async (input, rejection) => {
         return input;
@@ -65,6 +71,7 @@ test('Async function valid', () => {
         optional: false
     });
 });
+
 
 
 test('Async function invalid', () => {
@@ -84,6 +91,7 @@ test('Async function invalid', () => {
 });
 
 
+
 test('Async function error', () => {
     const validator: RouterTypes.Binder.Parameter = async (input, rejection) => {
         throw new Error('Error');
@@ -98,6 +106,7 @@ test('Async function error', () => {
         optional: false
     });
 });
+
 
 
 test('Promise valid', () => {
@@ -118,6 +127,7 @@ test('Promise valid', () => {
 });
 
 
+
 test('Promise invalid', () => {
     const validator: RouterTypes.Binder.Parameter = (input, rejection) => {
         return new Promise((resolve, reject) => {
@@ -136,6 +146,7 @@ test('Promise invalid', () => {
 });
 
 
+
 test('Promise error', () => {
     const validator: RouterTypes.Binder.Parameter = (input, rejection) => {
         return new Promise((resolve, reject) => {
@@ -152,6 +163,7 @@ test('Promise error', () => {
         optional: false
     });
 });
+
 
 
 test('Non-function', () => {

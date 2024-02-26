@@ -3,6 +3,7 @@ import { base_validator } from '../../../src/parser/validate/base';
 import { RouterTypes } from '../../../src/router/types';
 
 
+
 test('String valid', () => {
     expect(base_validator('string', false, 'test')).toEqual({
         type: 'string',
@@ -11,6 +12,7 @@ test('String valid', () => {
         optional: false
     });
 });
+
 
 
 test('String invalid', () => {
@@ -23,6 +25,7 @@ test('String invalid', () => {
 });
 
 
+
 test('String optional', () => {
     expect(base_validator('string', true, null)).toEqual({
         type: 'string',
@@ -31,6 +34,7 @@ test('String optional', () => {
         optional: true
     });
 });
+
 
 
 test('String optional (Value provided)', () => {
@@ -54,6 +58,7 @@ test('Number valid', () => {
 });
 
 
+
 test('Number invalid', () => {
     expect(base_validator('number', false, 'test')).toEqual({
         type: 'number',
@@ -64,6 +69,7 @@ test('Number invalid', () => {
 });
 
 
+
 test('Number optional', () => {
     expect(base_validator('number', true, null)).toEqual({
         type: 'number',
@@ -72,6 +78,7 @@ test('Number optional', () => {
         optional: true
     });
 });
+
 
 
 test('Number optional (Value provided)', () => {
@@ -95,6 +102,7 @@ test('Boolean valid', () => {
 });
 
 
+
 test('Boolean invalid', () => {
     expect(base_validator('boolean', false, 'test')).toEqual({
         type: 'boolean',
@@ -105,6 +113,7 @@ test('Boolean invalid', () => {
 });
 
 
+
 test('Boolean optional', () => {
     expect(base_validator('boolean', true, null)).toEqual({
         type: 'boolean',
@@ -113,6 +122,7 @@ test('Boolean optional', () => {
         optional: true
     });
 });
+
 
 
 test('Boolean optional (Value provided)', () => {
