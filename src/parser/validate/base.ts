@@ -22,7 +22,11 @@ export const base_validator = (
 
     // -- If the input is empty and the parameter
     //    is optional, return a valid object
-    if (!input && is_optional) return {
+    if ((
+        input === null ||
+        input === undefined ||
+        input === ''
+    ) && is_optional) return {
         type: base_parameter,
         optional: is_optional,
         valid: true,
@@ -46,17 +50,28 @@ export const base_validator = (
             break;
 
         case 'number':
+            
             try {
+                input = input.toString();
                 returnable.value = Number(input);
                 returnable.valid = !isNaN(returnable.value);
-            } catch (e) {
+            } 
+            
+            catch (e) {
                 returnable.valid = false;
                 returnable.value = null;
             }
+
+            if (!returnable.valid) 
+                returnable.value = null;
+
             break;
 
         case 'boolean':
-            const input_string = input.toString().toLowerCase();
+            try { input = input.toString(); }
+            catch (e) { returnable.valid = false; break; }
+
+            const input_string = input.toLowerCase().trim();
             returnable.valid = input_string === 'true' || input_string === 'false';
             returnable.value = returnable.valid ? input_string === 'true' : null;
             break;

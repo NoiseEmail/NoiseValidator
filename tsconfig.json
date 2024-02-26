@@ -17,7 +17,9 @@
 		"outDir": "./dist",
 		"strict": true,
 		"types": [
-			"bun-types"
+			"bun-types",
+			"jest",
+			"node"
 		]
 	},
 	"include": [
@@ -27,6 +29,6 @@
 		"esm": true
 	},
 	"lib": [
-		"esnext"
+		"esnext",
 	]
 }

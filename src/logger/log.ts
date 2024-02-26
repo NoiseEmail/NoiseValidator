@@ -43,8 +43,8 @@ export const log = (type: LogType, ...args: Array<unknown>): void => {
         break;
 
     case log_types.ERROR:
-        console.error(`${header}`, ...args);
-        throw new Error(`[${type}] ${args.join(' ')}`);
+        console.log(`${header}`, ...args);
+        break;
 
     case log_types.DEBUG:
         console.log(`${header}`, ...args);
