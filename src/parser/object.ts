@@ -38,7 +38,7 @@ export const object = async<
         validator_obj:
             RouterTypes.Binder.RequiredBody |
             RouterTypes.Binder.RequiredQuery,
-        input_obj: object,
+        input_obj: Object,
         built_obj: Object,
         path: Array<String> = []
     ): Promise<
