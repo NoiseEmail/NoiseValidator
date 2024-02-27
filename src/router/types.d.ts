@@ -383,6 +383,7 @@ declare namespace RouterTypes {
          */
         type All =
             Primative | 
+            Optional |
             TypedPrimative | 
             CustomValidatorFunction;
     }
