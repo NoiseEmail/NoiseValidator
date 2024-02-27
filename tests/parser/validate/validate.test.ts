@@ -39,7 +39,7 @@ describe('Validate', () => {
 
 
     test('Custom (Valid)', async () => {
-        const validator: RouterTypes.Binder.Parameter = (input, rejection) => {
+        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
             return input;
         };
 
@@ -54,7 +54,7 @@ describe('Validate', () => {
 
 
     test('Custom (Invalid)', async () => {
-        const validator: RouterTypes.Binder.Parameter = (input, rejection) => {
+        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
             rejection('Invalid input');
             return '';
         };
@@ -70,7 +70,7 @@ describe('Validate', () => {
 
 
     test('Custom (Error)', async () => {
-        const validator: RouterTypes.Binder.Parameter = (input, rejection) => {
+        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
             throw new Error('Error');
         };
 
@@ -85,7 +85,7 @@ describe('Validate', () => {
 
 
     test('Custom (Async Valid)', async () => {
-        const validator: RouterTypes.Binder.Parameter = async (input, rejection) => {
+        const validator: RouterTypes.Paramaters.All = async (input, rejection) => {
             return input;
         };
 

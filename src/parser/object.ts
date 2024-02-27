@@ -10,7 +10,7 @@ import {validate} from "./validate/validate";
  *
  * Validates user input against a given validation object.
  *
- * @param {Input} validator - The validation object. This should be either a `RouterTypes.Binder.RequiredBody` or `RouterTypes.Binder.RequiredQuery`.
+ * @param {Input} validator - The validation object. This should be either a `RouterTypes.Paramaters.Body` or `RouterTypes.Paramaters.Query`.
  * @param {object} input - The input to validate.
  *
  * @returns {Promise<
@@ -20,8 +20,8 @@ import {validate} from "./validate/validate";
  */
 export const object = async<
     Input extends (
-        RouterTypes.Binder.RequiredBody |
-        RouterTypes.Binder.RequiredQuery
+        RouterTypes.Paramaters.Body |
+        RouterTypes.Paramaters.Query
     )
 >(
     validator: Input,
@@ -36,8 +36,8 @@ export const object = async<
 
     const walk = async(
         validator_obj:
-            RouterTypes.Binder.RequiredBody |
-            RouterTypes.Binder.RequiredQuery,
+            RouterTypes.Paramaters.Body |
+            RouterTypes.Paramaters.Query,
         input_obj: Object,
         built_obj: Object,
         path: Array<String> = []
@@ -71,7 +71,7 @@ export const object = async<
                 value instanceof Boolean
             ) {
                 // -- Validate the parameter
-                let result: RouterTypes.Binder.ParsedParameter;
+                let result: RouterTypes.Paramaters.Parsed;
                 try { result = await validate(value, input_obj[key]); }
                 catch (e) { result = { type: 'custom', optional: false, valid: false, value: null }; }
                 if (result.valid) built_obj[key] = result.value;

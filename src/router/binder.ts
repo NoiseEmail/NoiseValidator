@@ -10,9 +10,9 @@ import Route from "./route";
 export default class Binder<
     Path extends string,
 
-    Body extends RouterTypes.Binder.RequiredBody,
-    Query extends RouterTypes.Binder.RequiredQuery,
-    Headers extends RouterTypes.Binder.RequiredHeaders,
+    Body extends RouterTypes.Paramaters.Body,
+    Query extends RouterTypes.Paramaters.Query,
+    Headers extends RouterTypes.Paramaters.Headers,
 
     ParsedBody extends RouterTypes.Binder.ConvertObjectToType<Body>,
     ParsedQuery extends RouterTypes.Binder.ConvertObjectToType<Query>,
@@ -56,9 +56,9 @@ export default class Binder<
     public static new = <
         Path extends string,
 
-        Body extends RouterTypes.Binder.RequiredBody,
-        Query extends RouterTypes.Binder.RequiredQuery,
-        Headers extends RouterTypes.Binder.RequiredHeaders,
+        Body extends RouterTypes.Paramaters.Body,
+        Query extends RouterTypes.Paramaters.Query,
+        Headers extends RouterTypes.Paramaters.Headers,
 
         BodyParsed extends RouterTypes.Binder.ConvertObjectToType<Body>,
         QueryParsed extends RouterTypes.Binder.ConvertObjectToType<Query>,

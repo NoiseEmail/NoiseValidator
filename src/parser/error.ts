@@ -4,16 +4,16 @@ export default class ParserError {
 
     private readonly _path: Array<String>;
     private readonly _message: String;
-    private readonly _parameter: RouterTypes.Binder.Parameter;
+    private readonly _parameter: RouterTypes.Paramaters.All;
     private readonly _input: any;
-    private readonly _details: RouterTypes.Binder.ParsedParameter;
+    private readonly _details: RouterTypes.Paramaters.Parsed;
 
     public constructor(
         path: Array<String>,
         message: String,
-        parameter: RouterTypes.Binder.Parameter,
+        parameter: RouterTypes.Paramaters.All,
         input: any,
-        details: RouterTypes.Binder.ParsedParameter
+        details: RouterTypes.Paramaters.Parsed
     ) {
         this._path = path;
         this._message = message;
@@ -32,7 +32,7 @@ export default class ParserError {
 
     public get path(): Array<String> { return this._path; }
     public get message(): String { return this._message; }
-    public get parameter(): RouterTypes.Binder.Parameter { return this._parameter; }
+    public get parameter(): RouterTypes.Paramaters.All { return this._parameter; }
     public get input(): any { return this._input; }
-    public get details(): RouterTypes.Binder.ParsedParameter { return this._details; }
+    public get details(): RouterTypes.Paramaters.Parsed { return this._details; }
 }

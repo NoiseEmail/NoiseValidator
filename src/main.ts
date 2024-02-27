@@ -26,7 +26,7 @@ Binder.new(route, {
     method: 'GET',
 
     required_query: {
-
+        test: 'Optional<>'
     },
 
     handler(request) {

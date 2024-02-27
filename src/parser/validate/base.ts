@@ -8,17 +8,17 @@ import {RouterTypes} from "../../router/types";
  * Validates the base parameter types (string, number, boolean)
  * and returns a parsed parameter object.
  *
- * @param {RouterTypes.Binder.BaseParameter} base_parameter - The base parameter type to validate.
+ * @param {RouterTypes.Paramaters.Primative} base_parameter - The base parameter type to validate.
  * @param {boolean} is_optional - Whether the parameter is optional.
  * @param {any} input - The input to validate.
  *
- * @returns {RouterTypes.Binder.ParsedParameter} - Returns a parsed parameter object.
+ * @returns {RouterTypes.Paramaters.Parsed} - Returns a parsed parameter object.
  */
 export const base_validator = (
-    base_parameter: RouterTypes.Binder.BaseParameter,
+    base_parameter: RouterTypes.Paramaters.Primative,
     is_optional: boolean,
     input: any
-): RouterTypes.Binder.ParsedParameter => {
+): RouterTypes.Paramaters.Parsed => {
 
     // -- If the input is empty and the parameter
     //    is optional, return a valid object

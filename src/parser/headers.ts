@@ -3,7 +3,7 @@ import ParserError from "./error";
 
 export const headers = (
     headers: any,
-    required_headers: RouterTypes.Binder.RequiredHeaders
+    required_headers: RouterTypes.Paramaters.Headers
 ): ParserError | null => {
 
     for (const [key, value] of Object.entries(required_headers)) {

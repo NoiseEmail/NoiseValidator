@@ -1,7 +1,8 @@
 import {FastifyReply, FastifyRequest, HTTPMethods} from "fastify";
 import BinderClass from "./binder";
 import RouterError from "./error";
-import exp from "node:constants";
+
+
 
 declare namespace RouterTypes {
 
@@ -15,9 +16,9 @@ declare namespace RouterTypes {
         type RouteMap = Map<HTTPMethods, Array<RouterTypes.Binder.Any>>
 
         interface RouteCompatibleObject {
-            body: Binder.ConvertObjectToType<Binder.RequiredBody>;
-            query: Binder.ConvertObjectToType<Binder.RequiredQuery>;
-            headers: Binder.ConvertHeaderObjectToType<Binder.RequiredHeaders>;
+            body: Binder.ConvertObjectToType<Paramaters.Body>;
+            query: Binder.ConvertObjectToType<Paramaters.Query>;
+            headers: Binder.ConvertHeaderObjectToType<Paramaters.Headers>;
             binder: Binder.Any;
         }
 
@@ -231,7 +232,7 @@ declare namespace RouterTypes {
 
                 // -- Special types
                 Object[Key] extends `Optional<${string}>` ? ConvertStringToType<Object[Key]> :
-                Object[Key] extends CustomValidator<infer R> ? R :
+                Object[Key] extends Paramaters.CustomValidatorFunction<infer R> ? R :
 
                 // -- Nested objects (Recursion is typescript is so weird, but cool)
                 Object[Key] extends object ? ConvertObjectToType<Object[Key]> :
@@ -306,45 +307,84 @@ declare namespace RouterTypes {
             Path extends string
         > = BinderClass<
             Path,
-            RequiredBody,
-            RequiredQuery,
-            RequiredHeaders,
-            ConvertObjectToType<RequiredBody>,
-            ConvertObjectToType<RequiredQuery>,
-            ConvertHeaderObjectToType<RequiredHeaders>,
+            Paramaters.Body,
+            Paramaters.Query,
+            Paramaters.Headers,
+            ConvertObjectToType<Paramaters.Body>,
+            ConvertObjectToType<Paramaters.Query>,
+            ConvertHeaderObjectToType<Paramaters.Headers>,
             Request<
                 ArrayToObject<DynamicURL.Extract<Path>>,
-                ConvertObjectToType<RequiredBody>,
-                ConvertObjectToType<RequiredQuery>,
-                ConvertHeaderObjectToType<RequiredHeaders>
+                ConvertObjectToType<Paramaters.Body>,
+                ConvertObjectToType<Paramaters.Query>,
+                ConvertHeaderObjectToType<Paramaters.Headers>
             >
         >;
 
         type Any = BinderClass<any, any, any, any, any, any, any, any>
+    }
 
 
+    namespace Paramaters {
 
-        type OptionalDecorator = `Optional<${BaseParameter}>`;
-        type BaseParameter = 'string' | 'number' | 'boolean';
-        type TypeParameter = String | Number | Boolean;
-        type CustomValidator<Returnable = unknown> = (
+        /**
+         * @name Primative
+         * The base primative types
+         */
+        type Primative = 'string' | 'number' | 'boolean';
+
+
+        /**
+         * @name TypedPrimative
+         * The base primative types represented as their
+         * typescript types
+         */
+        type TypedPrimative = String | Number | Boolean;
+
+
+        /**
+         * @name Optional
+         * Optional type decorator
+         * eg, `Optional<string>` -> `string | undefined`
+         * eg, `Optional<number>` -> `number | undefined`
+         * eg, `Optional<boolean>` -> `boolean | undefined`
+         * 
+         */
+        type Optional = `Optional<${Primative}>`;
+
+
+        /**
+         * @name CustomValidatorFunction
+         * The base parameter types
+         */
+        type CustomValidatorFunction<Returnable = unknown> = (
             value: unknown,
             reject: (reason: string | Error | null | undefined) => void,
         ) => Returnable;
-        type Parameter = BaseParameter | TypeParameter| OptionalDecorator | CustomValidator;
 
 
-        type RequiredHeaders = { [key: string]: boolean; }
-        interface RequiredBody { [key: string]: Parameter | RequiredBody; }
-        interface RequiredQuery { [key: string]: Parameter; }
+
+        type Headers = { [key: string]: boolean; }
+        type Body = { [key: string]: All | Body; }
+        type Query = { [key: string]: All; }
 
 
-        interface ParsedParameter {
-            type: BaseParameter | 'custom';
+        type Parsed = {
+            type: Primative | 'custom';
             value: String | Number | Boolean | unknown;
             optional: boolean;
             valid: boolean;
         }
+
+
+        /**
+         * @name all
+         * All of the possible parameter types
+         */
+        type All =
+            Primative | 
+            TypedPrimative | 
+            CustomValidatorFunction;
     }
 }
 

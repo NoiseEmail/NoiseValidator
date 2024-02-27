@@ -8,15 +8,15 @@ import {RouterTypes} from "../../router/types";
  * Validates the base parameter types (string, number, boolean)
  * and returns a parsed parameter object.
  *
- * @param {RouterTypes.Binder.Parameter} validator - The base parameter type to validate.
+ * @param {RouterTypes.Paramaters.Parsed} validator - The base parameter type to validate.
  * @param {any} input - The input to validate.
  *
- * @returns {RouterTypes.Binder.ParsedParameter} - Returns a parsed parameter object.
+ * @returns {RouterTypes.Paramaters.Parsed} - Returns a parsed parameter object.
  */
 export const function_validator = async (
-    validator: RouterTypes.Binder.Parameter,
+    validator: RouterTypes.Paramaters.All,
     input: any
-): Promise<RouterTypes.Binder.ParsedParameter> => {
+): Promise<RouterTypes.Paramaters.Parsed> => {
 
 
     // -- Has to be a function
@@ -26,7 +26,7 @@ export const function_validator = async (
     }
 
 
-    let error: RouterTypes.Binder.ParsedParameter | null = null;
+    let error: RouterTypes.Paramaters.Parsed | null = null;
     const rejection = (reason: string | Error | null | undefined) => {
         error = { type: 'custom', optional: false, valid: false, value: input };
     };
