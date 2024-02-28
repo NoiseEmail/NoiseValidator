@@ -20,9 +20,10 @@ export default class Binder<
 
     Request extends RouterTypes.Binder.Request<
         RouterTypes.Binder.ArrayToObject<RouterTypes.DynamicURL.Extract<Path>>,
-        RouterTypes.Binder.ConvertObjectToType<Body>,
-        RouterTypes.Binder.ConvertObjectToType<Query>,
-        RouterTypes.Binder.ConvertHeaderObjectToType<Headers>
+        // @ts-ignore
+        ParsedBody,
+        ParsedQuery,
+        ParsedHeaders
     >
 >{
     private readonly _id: String = Math.random().toString(36).substring(7);
@@ -66,9 +67,10 @@ export default class Binder<
 
         Request extends RouterTypes.Binder.Request<
             RouterTypes.Binder.ArrayToObject<RouterTypes.DynamicURL.Extract<Path>>,
-            RouterTypes.Binder.ConvertObjectToType<Body>,
-            RouterTypes.Binder.ConvertObjectToType<Query>,
-            RouterTypes.Binder.ConvertHeaderObjectToType<Headers>
+            // @ts-ignore
+            BodyParsed,
+            QueryParsed,
+            HeadersParsed
         >
     >(
         route: Route<Path, RouterTypes.RouteConfiguration<Path>>,
@@ -79,7 +81,7 @@ export default class Binder<
             required_query?: Query,
             required_headers?: Headers
         }
-    ): Binder<Path, Body, Query, Headers, BodyParsed, QueryParsed, HeadersParsed, Request> => new Binder(
+    ) => new Binder(
         route,
         parameters.method,
         parameters.handler,

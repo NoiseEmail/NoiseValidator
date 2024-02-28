@@ -2,6 +2,7 @@ import Log from './logger/log';
 import Router from "./router/router";
 import Route from "./router/route";
 import Binder from "./router/binder";
+import { RouterTypes } from './router/types';
 
 const router = Router.instance;
 router.start();
@@ -26,15 +27,15 @@ Binder.new(route, {
     method: 'GET',
 
     required_query: {
-        test: 'boolean'
+        test: 'Optional<boolean>',
     },
 
     required_body: {
-        test:'string'
+        tes2:'string'
     },
 
     handler(request) {
-        Log.info('Query:', request.dynamic_url);
+        Log.info('Query:', request.body.tes2);
         request.set_header('test', 'test');
 
         return Binder.respond(200, 'Balls')

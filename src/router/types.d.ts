@@ -281,10 +281,10 @@ declare namespace RouterTypes {
 
 
         type Request<
-            DynamicUrl,
-            Body,
-            Query,
-            Headers
+            DynamicUrl extends Paramaters.FlatObject,
+            Body extends Paramaters.NestedObject,
+            Query extends Paramaters.FlatObject,
+            Headers extends Paramaters.FlatObject
         > = {
             headers: Headers;
             body: Body;
@@ -330,6 +330,8 @@ declare namespace RouterTypes {
         /**
          * @name Primative
          * The base primative types
+         * 
+         * @returns {String} - Typechecked primative type
          */
         type Primative = 'string' | 'number' | 'boolean';
 
@@ -344,11 +346,13 @@ declare namespace RouterTypes {
 
         /**
          * @name Optional
-         * Optional type decorator
+         * Optional type decorator, used to define a parameter as optional
+         * 
          * eg, `Optional<string>` -> `string | undefined`
          * eg, `Optional<number>` -> `number | undefined`
          * eg, `Optional<boolean>` -> `boolean | undefined`
          * 
+         * @returns {String} - Typechecked optional type
          */
         type Optional = `Optional<${Primative}>`;
 
@@ -367,6 +371,9 @@ declare namespace RouterTypes {
         type Headers = { [key: string]: boolean; }
         type Body = { [key: string]: All | Body; }
         type Query = { [key: string]: All; }
+
+        type NestedObject = { [key: string]: TypedPrimative | NestedObject | void ; }
+        type FlatObject = { [key: string]: TypedPrimative | void ; }
 
 
         type Parsed = {
@@ -387,5 +394,63 @@ declare namespace RouterTypes {
             TypedPrimative | 
             CustomValidatorFunction;
     }
-}
 
+
+    namespace Middleware {
+
+        /**
+         * @name Function
+         * The middleware function type
+         */
+        type Function<
+            DataShape extends any,
+            DynamicUrl extends Paramaters.FlatObject,
+            Body extends Paramaters.NestedObject,
+            Query extends Paramaters.FlatObject,
+            Headers extends Paramaters.FlatObject
+        > = (
+            request: Binder.Request<
+                DynamicUrl,
+                Body,
+                Query,
+                Headers
+            >,
+
+            next: () => Promise<DataShape | void> | DataShape | void,
+            stop: (error: RouterError) => void
+            
+        ) => Promise<void> | void;
+
+
+
+        type Class<
+            DataShape extends any,
+
+            Body extends Paramaters.NestedObject,
+            Query extends Paramaters.FlatObject,
+            Headers extends Paramaters.FlatObject,
+
+            ParsedBody extends Binder.ConvertObjectToType<Body>,
+            ParsedQuery extends Binder.ConvertObjectToType<Query>,
+            ParsedHeaders extends Binder.ConvertHeaderObjectToType<Headers>,
+            
+            Request extends Binder.Request<
+                {},
+                // @ts-ignore
+                ParsedBody,
+                ParsedQuery,
+                ParsedHeaders
+            >
+        > = {
+
+            handler: (
+                request: Request
+            ) => Promise<DataShape | void> | DataShape | void;
+        };
+
+
+        type AnyClass = Class<any, any, any, any, any, any, any, any>;
+        
+
+    }
+}
