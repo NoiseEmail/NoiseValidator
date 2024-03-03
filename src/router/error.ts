@@ -1,6 +1,6 @@
-import {RouterTypes} from "./types";
-import Binder from "./binder";
-import Log from "../logger/log";
+import Binder from '../binder/binder';
+import Log from '../logger/log';
+import { Router } from './types';
 
 export default class RouterError {
     private readonly _message: String;
@@ -10,7 +10,7 @@ export default class RouterError {
     private _path: Array<String> = [];
 
     public constructor(
-        error_code: RouterTypes.Router.StatusBuilder.Status | number,
+        error_code: Router.StatusBuilder.Status | number,
         message: String,
         data?: any
     ) {

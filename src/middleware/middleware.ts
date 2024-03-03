@@ -1,19 +1,20 @@
-import { RouterTypes } from './types';
+import { Binder, Paramaters } from '../binder/types';
+import { Middleware } from './types';
 
 
 
 export default class GenericMiddleware<
     DataShape extends any,
 
-    Body extends RouterTypes.Paramaters.Body,
-    Query extends RouterTypes.Paramaters.Query,
-    Headers extends RouterTypes.Paramaters.Headers,
+    Body extends Paramaters.Body,
+    Query extends Paramaters.Query,
+    Headers extends Paramaters.Headers,
 
-    ParsedBody extends RouterTypes.Binder.ConvertObjectToType<Body>,
-    ParsedQuery extends RouterTypes.Binder.ConvertObjectToType<Query>,
-    ParsedHeaders extends RouterTypes.Binder.ConvertHeaderObjectToType<Headers>,
+    ParsedBody extends Binder.ConvertObjectToType<Body>,
+    ParsedQuery extends Binder.ConvertObjectToType<Query>,
+    ParsedHeaders extends Binder.ConvertHeaderObjectToType<Headers>,
 
-    Request extends RouterTypes.Binder.Request<
+    Request extends Binder.Request<
         {},
         // @ts-ignore
         ParsedBody,
@@ -34,23 +35,23 @@ export default class GenericMiddleware<
      * @returns {GenericMiddleware} - Returns a fully typed builder for the generic middleware.
      */
     public static Builder = <DataShape = void> (configuration: {
-        required_body?: RouterTypes.Paramaters.Body,
-        required_query?: RouterTypes.Paramaters.Query,
-        required_headers?: RouterTypes.Paramaters.Headers,
+        required_body?: Paramaters.Body,
+        required_query?: Paramaters.Query,
+        required_headers?: Paramaters.Headers,
     }) => class extends GenericMiddleware<
         DataShape,
-        RouterTypes.Paramaters.Body,
-        RouterTypes.Paramaters.Query,
-        RouterTypes.Paramaters.Headers,
-        RouterTypes.Binder.ConvertObjectToType<RouterTypes.Paramaters.Body>,
-        RouterTypes.Binder.ConvertObjectToType<RouterTypes.Paramaters.Query>,
-        RouterTypes.Binder.ConvertHeaderObjectToType<RouterTypes.Paramaters.Headers>,
-        RouterTypes.Binder.Request<
+        Paramaters.Body,
+        Paramaters.Query,
+        Paramaters.Headers,
+        Binder.ConvertObjectToType<Paramaters.Body>,
+        Binder.ConvertObjectToType<Paramaters.Query>,
+        Binder.ConvertHeaderObjectToType<Paramaters.Headers>,
+        Binder.Request<
             {},
             // @ts-ignore
-            RouterTypes.Binder.ConvertObjectToType<RouterTypes.Paramaters.Body>,
-            RouterTypes.Binder.ConvertObjectToType<RouterTypes.Paramaters.Query>,
-            RouterTypes.Binder.ConvertHeaderObjectToType<RouterTypes.Paramaters.Headers>
+            Binder.ConvertObjectToType<Paramaters.Body>,
+            Binder.ConvertObjectToType<Paramaters.Query>,
+            Binder.ConvertHeaderObjectToType<Paramaters.Headers>
         >
     > { constructor() { super() } }
 
@@ -102,4 +103,4 @@ class NeedsName extends GenericMiddleware.Builder<{
 const middleware = new NeedsName()
 
 
-let arr: Array<RouterTypes.Middleware.AnyClass> = [middleware];
+let arr: Array<Middleware.AnyClass> = [middleware];

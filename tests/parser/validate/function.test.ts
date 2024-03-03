@@ -1,12 +1,12 @@
 import { describe, expect, test } from '@jest/globals';
 import { function_validator } from '../../../src/parser/validate/function';
-import { RouterTypes } from '../../../src/router/types';
+import { Paramaters } from '../../../src/binder/types';
 
 
 describe('Function', () => {
     
     test('Function valid', () => {
-        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
+        const validator: Paramaters.All = (input, rejection) => {
             return input;
         };
 
@@ -23,7 +23,7 @@ describe('Function', () => {
 
 
     test('Function invalid', () => {
-        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
+        const validator: Paramaters.All = (input, rejection) => {
             rejection('Invalid input');
             return input;
         };
@@ -42,7 +42,7 @@ describe('Function', () => {
 
 
     test('Function error', () => {
-        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
+        const validator: Paramaters.All = (input, rejection) => {
             throw new Error('Error');
         };
 
@@ -59,7 +59,7 @@ describe('Function', () => {
 
 
     test('Async function valid', () => {
-        const validator: RouterTypes.Paramaters.All = async (input, rejection) => {
+        const validator: Paramaters.All = async (input, rejection) => {
             return input;
         };
 
@@ -76,7 +76,7 @@ describe('Function', () => {
 
 
     test('Async function invalid', () => {
-        const validator: RouterTypes.Paramaters.All = async (input, rejection) => {
+        const validator: Paramaters.All = async (input, rejection) => {
             rejection('Invalid input');
             return input;
         };
@@ -94,7 +94,7 @@ describe('Function', () => {
 
 
     test('Async function error', () => {
-        const validator: RouterTypes.Paramaters.All = async (input, rejection) => {
+        const validator: Paramaters.All = async (input, rejection) => {
             throw new Error('Error');
         };
 
@@ -111,7 +111,7 @@ describe('Function', () => {
 
 
     test('Promise valid', () => {
-        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
+        const validator: Paramaters.All = (input, rejection) => {
             return new Promise((resolve, reject) => {
                 resolve(input);
             });
@@ -130,7 +130,7 @@ describe('Function', () => {
 
 
     test('Promise invalid', () => {
-        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
+        const validator: Paramaters.All = (input, rejection) => {
             return new Promise((resolve, reject) => {
                 reject('Invalid input');
             });
@@ -149,7 +149,7 @@ describe('Function', () => {
 
 
     test('Promise error', () => {
-        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
+        const validator: Paramaters.All = (input, rejection) => {
             return new Promise((resolve, reject) => {
                 reject(new Error('Error'));
             });

@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
-import { RouterTypes } from '../../src/router/types';
 import ParserError from '../../src/parser/error';
 import { object } from '../../src/parser/object';
+import { Paramaters } from '../../src/binder/types';
 
 describe('Object', () => {
 
@@ -9,7 +9,7 @@ describe('Object', () => {
 
     // -- Object_ValidInput: Test with a valid input object that satisfies all validation rules.
     test('Valid Input', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -31,7 +31,7 @@ describe('Object', () => {
 
     // -- Object_NestedObject: Test with nested objects within the input object.
     test('Nested Object', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: {
@@ -59,7 +59,7 @@ describe('Object', () => {
 
     // -- Object_InvalidInput: Test with an invalid input object that violates one or more validation rules.
     test('Invalid Input', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -77,7 +77,7 @@ describe('Object', () => {
 
     // -- Object_MissingRequiredFields: Test with an input object missing required fields.
     test('Missing Required Fields', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -94,7 +94,7 @@ describe('Object', () => {
 
     // -- Object_InvalidFieldFormat: Test with an input object containing fields with invalid formats.
     test('Invalid Field Format', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -112,7 +112,7 @@ describe('Object', () => {
 
     // -- Object_InvalidNestedObject: Test with invalid nested objects within the input object.
     test('Invalid Nested Object', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: {
@@ -134,7 +134,7 @@ describe('Object', () => {
 
     // -- Object_EmptyInput: Test with an empty input object.
     test('Empty Input', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -148,7 +148,7 @@ describe('Object', () => {
 
     // -- Object_NullInput: Test with a null input object.
     test('Null Input', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -165,7 +165,7 @@ describe('Object', () => {
 
     // -- Object_UndefinedInput: Test with an undefined input object.
     test('Undefined Input', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -182,7 +182,7 @@ describe('Object', () => {
 
     // -- Object_CustomValidatorFailure: Test with a custom validator function failing for some fields.
     test('Custom Validator Failure', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: (input: any, rejection: Function) => {
                 rejection('Invalid input');
             },
@@ -202,7 +202,7 @@ describe('Object', () => {
 
     // -- Object_TypeMismatch: Test with input objects where types mismatch with validation rules.
     test('Type Mismatch', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -220,7 +220,7 @@ describe('Object', () => {
 
     // -- Object_ExtraFields: Test with input objects containing extra fields not specified in the validation rules.
     test('Extra Fields', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -243,7 +243,7 @@ describe('Object', () => {
 
     // -- Object_ArrayInput: Test with an input object containing arrays.
     test('Array Input', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -261,7 +261,7 @@ describe('Object', () => {
 
     // -- Object_ObjectInput: Test with an input object containing nested objects
     test('Object Input', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean'
@@ -279,7 +279,7 @@ describe('Object', () => {
 
     // -- Object_ValidWithOptionalFields: Test with a valid input object containing optional fields.
     test('Valid With Optional Fields', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean',
@@ -303,7 +303,7 @@ describe('Object', () => {
 
     // -- Object_InvalidOptionalFieldFormat: Test with an input object containing optional fields with invalid formats.
     test('Invalid Optional Field Format', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: 'boolean',
@@ -324,7 +324,7 @@ describe('Object', () => {
 
     // -- Object_NestedObject_ExtraFields: Test with nested objects containing extra fields not specified in the validation rules.
     test('Nested Object Extra Fields', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: {
@@ -354,7 +354,7 @@ describe('Object', () => {
 
     // -- Object_NestedObject_InvalidField: Test with nested objects containing fields with invalid key
     test('Nested Object Invalid Field', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: {
@@ -377,7 +377,7 @@ describe('Object', () => {
 
     // -- Object_NestedObject_StringToBoolean: Test with nested objects containing fields with string values that can be converted to boolean.
     test('Nested Object String to Boolean', async () => {
-        const validator: RouterTypes.Paramaters.Body = {
+        const validator: Paramaters.Body = {
             test: 'string',
             test2: 'number',
             test3: {

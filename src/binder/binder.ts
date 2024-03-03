@@ -1,25 +1,27 @@
-import {RouterTypes} from "./types";
-import {FastifyReply, FastifyRequest, HTTPMethods} from "fastify";
-import {object} from "../parser/object";
-import Log from "../logger/log";
-import {headers} from "../parser/headers";
-import ParserError from "../parser/error";
-import RouterError from "./error";
-import Route from "./route";
+import {FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
+import {object} from '../parser/object';
+import Log from '../logger/log';
+import {headers} from '../parser/headers';
+import ParserError from '../parser/error';
+import RouterError from '../router/error';
+import Route from '../router/route';
+import { Paramaters } from './types';
+import { Binder as BinderType } from './types';
+import { DynamicURL, Router } from '../router/types';
 
 export default class Binder<
     Path extends string,
 
-    Body extends RouterTypes.Paramaters.Body,
-    Query extends RouterTypes.Paramaters.Query,
-    Headers extends RouterTypes.Paramaters.Headers,
+    Body extends Paramaters.Body,
+    Query extends Paramaters.Query,
+    Headers extends Paramaters.Headers,
 
-    ParsedBody extends RouterTypes.Binder.ConvertObjectToType<Body>,
-    ParsedQuery extends RouterTypes.Binder.ConvertObjectToType<Query>,
-    ParsedHeaders extends RouterTypes.Binder.ConvertHeaderObjectToType<Headers>,
+    ParsedBody extends BinderType.ConvertObjectToType<Body>,
+    ParsedQuery extends BinderType.ConvertObjectToType<Query>,
+    ParsedHeaders extends BinderType.ConvertHeaderObjectToType<Headers>,
 
-    Request extends RouterTypes.Binder.Request<
-        RouterTypes.Binder.ArrayToObject<RouterTypes.DynamicURL.Extract<Path>>,
+    Request extends BinderType.Request<
+    BinderType.ArrayToObject<DynamicURL.Extract<Path>>,
         // @ts-ignore
         ParsedBody,
         ParsedQuery,
@@ -28,7 +30,7 @@ export default class Binder<
 >{
     private readonly _id: String = Math.random().toString(36).substring(7);
     private readonly _method: HTTPMethods;
-    private readonly _handler: RouterTypes.Router.Executable<Request> = async() => {};
+    private readonly _handler: Router.Executable<Request> = async() => {};
     private readonly _required_body: Body;
     private readonly _required_query: Query;
     private readonly _required_headers: Headers;
@@ -36,7 +38,7 @@ export default class Binder<
 
 
     public constructor(
-        route: Route<Path, RouterTypes.RouteConfiguration<Path>>,
+        route: Route<Path, Router.Configuration<Path>>,
         method: HTTPMethods,
         handler: (request: Request) => Promise<any> | any,
         required_body: Body,
@@ -57,26 +59,26 @@ export default class Binder<
     public static new = <
         Path extends string,
 
-        Body extends RouterTypes.Paramaters.Body,
-        Query extends RouterTypes.Paramaters.Query,
-        Headers extends RouterTypes.Paramaters.Headers,
+        Body extends Paramaters.Body,
+        Query extends Paramaters.Query,
+        Headers extends Paramaters.Headers,
 
-        BodyParsed extends RouterTypes.Binder.ConvertObjectToType<Body>,
-        QueryParsed extends RouterTypes.Binder.ConvertObjectToType<Query>,
-        HeadersParsed extends RouterTypes.Binder.ConvertHeaderObjectToType<Headers>,
+        BodyParsed extends BinderType.ConvertObjectToType<Body>,
+        QueryParsed extends BinderType.ConvertObjectToType<Query>,
+        HeadersParsed extends BinderType.ConvertHeaderObjectToType<Headers>,
 
-        Request extends RouterTypes.Binder.Request<
-            RouterTypes.Binder.ArrayToObject<RouterTypes.DynamicURL.Extract<Path>>,
+        Request extends BinderType.Request<
+        BinderType.ArrayToObject<DynamicURL.Extract<Path>>,
             // @ts-ignore
             BodyParsed,
             QueryParsed,
             HeadersParsed
         >
     >(
-        route: Route<Path, RouterTypes.RouteConfiguration<Path>>,
+        route: Route<Path, Router.Configuration<Path>>,
         parameters: {
             method: HTTPMethods,
-            handler: RouterTypes.Router.Executable<Request>,
+            handler: Router.Executable<Request>,
             required_body?: Body,
             required_query?: Query,
             required_headers?: Headers
@@ -98,7 +100,7 @@ export default class Binder<
         body: ParsedBody,
         query: ParsedQuery,
         headers: ParsedHeaders,
-        binder: RouterTypes.Binder.Any
+        binder: BinderType.Any
     }> {
 
         // -- TODO: Check the headers for a content-type and validate the body based on that
@@ -142,7 +144,7 @@ export default class Binder<
         body: ParsedBody,
         query: ParsedQuery,
         headers: ParsedHeaders
-    ): Promise<RouterTypes.Router.ExecutableReturnable> => {
+    ): Promise<Router.ExecutableReturnable> => {
         // @ts-ignore
         return this._handler({
             body: body,
@@ -164,10 +166,10 @@ export default class Binder<
 
 
     public static respond = (
-        response_code: RouterTypes.Router.StatusBuilder.Status | number,
+        response_code: Router.StatusBuilder.Status | number,
         response_body?: any,
         content_type?: string
-    ): RouterTypes.Router.ReturnableObject => {
+    ): Router.ReturnableObject => {
         return {
             status: response_code,
             body: response_body || {},
@@ -176,7 +178,7 @@ export default class Binder<
     }
 
     public static error = (
-        response_code: RouterTypes.Router.StatusBuilder.Status | number,
+        response_code: Router.StatusBuilder.Status | number,
         message: String,
         data?: any
     ): RouterError => new RouterError(response_code, message, data);
@@ -184,7 +186,7 @@ export default class Binder<
 
 
     public static response_code = (
-        response_code: RouterTypes.Router.StatusBuilder.Status | number
+        response_code: Router.StatusBuilder.Status | number
     ): number => {
         if (typeof response_code === 'string') return Number(response_code.split('_')[0]);
         return response_code;

@@ -1,6 +1,6 @@
-import {RouterTypes} from "../router/types";
-import ParserError from "./error";
-import {validate} from "./validate/validate";
+import { Binder, Paramaters } from '../binder/types';
+import ParserError from './error';
+import {validate} from './validate/validate';
 
 
 
@@ -10,24 +10,24 @@ import {validate} from "./validate/validate";
  *
  * Validates user input against a given validation object.
  *
- * @param {Input} validator - The validation object. This should be either a `RouterTypes.Paramaters.Body` or `RouterTypes.Paramaters.Query`.
+ * @param {Input} validator - The validation object. This should be either a `Paramaters.Body` or `Paramaters.Query`.
  * @param {object} input - The input to validate.
  *
  * @returns {Promise<
- *  RouterTypes.Binder.ConvertObjectToType<Input> |
- *  RouterTypes.Binder.ParserError
+ *  Binder.ConvertObjectToType<Input> |
+ *  Binder.ParserError
  * >} - Returns a promise that resolves to either a converted object or a parser error.
  */
 export const object = async<
     Input extends (
-        RouterTypes.Paramaters.Body |
-        RouterTypes.Paramaters.Query
+        Paramaters.Body |
+        Paramaters.Query
     )
 >(
     validator: Input,
     input: object
 ): Promise<
-    RouterTypes.Binder.ConvertObjectToType<Input> |
+    Binder.ConvertObjectToType<Input> |
     ParserError
 > => new Promise(async(resolve, reject) => {
 
@@ -36,13 +36,13 @@ export const object = async<
 
     const walk = async(
         validator_obj:
-            RouterTypes.Paramaters.Body |
-            RouterTypes.Paramaters.Query,
+            Paramaters.Body |
+            Paramaters.Query,
         input_obj: Object,
         built_obj: Object,
         path: Array<String> = []
     ): Promise<
-        RouterTypes.Binder.ConvertObjectToType<Input> |
+        Binder.ConvertObjectToType<Input> |
         ParserError
     > => {
 
@@ -71,7 +71,7 @@ export const object = async<
                 value instanceof Boolean
             ) {
                 // -- Validate the parameter
-                let result: RouterTypes.Paramaters.Parsed;
+                let result: Paramaters.Parsed;
                 try { result = await validate(value, input_obj[key]); }
                 catch (e) { result = { type: 'custom', optional: false, valid: false, value: null }; }
                 if (result.valid) built_obj[key] = result.value;
@@ -90,7 +90,7 @@ export const object = async<
         }
 
         // -- Return the built object
-        return built_obj as RouterTypes.Binder.ConvertObjectToType<Input>;
+        return built_obj as Binder.ConvertObjectToType<Input>;
     }
 
 

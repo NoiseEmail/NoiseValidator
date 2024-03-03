@@ -1,7 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
-import { base_validator } from '../../../src/parser/validate/base';
-import { RouterTypes } from '../../../src/router/types';
 import { validate } from '../../../src/parser/validate/validate';
+import { Paramaters } from '../../../src/binder/types';
 
 describe('Validate', () => {
     
@@ -39,7 +38,7 @@ describe('Validate', () => {
 
 
     test('Custom (Valid)', async () => {
-        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
+        const validator: Paramaters.All = (input, rejection) => {
             return input;
         };
 
@@ -54,7 +53,7 @@ describe('Validate', () => {
 
 
     test('Custom (Invalid)', async () => {
-        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
+        const validator: Paramaters.All = (input, rejection) => {
             rejection('Invalid input');
             return '';
         };
@@ -70,7 +69,7 @@ describe('Validate', () => {
 
 
     test('Custom (Error)', async () => {
-        const validator: RouterTypes.Paramaters.All = (input, rejection) => {
+        const validator: Paramaters.All = (input, rejection) => {
             throw new Error('Error');
         };
 
@@ -85,7 +84,7 @@ describe('Validate', () => {
 
 
     test('Custom (Async Valid)', async () => {
-        const validator: RouterTypes.Paramaters.All = async (input, rejection) => {
+        const validator: Paramaters.All = async (input, rejection) => {
             return input;
         };
 

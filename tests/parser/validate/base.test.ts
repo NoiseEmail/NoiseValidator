@@ -1,6 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
 import { base_validator } from '../../../src/parser/validate/base';
-import { RouterTypes } from '../../../src/router/types';
 
 
 describe('Base', () => {

@@ -1,5 +1,5 @@
-import Log from "../../logger/log";
-import {RouterTypes} from "../../router/types";
+import { Paramaters } from '../../binder/types';
+import Log from '../../logger/log';
 
 
 
@@ -8,15 +8,15 @@ import {RouterTypes} from "../../router/types";
  * Validates the base parameter types (string, number, boolean)
  * and returns a parsed parameter object.
  *
- * @param {RouterTypes.Paramaters.Parsed} validator - The base parameter type to validate.
+ * @param {Paramaters.Parsed} validator - The base parameter type to validate.
  * @param {any} input - The input to validate.
  *
- * @returns {RouterTypes.Paramaters.Parsed} - Returns a parsed parameter object.
+ * @returns {Paramaters.Parsed} - Returns a parsed parameter object.
  */
 export const function_validator = async (
-    validator: RouterTypes.Paramaters.All,
+    validator: Paramaters.All,
     input: any
-): Promise<RouterTypes.Paramaters.Parsed> => {
+): Promise<Paramaters.Parsed> => {
 
 
     // -- Has to be a function
@@ -26,7 +26,7 @@ export const function_validator = async (
     }
 
 
-    let error: RouterTypes.Paramaters.Parsed | null = null;
+    let error: Paramaters.Parsed | null = null;
     const rejection = (reason: string | Error | null | undefined) => {
         error = { type: 'custom', optional: false, valid: false, value: input };
     };

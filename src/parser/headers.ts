@@ -1,9 +1,9 @@
-import {RouterTypes} from "../router/types";
-import ParserError from "./error";
+import { Paramaters } from '../binder/types';
+import ParserError from './error';
 
 export const headers = (
     headers: any,
-    required_headers: RouterTypes.Paramaters.Headers
+    required_headers: Paramaters.Headers
 ): ParserError | null => {
 
     for (const [key, value] of Object.entries(required_headers)) {

@@ -1,8 +1,7 @@
 import Log from './logger/log';
-import Router from "./router/router";
-import Route from "./router/route";
-import Binder from "./router/binder";
-import { RouterTypes } from './router/types';
+import Router from './router/router';
+import Route from './router/route';
+import Binder from './binder/binder';
 
 const router = Router.instance;
 router.start();

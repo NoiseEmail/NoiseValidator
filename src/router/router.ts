@@ -1,5 +1,5 @@
 import Route from './route';
-import Log from "../logger/log";
+import Log from '../logger/log';
 import Fastify, {FastifyInstance} from 'fastify';
 
 export default class Router {

@@ -1,15 +1,16 @@
-import Router from "./router";
-import {RouterTypes} from "./types";
-import {FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods} from "fastify";
-import Log from "../logger/log";
-import Binder from "./binder";
-import ParserError from "../parser/error";
-import RouterError from "./error";
+import Router from './router';
+import {FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
+import Log from '../logger/log';
+import Binder from '../binder/binder';
+import ParserError from '../parser/error';
+import RouterError from './error';
 
+import { Router as RouterType } from './types';
+import { Binder as BinderType } from '../binder/types';
 
 export default class Route<
     Path extends string,
-    Configuration extends RouterTypes.RouteConfiguration<Path>
+    Configuration extends RouterType.Configuration<Path>
 > {
 
     private readonly _friendly_name: String;
@@ -18,8 +19,8 @@ export default class Route<
     private _router_instance: Router;
     private _configuration: Configuration;
 
-    private _binders: Map<String, RouterTypes.Binder.Any> = new Map();
-    private _router_map: RouterTypes.Router.RouteMap = new Map();
+    private _binders: Map<String, BinderType.Any> = new Map();
+    private _router_map: RouterType.RouteMap = new Map();
 
     public constructor(
         configuration: Configuration,
@@ -31,8 +32,8 @@ export default class Route<
     }
 
     public static new = <path extends string>(
-        configuration: RouterTypes.RouteConfiguration<path>,
-    ): Route<path, RouterTypes.RouteConfiguration<path>> => new Route(
+        configuration: RouterType.Configuration<path>,
+    ): Route<path, RouterType.Configuration<path>> => new Route(
         configuration,
     );
 
@@ -46,7 +47,7 @@ export default class Route<
      * @returns {Route} - Returns the route instance (For chaining)
      */
     public bind = (
-        binder: RouterTypes.Binder.Any
+        binder: BinderType.Any
     ): this => {
         if (this._binders.has(binder.id)) throw new Error(`Binder with id: ${binder.id} already exists`);
         if (!this._router_map.has(binder.method)) this._router_map.set(binder.method, []);
@@ -66,13 +67,13 @@ export default class Route<
      * @param {HTTPMethods} method - The method to find a route for
      * @param {FastifyRequest} fastify_request - The request to find a route for
      *
-     * @returns {Promise<RouterTypes.Binder.Generic | null | ParserError>} - Returns a promise that resolves to either a route or null
+     * @returns {Promise<Binder.Generic | null | ParserError>} - Returns a promise that resolves to either a route or null
      */
     private async _find_compatible_route(
         method: HTTPMethods,
         fastify_request: FastifyRequest
     ): Promise<
-        RouterTypes.Router.RouteCompatibleObject |
+        RouterType.RouteCompatibleObject |
         null |
         ParserError
     > {
@@ -104,7 +105,7 @@ export default class Route<
         if (result instanceof ParserError) return fastify_reply.code(400).send({error: result.message});
 
         // -- Process the route
-        let processed_request: RouterTypes.Router.ExecutableReturnable | null = null;
+        let processed_request: RouterType.ExecutableReturnable | null = null;
         try {
             processed_request = await result.binder.process(
                 fastify_request,
@@ -125,7 +126,7 @@ export default class Route<
         }
 
         // -- Ensure a response is sent
-        let response: RouterTypes.Router.ReturnableObject;
+        let response: RouterType.ReturnableObject;
 
         if (processed_request instanceof RouterError) {
             // processed_request.path = this._path;
