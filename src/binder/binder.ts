@@ -7,10 +7,14 @@ import { Binder as BinderType } from './types';
 import { DynamicURL, Router } from '../router/types';
 import CompileSchema from './schema';
 import { mergician } from 'mergician';
+import { Middleware } from '../middleware/types';
 
 
 
 export default class Binder<
+    MiddlewareDict extends Middleware.Dict,
+    MiddlewareData extends Middleware.Extract<MiddlewareDict>,
+
     UrlPath extends string,
 
     BodySchema extends Paramaters.Body,
@@ -26,43 +30,54 @@ export default class Binder<
         ParsedUrlPath,
         ParsedBodySchema,
         ParsedQuerySchema,
-        ParsedHeaderSchema
+        ParsedHeaderSchema,
+        MiddlewareData
     >
 >{
     private readonly _id: String = Math.random().toString(36).substring(7);
     private readonly _method: HTTPMethods;
     private readonly _handler: Router.Executable<Request>;
+    private readonly _compilable_schemas: CompileSchema;
+
+    private readonly _middleware: MiddlewareDict;
 
     private readonly _body_schema: BodySchema;
     private readonly _query_schema: QuerySchema;
     private readonly _headers_schema: HeaderSchema;
 
-    private _compiled_body_schema: Array<Paramaters.Body> = [];
-    private _compiled_query_schema: Array<Paramaters.Query> = [];
-    private _compiled_headers_schema: Array<Paramaters.Headers> = [];
+    private _compiled_body_schemas: Array<Paramaters.Body> = [];
+    private _compiled_query_schemas: Array<Paramaters.Query> = [];
+    private _compiled_headers_schemas: Array<Paramaters.Headers> = [];
 
-    
+
 
     public constructor(
         route: Route<UrlPath, Router.Configuration<UrlPath>>,
-        method: HTTPMethods,
-        handler: (request: Request) => Promise<any> | any,
-        body_schema: BodySchema,
-        query_schema: QuerySchema,
-        headers_schema: HeaderSchema
+        configuration: BinderType.Configuration<
+            MiddlewareDict,
+            BodySchema, 
+            QuerySchema, 
+            HeaderSchema, 
+            Request
+        >
     ) {
-        this._method = method;
-        this._body_schema = body_schema;
-        this._query_schema = query_schema;
-        this._headers_schema = headers_schema;
-        this._handler = handler;
-
+        this._method = configuration.method;
+        this._handler = configuration.handler;
+        this._body_schema = configuration.body_schema;
+        this._query_schema = configuration.query_schema;
+        this._headers_schema = configuration.headers_schema;
+        this._compilable_schemas = configuration.compilable_schemas;
+        this._middleware = configuration.middleware;
+    
         route.bind(this);
     }
 
 
 
     public static new = <
+        MiddlewareDict extends Middleware.Dict,
+        MiddlewareData extends Middleware.Extract<MiddlewareDict>,
+
         UrlPath extends string,
 
         BodySchema extends Paramaters.Body,
@@ -78,11 +93,13 @@ export default class Binder<
             PathParsed,
             BodyParsed,
             QueryParsed,
-            HeadersParsed
+            HeadersParsed,
+            MiddlewareData
         >
     >(
         route: Route<UrlPath, Router.Configuration<UrlPath>>,
         parameters: BinderType.OptionalConfiguration<
+            MiddlewareDict,
             BodySchema, 
             QuerySchema, 
             HeaderSchema, 
@@ -90,34 +107,68 @@ export default class Binder<
         >
     ) => {
 
-
+        // -- Merge the default configuration with the provided configuration
         const merged_configuration: BinderType.Configuration<
+            MiddlewareDict,
             BodySchema, 
             QuerySchema, 
             HeaderSchema, 
             Request
         > = mergician({})(Binder.DefaultConfiguration<
+            MiddlewareDict,
             BodySchema, 
             QuerySchema, 
             HeaderSchema, 
             Request
         >(), parameters);
 
+        
+        // -- Create a new binder instance
+        return new Binder(route, merged_configuration);
+    }
 
-        return new Binder(route,
-            merged_configuration.method,
-            merged_configuration.handler,
-            merged_configuration.body_schema,
-            merged_configuration.query_schema,
-            merged_configuration.headers_schema
-        );
+
+
+    public compile = (): void => {
+
+        // -- Tempp arrays to store the schemas before they are compiled
+        const temp_schemas = {
+            body: [ this._compilable_schemas.body ? this._body_schema : {} ],
+            query: [ this._compilable_schemas.query ? this._query_schema : {} ],
+            headers: [ this._compilable_schemas.headers ? this._headers_schema : {} ]
+        };
+
+        // -- Add the scheams that cant be compiled to the compiled schemas
+        if (!this._compilable_schemas.body) this._compiled_body_schemas.push(this._body_schema);
+        if (!this._compilable_schemas.query) this._compiled_query_schemas.push(this._query_schema);
+        if (!this._compilable_schemas.headers) this._compiled_headers_schemas.push(this._headers_schema);
+
+
+
+    };
+
+
+
+    private _get_all_middleware_schemas = (): {
+        body: Array<Paramaters.Body>,
+        query: Array<Paramaters.Query>,
+        headers: Array<Paramaters.Headers>
+    } => {
+        
+        const middleware_schemas = {
+            body: [],
+            query: [],
+            headers: []
+        };
+
+        return middleware_schemas;
     }
 
 
 
 
-
     public static DefaultConfiguration = <
+        MiddlewareDict extends Middleware.Dict,
         BodySchema extends Paramaters.Body,
         QuerySchema extends Paramaters.Query,
         HeaderSchema extends Paramaters.Headers,
@@ -125,7 +176,8 @@ export default class Binder<
             DynamicURL.Extracted<string>,
             BinderType.ConvertObjectToType<BodySchema>,
             BinderType.ConvertObjectToType<QuerySchema>,
-            BinderType.ConvertHeaderObjectToType<HeaderSchema>
+            BinderType.ConvertHeaderObjectToType<HeaderSchema>,
+            Middleware.Extract<MiddlewareDict>
         >
     >() => {
         return {
@@ -135,6 +187,7 @@ export default class Binder<
             body_schema: {} as BodySchema,
             query_schema: {} as QuerySchema,
             headers_schema: {} as HeaderSchema,
+            middleware: {} as MiddlewareDict,
 
             compilable_schemas: CompileSchema.All()
         }

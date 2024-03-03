@@ -81,11 +81,11 @@ export default class Route<
         let error: ParserError | null = null;
 
         // -- Iterate over the routes and find the first one that matches
-        for (const bind of binders) {
-            const result = await bind.validate(fastify_request);
-            if (result instanceof ParserError) error = result;
-            else return result;
-        }
+        // for (const bind of binders) {
+        //     const result = await bind.validate(fastify_request);
+        //     if (result instanceof ParserError) error = result;
+        //     else return result;
+        // }
 
         return error;
     }

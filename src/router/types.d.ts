@@ -30,7 +30,7 @@ declare namespace Router {
         RouterError;
 
     type Executable<
-        Request extends Binder.Request<any, any, any, any>
+        Request extends Binder.Request<any, any, any, any, any>
     > = (request: Request) => ExecutableReturnable;
 
     namespace StatusBuilder {

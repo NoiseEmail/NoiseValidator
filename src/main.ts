@@ -2,19 +2,32 @@ import Log from './logger/log';
 import Router from './router/router';
 import Route from './router/route';
 import Binder from './binder/binder';
+import GenericMiddleware from './middleware/middleware';
+import CompileSchema from './binder/schema';
 
 const router = Router.instance;
 router.start();
 
 
-// server.get('/', async (request, reply) => {
-//     return { hello: 'world' };
-// });
 
-// router.add_route(Route.new({
-//     path: ['test'],
-//     friendly_name: 'Test'
-// }));
+class SessionMiddleware extends GenericMiddleware.Builder<{
+    id: string | null
+}>({
+    compilable_schemas: CompileSchema.All(),
+    headers_schema: {
+        'x-session-id': true
+    }
+}) {
+    public handler = () => {
+        // const data = this.headers.;
+        
+        this.continue({
+            id: 'BLAH'
+        });
+    };
+};
+
+
 
 
 const route = Route.new({
@@ -24,6 +37,12 @@ const route = Route.new({
 
 Binder.new(route, {
     method: 'GET',
+
+
+    middleware: {
+        session: new SessionMiddleware()
+    },
+
 
     query_schema: {
         test: 'Optional<boolean>',
@@ -41,6 +60,9 @@ Binder.new(route, {
         Log.info('Query:', request.query);
         Log.info('Body:', request.body);
         Log.info('Headers:', request.headers);
+        Log.info('URL:', request.url);
+
+        Log.info('SESSION ID:', request.middleware.session.id);
 
         request.set_header('test', 'test');
 

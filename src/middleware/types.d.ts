@@ -9,7 +9,7 @@ declare namespace Middleware {
      * The middleware function type
      */
     type Function<
-        DataShape extends any,
+        MiddlewareData extends any,
         DynamicUrl extends Paramaters.FlatObject,
         BodySchema extends Paramaters.NestedObject,
         QuerySchema extends Paramaters.FlatObject,
@@ -19,10 +19,11 @@ declare namespace Middleware {
             DynamicUrl,
             BodySchema,
             QuerySchema,
-            HeaderSchema
+            HeaderSchema,
+            MiddlewareData
         >,
 
-        next: () => Promise<DataShape | void> | DataShape | void,
+        next: () => Promise<MiddlewareData | void> | MiddlewareData | void,
         stop: (error: RouterError) => void
         
     ) => Promise<void> | void;
@@ -30,7 +31,7 @@ declare namespace Middleware {
 
 
     type Class<
-        DataShape extends any,
+        MiddlewareData extends Middleware.Dict,
 
         BodySchema extends Paramaters.NestedObject,
         QuerySchema extends Paramaters.FlatObject,
@@ -41,15 +42,15 @@ declare namespace Middleware {
         ParsedHeaderSchema extends Binder.ConvertHeaderObjectToType<HeaderSchema>,
         
         Request extends Binder.Request<{},
-        ParsedBodySchema,
+            ParsedBodySchema,
             ParsedQuerySchema,
-            ParsedHeaderSchema
+            ParsedHeaderSchema,
+            MiddlewareData
         >
     > = {
-
         handler: (
             request: Request
-        ) => Promise<DataShape | void> | DataShape | void;
+        ) => Promise<MiddlewareData | void> | MiddlewareData | void;
     };
 
 
@@ -74,4 +75,10 @@ declare namespace Middleware {
      * Same as Configuration, but all fields are optional
     */
     type OptionalConfiguration = Partial<Configuration>;
+
+
+    type Dict = { [key: string]: AnyClass; }
+    type Extract<T> = T extends 
+        { [key: string]: { data: infer U } } ? 
+        { [key in keyof T]: U } : never;
 }

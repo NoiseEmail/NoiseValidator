@@ -6,7 +6,7 @@ import { mergician } from 'mergician';
 
 
 export default class GenericMiddleware<
-    DataShape extends any,
+    MiddlewareData extends any,
 
     BodySchema extends Paramaters.Body,
     QuerySchema extends Paramaters.Query,
@@ -19,7 +19,8 @@ export default class GenericMiddleware<
     Request extends Binder.Request<{},
         ParsedBodySchema,
         ParsedQuerySchema,
-        ParsedHeaderSchema
+        ParsedHeaderSchema,
+        MiddlewareData  
     >
 > {
     private readonly _id: String = Math.random().toString(36).substring(7);
@@ -34,7 +35,7 @@ export default class GenericMiddleware<
      * 
      * @returns {GenericMiddleware} - Returns a fully typed builder for the generic middleware.
      */
-    public static Builder = <DataShape = void> (
+    public static Builder = <MiddlewareData = void> (
         configuration: Middleware.OptionalConfiguration = GenericMiddleware.DefaultConfiguration
     ) => {
 
@@ -45,7 +46,8 @@ export default class GenericMiddleware<
 
 
         return class extends GenericMiddleware<
-            DataShape,
+            MiddlewareData,
+
             Paramaters.Body,
             Paramaters.Query,
             Paramaters.Headers,
@@ -57,7 +59,8 @@ export default class GenericMiddleware<
             Binder.Request<{},
                 Binder.ConvertObjectToType<Paramaters.Body>,
                 Binder.ConvertObjectToType<Paramaters.Query>,
-                Binder.ConvertHeaderObjectToType<Paramaters.Headers>
+                Binder.ConvertHeaderObjectToType<Paramaters.Headers>,
+                MiddlewareData
             >
         > { 
             constructor() { super() } 
@@ -84,11 +87,16 @@ export default class GenericMiddleware<
         compilable_schemas: CompileSchema.All()
     };
 
-    protected continue = ( data: DataShape ) => {};
+    protected continue = ( data: MiddlewareData ) => {};
     protected exit = () => {};
 
     protected get request(): Request { return this._request as Request; }
-    protected get parsed_body(): ParsedBodySchema { return this.request.body as ParsedBodySchema; }
     public _set_request(request: Request) { this._request = request; }
     public get id(): String { return this._id; }
+    public get data(): MiddlewareData { return {} as MiddlewareData; }
+
+
+    protected get headers(): ParsedHeaderSchema { return this._request?.headers as ParsedHeaderSchema; }
+    protected get body(): ParsedBodySchema { return this._request?.body as ParsedBodySchema; }
+    protected get query(): ParsedQuerySchema { return this._request?.query as ParsedQuerySchema; }
 }

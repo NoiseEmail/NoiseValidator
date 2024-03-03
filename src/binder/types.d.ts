@@ -2,31 +2,35 @@ import { DynamicURL, Router } from '../router/types';
 import BinderClass from './binder';
 import {FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
 import CompileSchema from './schema';
+import { Middleware } from '../middleware/types';
 
 declare namespace Binder {
 
     type Configuration<
+        MiddlewareDict extends Middleware.Dict,
         BodySchema extends Paramaters.NestedObject,
         QuerySchema extends Paramaters.FlatObject,
         HeaderSchema extends Paramaters.FlatObject,
-        Request extends Binder.Request<any, any, any, any>
+        Request extends Binder.Request<any, any, any, any, any>
     > = {
         method: HTTPMethods,
         handler: Router.Executable<Request>,
         body_schema: BodySchema,
         query_schema: QuerySchema,
         headers_schema: HeaderSchema,
-        compilable_schemas: CompileSchema
+        compilable_schemas: CompileSchema,
+        middleware: MiddlewareDict,
     };
 
 
 
     type OptionalConfiguration<
+        MiddlewareDict extends Middleware.Dict,
         BodySchema extends Paramaters.NestedObject,
         QuerySchema extends Paramaters.FlatObject,
         HeaderSchema extends Paramaters.FlatObject,
-        Request extends Binder.Request<any, any, any, any>
-    > = Partial<Configuration<BodySchema, QuerySchema, HeaderSchema, Request>>;
+        Request extends Binder.Request<any, any, any, any, any>
+    > = Partial<Configuration<MiddlewareDict, BodySchema, QuerySchema, HeaderSchema, Request>>;
 
 
 
@@ -136,12 +140,14 @@ declare namespace Binder {
         DynamicUrl, 
         BodySchema, 
         QuerySchema, 
-        HeaderSchema
+        HeaderSchema,
+        MiddlewareData
     > = {
         headers: HeaderSchema;
         body: BodySchema;
         query: QuerySchema;
-        dynamic_url: DynamicUrl;
+        url: DynamicUrl;
+        middleware: MiddlewareData;
 
         set_header: (key: string, value: string) => void;
         set_headers: ([key, value]: [string, string]) => void;
@@ -156,6 +162,8 @@ declare namespace Binder {
 
 
     type Generic = BinderClass<
+        Middleware.Dict,
+        Middleware.Extract<Middleware.Dict>,
         any,
         Paramaters.Body,
         Paramaters.Query,
@@ -168,11 +176,12 @@ declare namespace Binder {
             DynamicURL.Extracted<any>,
             ConvertObjectToType<Paramaters.Body>,
             ConvertObjectToType<Paramaters.Query>,
-            ConvertHeaderObjectToType<Paramaters.Headers>
+            ConvertHeaderObjectToType<Paramaters.Headers>,
+            Middleware.Extract<Middleware.Dict>
         >
     >;
 
-    type Any = BinderClass<any, any, any, any, any, any, any, any, any>;
+    type Any = BinderClass<any, any, any, any, any, any, any, any, any, any, any>;
 
 }
 
