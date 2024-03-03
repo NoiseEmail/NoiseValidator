@@ -19,8 +19,7 @@ export default class Route<
     private _router_instance: Router;
     private _configuration: Configuration;
 
-    private _binders: Map<String, BinderType.Generic> = new Map();
-    private _router_map: RouterType.RouteMap = new Map();
+    private _binder_map: RouterType.BinderMap = new Map();
 
     public constructor(
         configuration: Configuration,
@@ -49,10 +48,8 @@ export default class Route<
     public bind = (
         binder: BinderType.Any
     ): this => {
-        if (this._binders.has(binder.id)) throw new Error(`Binder with id: ${binder.id} already exists`);
-        if (!this._router_map.has(binder.method)) this._router_map.set(binder.method, []);
-        this._router_map.get(binder.method)?.push(binder);
-        this._binders.set(binder.id, binder);
+        if (!this._binder_map.has(binder.method)) this._binder_map.set(binder.method, []);
+        this._binder_map.get(binder.method)?.push(binder);
         return this;
     }
 
@@ -79,19 +76,20 @@ export default class Route<
     > {
 
         // -- Get all the possible routes for the given method
-        const routes = this._router_map.get(method);
-        if (!routes) return null;
+        const binders = this._binder_map.get(method);
+        if (!binders) return null;
         let error: ParserError | null = null;
 
         // -- Iterate over the routes and find the first one that matches
-        for (const route of routes) {
-            const result = await route.validate(fastify_request);
+        for (const bind of binders) {
+            const result = await bind.validate(fastify_request);
             if (result instanceof ParserError) error = result;
             else return result;
         }
 
         return error;
     }
+
 
 
     private _process = async (

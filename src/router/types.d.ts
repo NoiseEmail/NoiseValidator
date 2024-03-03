@@ -8,7 +8,7 @@ declare namespace Router {
         friendly_name: String;
     }
 
-    type RouteMap = Map<HTTPMethods, Array<Binder.Generic>>
+    type BinderMap = Map<HTTPMethods, Array<Binder.Generic>>
 
     interface RouteCompatibleObject {
         body: Binder.ConvertObjectToType<Paramaters.Body>;
