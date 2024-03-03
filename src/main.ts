@@ -25,16 +25,23 @@ const route = Route.new({
 Binder.new(route, {
     method: 'GET',
 
-    required_query: {
+    query_schema: {
         test: 'Optional<boolean>',
     },
 
-    required_body: {
+    body_schema: {
         tes2:'string'
     },
 
+    headers_schema: {
+        test: false
+    },
+
     handler(request) {
-        Log.info('Query:', request.body.tes2);
+        Log.info('Query:', request.query);
+        Log.info('Body:', request.body);
+        Log.info('Headers:', request.headers);
+        
         request.set_header('test', 'test');
 
         return Binder.respond(200, 'Balls')

@@ -3,10 +3,10 @@ import ParserError from './error';
 
 export const headers = (
     headers: any,
-    required_headers: Paramaters.Headers
+    headers_schema: Paramaters.Headers
 ): ParserError | null => {
 
-    for (const [key, value] of Object.entries(required_headers)) {
+    for (const [key, value] of Object.entries(headers_schema)) {
 
         // -- Check if the header is present
         const exists = Object.prototype.hasOwnProperty.call(headers, key);

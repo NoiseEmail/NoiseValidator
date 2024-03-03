@@ -19,7 +19,7 @@ export default class Route<
     private _router_instance: Router;
     private _configuration: Configuration;
 
-    private _binders: Map<String, BinderType.Any> = new Map();
+    private _binders: Map<String, BinderType.Generic> = new Map();
     private _router_map: RouterType.RouteMap = new Map();
 
     public constructor(

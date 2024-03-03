@@ -1,13 +1,14 @@
 import {FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
-import {object} from '../parser/object';
 import Log from '../logger/log';
-import {headers} from '../parser/headers';
-import ParserError from '../parser/error';
 import RouterError from '../router/error';
 import Route from '../router/route';
 import { Paramaters } from './types';
 import { Binder as BinderType } from './types';
 import { DynamicURL, Router } from '../router/types';
+import CompileSchema from './schema';
+import { mergician } from 'mergician';
+
+
 
 export default class Binder<
     Path extends string,
@@ -19,10 +20,10 @@ export default class Binder<
     ParsedBody extends BinderType.ConvertObjectToType<Body>,
     ParsedQuery extends BinderType.ConvertObjectToType<Query>,
     ParsedHeaders extends BinderType.ConvertHeaderObjectToType<Headers>,
+    ParsedPath extends DynamicURL.Extracted<Path>,
 
     Request extends BinderType.Request<
-    BinderType.ArrayToObject<DynamicURL.Extract<Path>>,
-        // @ts-ignore
+        ParsedPath,
         ParsedBody,
         ParsedQuery,
         ParsedHeaders
@@ -30,25 +31,30 @@ export default class Binder<
 >{
     private readonly _id: String = Math.random().toString(36).substring(7);
     private readonly _method: HTTPMethods;
-    private readonly _handler: Router.Executable<Request> = async() => {};
-    private readonly _required_body: Body;
-    private readonly _required_query: Query;
-    private readonly _required_headers: Headers;
+    private readonly _handler: Router.Executable<Request>;
 
+    private readonly _body_schema: Body;
+    private readonly _query_schema: Query;
+    private readonly _headers_schema: Headers;
 
+    private _compiled_body_schema: Array<Paramaters.Body> = [];
+    private _compiled_query_schema: Array<Paramaters.Query> = [];
+    private _compiled_headers_schema: Array<Paramaters.Headers> = [];
+
+    
 
     public constructor(
         route: Route<Path, Router.Configuration<Path>>,
         method: HTTPMethods,
         handler: (request: Request) => Promise<any> | any,
-        required_body: Body,
-        required_query: Query,
-        required_headers: Headers
+        body_schema: Body,
+        query_schema: Query,
+        headers_schema: Headers
     ) {
         this._method = method;
-        this._required_body = required_body;
-        this._required_query = required_query;
-        this._required_headers = required_headers;
+        this._body_schema = body_schema;
+        this._query_schema = query_schema;
+        this._headers_schema = headers_schema;
         this._handler = handler;
 
         route.bind(this);
@@ -66,73 +72,55 @@ export default class Binder<
         BodyParsed extends BinderType.ConvertObjectToType<Body>,
         QueryParsed extends BinderType.ConvertObjectToType<Query>,
         HeadersParsed extends BinderType.ConvertHeaderObjectToType<Headers>,
+        PathParsed extends DynamicURL.Extracted<Path>,
 
         Request extends BinderType.Request<
-        BinderType.ArrayToObject<DynamicURL.Extract<Path>>,
-            // @ts-ignore
+            PathParsed,
             BodyParsed,
             QueryParsed,
             HeadersParsed
         >
     >(
         route: Route<Path, Router.Configuration<Path>>,
-        parameters: {
-            method: HTTPMethods,
-            handler: Router.Executable<Request>,
-            required_body?: Body,
-            required_query?: Query,
-            required_headers?: Headers
-        }
-    ) => new Binder(
-        route,
-        parameters.method,
-        parameters.handler,
-        parameters.required_body || {} as Body,
-        parameters.required_query || {} as Query,
-        parameters.required_headers || {} as Headers
-    );
+        parameters: BinderType.OptionalConfiguration<Body, Query, Headers, Request>
+    ) => {
+
+        const merged_configuration: BinderType.Configuration<Body, Query, Headers, Request> = 
+            mergician({})(Binder.DefaultConfiguration<Body, Query, Headers, Request>(), parameters);
+
+        return new Binder(route,
+            merged_configuration.method,
+            merged_configuration.handler,
+            merged_configuration.body_schema,
+            merged_configuration.query_schema,
+            merged_configuration.headers_schema
+        );
+    }
 
 
 
-    public async validate(
-        fastify_request: FastifyRequest
-    ): Promise<ParserError | {
-        body: ParsedBody,
-        query: ParsedQuery,
-        headers: ParsedHeaders,
-        binder: BinderType.Any
-    }> {
-
-        // -- TODO: Check the headers for a content-type and validate the body based on that
-        //    If no content-type is found, return a ParserError
-        //    If the content-type is not supported, return a ParserError
-
-        // -- Validate Body
-        const body = await object(
-            this._required_body,
-            fastify_request.body as object
-        ).catch((error) => error);
-        if (body instanceof ParserError) return body;
 
 
-        // -- Validate Headers
-        const query = await object(
-            this._required_query,
-            fastify_request.query as object
-        ).catch((error) => error);
-        if (query instanceof ParserError) return query;
-
-
-        // -- Validate Headers
-        const headers_error = headers(fastify_request.headers, this._required_headers);
-        if (headers_error) return headers_error;
-
-
+    public static DefaultConfiguration = <
+        Body extends Paramaters.Body,
+        Query extends Paramaters.Query,
+        Headers extends Paramaters.Headers,
+        Request extends BinderType.Request<
+            DynamicURL.Extracted<string>,
+            BinderType.ConvertObjectToType<Body>,
+            BinderType.ConvertObjectToType<Query>,
+            BinderType.ConvertHeaderObjectToType<Headers>
+        >
+    >() => {
         return {
-            body: body as ParsedBody,
-            query: query as ParsedQuery,
-            headers: {} as ParsedHeaders,
-            binder: this
+            method: 'GET',
+            handler: async(request: Request) => Binder.respond(500, 'No handler was provided'),
+
+            body_schema: {} as Body,
+            query_schema: {} as Query,
+            headers_schema: {} as Headers,
+
+            compilable_schemas: CompileSchema.All()
         }
     }
 
@@ -141,12 +129,14 @@ export default class Binder<
     public process = async(
         fastify_request: FastifyRequest,
         fastify_reply: FastifyReply,
+
         body: ParsedBody,
         query: ParsedQuery,
         headers: ParsedHeaders
     ): Promise<Router.ExecutableReturnable> => {
+
         // @ts-ignore
-        return this._handler({
+        const request_body: Request = {
             body: body,
             query: query,
             headers: headers,
@@ -157,11 +147,17 @@ export default class Binder<
                 reply: fastify_reply
             },
 
-            set_header: (key: string, value: string) => Binder._set_header(fastify_reply, key, value),
-            set_headers: (headers: [string, string][]) => Binder._set_headers(fastify_reply, headers),
-            remove_header: (key: string) => Binder._remove_header(fastify_reply, key),
-            remove_headers: (keys: Array<string>) => Binder._remove_headers(fastify_reply, keys),
-        });
+            set_header: (key: string, value: string): void => 
+                Binder._set_header(fastify_reply, key, value),
+            set_headers: ([key, value]: [string, string]): void => 
+                Binder._set_headers(fastify_reply, [key, value]),
+            remove_header: (key: string): void => 
+                Binder._remove_header(fastify_reply, key),
+            remove_headers: (keys: Array<string>): void =>
+                Binder._remove_headers(fastify_reply, keys),
+        };
+
+        return this._handler(request_body);
     }
 
 
@@ -219,18 +215,18 @@ export default class Binder<
 
     private static _set_headers = (
         fastify_reply: FastifyReply,
-        headers: [string, string][]
+        [key, value]: [string, string]
     ): void => {
         if (fastify_reply.sent) Log.warn('Response was already sent, server will not respond in expected manner');
-        else for (const [key, value] of Object.entries(headers)) fastify_reply.header(key, value);
+        else fastify_reply.header(key, value);
     }
 
 
 
     public get id(): String { return this._id; }
     public get method(): HTTPMethods { return this._method; }
-    public get required_body(): Body { return this._required_body; }
-    public get required_query(): Query { return this._required_query; }
-    public get required_headers(): Headers { return this._required_headers; }
+    public get body_schema(): Body { return this._body_schema; }
+    public get query_schema(): Query { return this._query_schema; }
+    public get headers_schema(): Headers { return this._headers_schema; }
     public get handler(): (request: Request) => Promise<any> | any { return this._handler; }
 }

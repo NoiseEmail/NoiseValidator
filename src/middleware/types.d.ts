@@ -1,5 +1,6 @@
 import { Binder, Paramaters } from '../binder/types';
 import RouterError from '../router/error';
+import CompileSchema from '../binder/schema';
 
 declare namespace Middleware {
 
@@ -39,9 +40,7 @@ declare namespace Middleware {
         ParsedQuery extends Binder.ConvertObjectToType<Query>,
         ParsedHeaders extends Binder.ConvertHeaderObjectToType<Headers>,
         
-        Request extends Binder.Request<
-            {},
-            // @ts-ignore
+        Request extends Binder.Request<{},
             ParsedBody,
             ParsedQuery,
             ParsedHeaders
@@ -57,4 +56,22 @@ declare namespace Middleware {
     type AnyClass = Class<any, any, any, any, any, any, any, any>;
     
 
+
+    /**
+     * @name Configuration
+     */
+    type Configuration = {
+        body_schema: Paramaters.Body;
+        query_schema: Paramaters.Query;
+        headers_schema: Paramaters.Headers;
+        compilable_schemas: CompileSchema;
+    };
+
+
+
+    /** 
+     * @name OptionalConfiguration
+     * Same as Configuration, but all fields are optional
+    */
+    type OptionalConfiguration = Partial<Configuration>;
 }

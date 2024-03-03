@@ -1,8 +1,34 @@
-import { DynamicURL } from '../router/types';
+import { DynamicURL, Router } from '../router/types';
 import BinderClass from './binder';
-import {FastifyReply, FastifyRequest} from 'fastify';
+import {FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
+import CompileSchema from './schema';
 
 declare namespace Binder {
+
+    type Configuration<
+        Body extends Paramaters.NestedObject,
+        Query extends Paramaters.FlatObject,
+        Headers extends Paramaters.FlatObject,
+        Request extends Binder.Request<any, any, any, any>
+    > = {
+        method: HTTPMethods,
+        handler: Router.Executable<Request>,
+        body_schema: Body,
+        query_schema: Query,
+        headers_schema: Headers,
+        compilable_schemas: CompileSchema
+    };
+
+
+
+    type OptionalConfiguration<
+        Body extends Paramaters.NestedObject,
+        Query extends Paramaters.FlatObject,
+        Headers extends Paramaters.FlatObject,
+        Request extends Binder.Request<any, any, any, any>
+    > = Partial<Configuration<Body, Query, Headers, Request>>;
+
+
 
     /**
      * @name ExtractOptionalType
@@ -106,12 +132,7 @@ declare namespace Binder {
 
 
 
-    type Request<
-        DynamicUrl extends Paramaters.FlatObject,
-        Body extends Paramaters.NestedObject,
-        Query extends Paramaters.FlatObject,
-        Headers extends Paramaters.FlatObject
-    > = {
+    type Request<DynamicUrl, Body, Query, Headers> = {
         headers: Headers;
         body: Body;
         query: Query;
@@ -129,25 +150,25 @@ declare namespace Binder {
     };
 
 
-    type Generic<
-        Path extends string
-    > = BinderClass<
-        Path,
+    type Generic = BinderClass<
+        any,
         Paramaters.Body,
         Paramaters.Query,
         Paramaters.Headers,
         ConvertObjectToType<Paramaters.Body>,
         ConvertObjectToType<Paramaters.Query>,
         ConvertHeaderObjectToType<Paramaters.Headers>,
+        DynamicURL.Extracted<any>,
         Request<
-            ArrayToObject<DynamicURL.Extract<Path>>,
+            DynamicURL.Extracted<any>,
             ConvertObjectToType<Paramaters.Body>,
             ConvertObjectToType<Paramaters.Query>,
             ConvertHeaderObjectToType<Paramaters.Headers>
         >
     >;
 
-    type Any = BinderClass<any, any, any, any, any, any, any, any>
+    type Any = BinderClass<any, any, any, any, any, any, any, any, any>;
+
 }
 
 
@@ -196,11 +217,11 @@ declare namespace Paramaters {
 
 
     type Headers = { [key: string]: boolean; }
-    type Body = { [key: string]: All | Body; }
-    type Query = { [key: string]: All; }
+    type Body = { [key: string]: TypedPrimative | Optional | Primative | CustomValidatorFunction | Body; }
+    type Query = { [key: string]: TypedPrimative | Optional | Primative | CustomValidatorFunction; }
 
-    type NestedObject = { [key: string]: TypedPrimative | NestedObject | void ; }
-    type FlatObject = { [key: string]: TypedPrimative | void ; }
+    type NestedObject = { [key: string]: TypedPrimative | NestedObject | CustomValidatorFunction | void; }
+    type FlatObject = { [key: string]: TypedPrimative | CustomValidatorFunction | void ; }
 
 
     type Parsed = {

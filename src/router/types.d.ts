@@ -8,13 +8,13 @@ declare namespace Router {
         friendly_name: String;
     }
 
-    type RouteMap = Map<HTTPMethods, Array<Binder.Any>>
+    type RouteMap = Map<HTTPMethods, Array<Binder.Generic>>
 
     interface RouteCompatibleObject {
         body: Binder.ConvertObjectToType<Paramaters.Body>;
         query: Binder.ConvertObjectToType<Paramaters.Query>;
         headers: Binder.ConvertHeaderObjectToType<Paramaters.Headers>;
-        binder: Binder.Any;
+        binder: Binder.Generic;
     }
 
     interface ReturnableObject {
@@ -26,10 +26,8 @@ declare namespace Router {
     type ExecutableReturnable =
         Promise<ReturnableObject> |
         Promise<RouterError> |
-        Promise<void> |
         ReturnableObject |
-        RouterError |
-        void;
+        RouterError;
 
     type Executable<
         Request extends Binder.Request<any, any, any, any>
@@ -165,4 +163,9 @@ declare namespace DynamicURL {
         r extends `${infer l2}:${infer r2}` ? Extract<`:${r2}`, [...res, RemoveRegex<l2>]> :
         never : never;
 
+    type ArrayToObject<Arr extends Array<string>> = {
+        [Key in Arr[number]]: string;
+    }
+
+    type Extracted<str extends string> = ArrayToObject<Extract<str>>;
 }
