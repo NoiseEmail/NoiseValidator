@@ -8,18 +8,18 @@ import { mergician } from 'mergician';
 export default class GenericMiddleware<
     DataShape extends any,
 
-    Body extends Paramaters.Body,
-    Query extends Paramaters.Query,
-    Headers extends Paramaters.Headers,
+    BodySchema extends Paramaters.Body,
+    QuerySchema extends Paramaters.Query,
+    HeaderSchema extends Paramaters.Headers,
 
-    ParsedBody extends Binder.ConvertObjectToType<Body>,
-    ParsedQuery extends Binder.ConvertObjectToType<Query>,
-    ParsedHeaders extends Binder.ConvertHeaderObjectToType<Headers>,
+    ParsedBodySchema extends Binder.ConvertObjectToType<BodySchema>,
+    ParsedQuerySchema extends Binder.ConvertObjectToType<QuerySchema>,
+    ParsedHeaderSchema extends Binder.ConvertHeaderObjectToType<HeaderSchema>,
 
     Request extends Binder.Request<{},
-        ParsedBody,
-        ParsedQuery,
-        ParsedHeaders
+        ParsedBodySchema,
+        ParsedQuerySchema,
+        ParsedHeaderSchema
     >
 > {
     private readonly _id: String = Math.random().toString(36).substring(7);
@@ -88,7 +88,7 @@ export default class GenericMiddleware<
     protected exit = () => {};
 
     protected get request(): Request { return this._request as Request; }
-    protected get parsed_body(): ParsedBody { return this.request.body as ParsedBody; }
+    protected get parsed_body(): ParsedBodySchema { return this.request.body as ParsedBodySchema; }
     public _set_request(request: Request) { this._request = request; }
     public get id(): String { return this._id; }
 }

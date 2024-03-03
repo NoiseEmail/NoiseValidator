@@ -11,15 +11,15 @@ declare namespace Middleware {
     type Function<
         DataShape extends any,
         DynamicUrl extends Paramaters.FlatObject,
-        Body extends Paramaters.NestedObject,
-        Query extends Paramaters.FlatObject,
-        Headers extends Paramaters.FlatObject
+        BodySchema extends Paramaters.NestedObject,
+        QuerySchema extends Paramaters.FlatObject,
+        HeaderSchema extends Paramaters.FlatObject
     > = (
         request: Binder.Request<
             DynamicUrl,
-            Body,
-            Query,
-            Headers
+            BodySchema,
+            QuerySchema,
+            HeaderSchema
         >,
 
         next: () => Promise<DataShape | void> | DataShape | void,
@@ -32,18 +32,18 @@ declare namespace Middleware {
     type Class<
         DataShape extends any,
 
-        Body extends Paramaters.NestedObject,
-        Query extends Paramaters.FlatObject,
-        Headers extends Paramaters.FlatObject,
+        BodySchema extends Paramaters.NestedObject,
+        QuerySchema extends Paramaters.FlatObject,
+        HeaderSchema extends Paramaters.FlatObject,
 
-        ParsedBody extends Binder.ConvertObjectToType<Body>,
-        ParsedQuery extends Binder.ConvertObjectToType<Query>,
-        ParsedHeaders extends Binder.ConvertHeaderObjectToType<Headers>,
+        ParsedBodySchema extends Binder.ConvertObjectToType<BodySchema>,
+        ParsedQuerySchema extends Binder.ConvertObjectToType<QuerySchema>,
+        ParsedHeaderSchema extends Binder.ConvertHeaderObjectToType<HeaderSchema>,
         
         Request extends Binder.Request<{},
-            ParsedBody,
-            ParsedQuery,
-            ParsedHeaders
+        ParsedBodySchema,
+            ParsedQuerySchema,
+            ParsedHeaderSchema
         >
     > = {
 

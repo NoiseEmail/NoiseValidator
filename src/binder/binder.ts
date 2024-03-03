@@ -11,31 +11,31 @@ import { mergician } from 'mergician';
 
 
 export default class Binder<
-    Path extends string,
+    UrlPath extends string,
 
-    Body extends Paramaters.Body,
-    Query extends Paramaters.Query,
-    Headers extends Paramaters.Headers,
+    BodySchema extends Paramaters.Body,
+    QuerySchema extends Paramaters.Query,
+    HeaderSchema extends Paramaters.Headers,
 
-    ParsedBody extends BinderType.ConvertObjectToType<Body>,
-    ParsedQuery extends BinderType.ConvertObjectToType<Query>,
-    ParsedHeaders extends BinderType.ConvertHeaderObjectToType<Headers>,
-    ParsedPath extends DynamicURL.Extracted<Path>,
+    ParsedBodySchema extends BinderType.ConvertObjectToType<BodySchema>,
+    ParsedQuerySchema extends BinderType.ConvertObjectToType<QuerySchema>,
+    ParsedHeaderSchema extends BinderType.ConvertHeaderObjectToType<HeaderSchema>,
+    ParsedUrlPath extends DynamicURL.Extracted<UrlPath>,
 
     Request extends BinderType.Request<
-        ParsedPath,
-        ParsedBody,
-        ParsedQuery,
-        ParsedHeaders
+        ParsedUrlPath,
+        ParsedBodySchema,
+        ParsedQuerySchema,
+        ParsedHeaderSchema
     >
 >{
     private readonly _id: String = Math.random().toString(36).substring(7);
     private readonly _method: HTTPMethods;
     private readonly _handler: Router.Executable<Request>;
 
-    private readonly _body_schema: Body;
-    private readonly _query_schema: Query;
-    private readonly _headers_schema: Headers;
+    private readonly _body_schema: BodySchema;
+    private readonly _query_schema: QuerySchema;
+    private readonly _headers_schema: HeaderSchema;
 
     private _compiled_body_schema: Array<Paramaters.Body> = [];
     private _compiled_query_schema: Array<Paramaters.Query> = [];
@@ -44,12 +44,12 @@ export default class Binder<
     
 
     public constructor(
-        route: Route<Path, Router.Configuration<Path>>,
+        route: Route<UrlPath, Router.Configuration<UrlPath>>,
         method: HTTPMethods,
         handler: (request: Request) => Promise<any> | any,
-        body_schema: Body,
-        query_schema: Query,
-        headers_schema: Headers
+        body_schema: BodySchema,
+        query_schema: QuerySchema,
+        headers_schema: HeaderSchema
     ) {
         this._method = method;
         this._body_schema = body_schema;
@@ -63,16 +63,16 @@ export default class Binder<
 
 
     public static new = <
-        Path extends string,
+        UrlPath extends string,
 
-        Body extends Paramaters.Body,
-        Query extends Paramaters.Query,
-        Headers extends Paramaters.Headers,
+        BodySchema extends Paramaters.Body,
+        QuerySchema extends Paramaters.Query,
+        HeaderSchema extends Paramaters.Headers,
 
-        BodyParsed extends BinderType.ConvertObjectToType<Body>,
-        QueryParsed extends BinderType.ConvertObjectToType<Query>,
-        HeadersParsed extends BinderType.ConvertHeaderObjectToType<Headers>,
-        PathParsed extends DynamicURL.Extracted<Path>,
+        BodyParsed extends BinderType.ConvertObjectToType<BodySchema>,
+        QueryParsed extends BinderType.ConvertObjectToType<QuerySchema>,
+        HeadersParsed extends BinderType.ConvertHeaderObjectToType<HeaderSchema>,
+        PathParsed extends DynamicURL.Extracted<UrlPath>,
 
         Request extends BinderType.Request<
             PathParsed,
@@ -81,12 +81,28 @@ export default class Binder<
             HeadersParsed
         >
     >(
-        route: Route<Path, Router.Configuration<Path>>,
-        parameters: BinderType.OptionalConfiguration<Body, Query, Headers, Request>
+        route: Route<UrlPath, Router.Configuration<UrlPath>>,
+        parameters: BinderType.OptionalConfiguration<
+            BodySchema, 
+            QuerySchema, 
+            HeaderSchema, 
+            Request
+        >
     ) => {
 
-        const merged_configuration: BinderType.Configuration<Body, Query, Headers, Request> = 
-            mergician({})(Binder.DefaultConfiguration<Body, Query, Headers, Request>(), parameters);
+
+        const merged_configuration: BinderType.Configuration<
+            BodySchema, 
+            QuerySchema, 
+            HeaderSchema, 
+            Request
+        > = mergician({})(Binder.DefaultConfiguration<
+            BodySchema, 
+            QuerySchema, 
+            HeaderSchema, 
+            Request
+        >(), parameters);
+
 
         return new Binder(route,
             merged_configuration.method,
@@ -102,23 +118,23 @@ export default class Binder<
 
 
     public static DefaultConfiguration = <
-        Body extends Paramaters.Body,
-        Query extends Paramaters.Query,
-        Headers extends Paramaters.Headers,
+        BodySchema extends Paramaters.Body,
+        QuerySchema extends Paramaters.Query,
+        HeaderSchema extends Paramaters.Headers,
         Request extends BinderType.Request<
             DynamicURL.Extracted<string>,
-            BinderType.ConvertObjectToType<Body>,
-            BinderType.ConvertObjectToType<Query>,
-            BinderType.ConvertHeaderObjectToType<Headers>
+            BinderType.ConvertObjectToType<BodySchema>,
+            BinderType.ConvertObjectToType<QuerySchema>,
+            BinderType.ConvertHeaderObjectToType<HeaderSchema>
         >
     >() => {
         return {
             method: 'GET',
             handler: async(request: Request) => Binder.respond(500, 'No handler was provided'),
 
-            body_schema: {} as Body,
-            query_schema: {} as Query,
-            headers_schema: {} as Headers,
+            body_schema: {} as BodySchema,
+            query_schema: {} as QuerySchema,
+            headers_schema: {} as HeaderSchema,
 
             compilable_schemas: CompileSchema.All()
         }
@@ -130,9 +146,9 @@ export default class Binder<
         fastify_request: FastifyRequest,
         fastify_reply: FastifyReply,
 
-        body: ParsedBody,
-        query: ParsedQuery,
-        headers: ParsedHeaders
+        body: ParsedBodySchema,
+        query: ParsedQuerySchema,
+        headers: ParsedHeaderSchema
     ): Promise<Router.ExecutableReturnable> => {
 
         // @ts-ignore
@@ -225,8 +241,8 @@ export default class Binder<
 
     public get id(): String { return this._id; }
     public get method(): HTTPMethods { return this._method; }
-    public get body_schema(): Body { return this._body_schema; }
-    public get query_schema(): Query { return this._query_schema; }
-    public get headers_schema(): Headers { return this._headers_schema; }
+    public get body_schema(): BodySchema { return this._body_schema; }
+    public get query_schema(): QuerySchema { return this._query_schema; }
+    public get headers_schema(): HeaderSchema { return this._headers_schema; }
     public get handler(): (request: Request) => Promise<any> | any { return this._handler; }
 }

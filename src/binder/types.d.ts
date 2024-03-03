@@ -6,27 +6,27 @@ import CompileSchema from './schema';
 declare namespace Binder {
 
     type Configuration<
-        Body extends Paramaters.NestedObject,
-        Query extends Paramaters.FlatObject,
-        Headers extends Paramaters.FlatObject,
+        BodySchema extends Paramaters.NestedObject,
+        QuerySchema extends Paramaters.FlatObject,
+        HeaderSchema extends Paramaters.FlatObject,
         Request extends Binder.Request<any, any, any, any>
     > = {
         method: HTTPMethods,
         handler: Router.Executable<Request>,
-        body_schema: Body,
-        query_schema: Query,
-        headers_schema: Headers,
+        body_schema: BodySchema,
+        query_schema: QuerySchema,
+        headers_schema: HeaderSchema,
         compilable_schemas: CompileSchema
     };
 
 
 
     type OptionalConfiguration<
-        Body extends Paramaters.NestedObject,
-        Query extends Paramaters.FlatObject,
-        Headers extends Paramaters.FlatObject,
+        BodySchema extends Paramaters.NestedObject,
+        QuerySchema extends Paramaters.FlatObject,
+        HeaderSchema extends Paramaters.FlatObject,
         Request extends Binder.Request<any, any, any, any>
-    > = Partial<Configuration<Body, Query, Headers, Request>>;
+    > = Partial<Configuration<BodySchema, QuerySchema, HeaderSchema, Request>>;
 
 
 
@@ -132,10 +132,15 @@ declare namespace Binder {
 
 
 
-    type Request<DynamicUrl, Body, Query, Headers> = {
-        headers: Headers;
-        body: Body;
-        query: Query;
+    type Request<
+        DynamicUrl, 
+        BodySchema, 
+        QuerySchema, 
+        HeaderSchema
+    > = {
+        headers: HeaderSchema;
+        body: BodySchema;
+        query: QuerySchema;
         dynamic_url: DynamicUrl;
 
         set_header: (key: string, value: string) => void;

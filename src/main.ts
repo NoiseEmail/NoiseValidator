@@ -41,7 +41,7 @@ Binder.new(route, {
         Log.info('Query:', request.query);
         Log.info('Body:', request.body);
         Log.info('Headers:', request.headers);
-        
+
         request.set_header('test', 'test');
 
         return Binder.respond(200, 'Balls')

@@ -9,8 +9,8 @@ import { Router as RouterType } from './types';
 import { Binder as BinderType } from '../binder/types';
 
 export default class Route<
-    Path extends string,
-    Configuration extends RouterType.Configuration<Path>
+    UrlPath extends string,
+    Configuration extends RouterType.Configuration<UrlPath>
 > {
 
     private readonly _friendly_name: String;
