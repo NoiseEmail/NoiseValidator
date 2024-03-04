@@ -8,9 +8,10 @@ import { DynamicURL, Router } from '../router/types';
 import { mergician } from 'mergician';
 import { Middleware } from '../middleware/types';
 import ParserError from '../parser/error';
-import { wrapper } from '../parser/validate/wrapper';
-import { merge_nested_schemas } from '../parser/merge';
+import { wrapper } from '../schema/wrapper';
+import { merge_nested_schemas } from '../schema/merge/nested_object';
 import log from '../logger/log';
+import { merge_header_schemas } from '../schema/merge/headers';
 
 
 
@@ -75,6 +76,7 @@ export default class Binder<
         this.compile();
         console.log(this._compiled_body_schemas);
         console.log(this._compiled_query_schemas);
+        console.log(this._compiled_header_schemas);
     }
 
 
@@ -160,7 +162,7 @@ export default class Binder<
 
         this._compiled_body_schemas = merged_body_schemas;
         this._compiled_query_schemas = merged_query_schemas;
-        // this._compiled_header_schemas = schemas.headers;
+        this._compiled_header_schemas = merge_header_schemas(schemas.headers);
     };
 
 

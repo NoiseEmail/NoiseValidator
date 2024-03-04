@@ -1,4 +1,4 @@
-import { Paramaters } from "../../binder/types";
+import { Paramaters } from "../binder/types";
 
 
 /**

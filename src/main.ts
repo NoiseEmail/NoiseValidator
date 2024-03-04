@@ -10,7 +10,8 @@ router.start();
 
 class AuthMiddleware extends GenericMiddleware.Builder({
     header_schema: {
-        'x-session-id': true
+        'x-session-id': true,
+        test: false
     },
     body_schema: {
         test1: 'Optional<boolean>',
@@ -54,7 +55,7 @@ Binder.new(route, {
     },
 
     header_schema: {
-        test: false
+        test: true
     },
 
     handler(request) {

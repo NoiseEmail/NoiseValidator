@@ -1,8 +1,8 @@
 import { mergician } from "mergician";
-import { Paramaters } from "../binder/types";
-import { extract_validator_details } from "./validate/validate";
-import ParserError from "./error";
-import { error } from "../logger/log";
+import { Paramaters } from "../../binder/types";
+import { extract_validator_details } from "../../parser/validate/validate";
+import ParserError from "../../parser/error";
+import { error } from "../../logger/log";
 
 export const merge_nested_schemas = <
     T extends Paramaters.WrappedBody | Paramaters.WrappedQuery
