@@ -15,7 +15,8 @@ export const wrapper = <
     T extends Paramaters.WrappedBody | Paramaters.WrappedQuery
 >(
     schema: Paramaters.Body | Paramaters.Query,
-    belongs_to: String,
+    belongs_to: string,
+    type: 'Binder' | 'Middleware'
 ): T => {
 
     const walk = (
@@ -42,7 +43,8 @@ export const wrapper = <
             if (typeof value === 'function') returnable[key] = [{
                 function: value,
                 path: [...path, key],
-                belongs_to
+                belongs_to,
+                type
             }];
 
             else returnable[key] = value;

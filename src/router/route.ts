@@ -68,7 +68,8 @@ export default class Route<
      */
     private async _find_compatible_route(
         method: HTTPMethods,
-        fastify_request: FastifyRequest
+        fastify_request: FastifyRequest,
+        fastify_reply: FastifyReply,
     ): Promise<
         RouterType.RouteCompatibleObject |
         null |
@@ -82,9 +83,28 @@ export default class Route<
 
         // -- Iterate over the routes and find the first one that matches
         for (const bind of binders) {
+
+
+            // -- Check if schema is compatible
             const result = await bind.validate(fastify_request);
-            if (result instanceof ParserError) error = result;
-            else return result;
+            if (result instanceof ParserError) {
+                error = result;
+                continue;
+            }
+
+
+            // -- Execute the Middleware
+            const middleware = await bind.validate_all_middleware(
+                result, fastify_request, fastify_reply);
+
+            if (middleware instanceof ParserError) {
+                error = middleware;
+                continue;
+            }
+
+
+            result.middleware = middleware;
+            return result;
         }
 
         return error;
@@ -97,7 +117,8 @@ export default class Route<
         fastify_request: FastifyRequest,
         fastify_reply: FastifyReply,
     ): Promise<any> => {
-        const result = await this._find_compatible_route(method, fastify_request);
+        const result = await this._find_compatible_route(
+            method, fastify_request, fastify_reply);
 
         if (!result) return fastify_reply.code(404).send({error: 'No route found'});
         if (result instanceof ParserError) return fastify_reply.code(400).send({error: result.message});
@@ -106,13 +127,15 @@ export default class Route<
         let processed_request: RouterType.ExecutableReturnable | null = null;
         try {
             processed_request = await result.binder.process(
-                fastify_request,
+                fastify_request, 
                 fastify_reply,
-                result.body,
-                result.query,
+
+                result.body as any,
+                result.query as any,
                 result.headers,
-                // dynamic url
-                fastify_request.params as any
+                result.middleware,
+                
+                result.url,
             );
         } catch (error) {
             Log.error('Error processing request:', error);

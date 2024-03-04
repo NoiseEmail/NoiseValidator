@@ -9,24 +9,18 @@ const router = Router.instance;
 router.start();
 
 class AuthMiddleware extends GenericMiddleware.Builder({
-    header_schema: {
-        'x-session-id': true,
-        test: false
-    },
     body_schema: {
-        test1: 'Optional<boolean>',
-        agh: 'string',
-        wth: ()=>'string'
-    },
-    query_schema: {
-        test: 'boolean',
-        test2: 'Optional<string>'
+        test: ()=>'balls'
     }
 })<{
     id: string | null
 }>() {
-    private handler = (request) => {
-        Log.info('Handler');
+    public handler = () => {
+        Log.info('Body:', this.body);
+        Log.info('Query:', this.query);
+
+        Log.info('Headers:', this.headers);
+        
     }
 }
 
@@ -37,7 +31,7 @@ const route = Route.new({
 });
 
 Binder.new(route, {
-    method: 'GET',
+    method: 'POST',
 
 
     middleware: {
@@ -45,28 +39,28 @@ Binder.new(route, {
     },
 
 
-    query_schema: {
-        test: 'Optional<boolean>',
-        test2: 'string'
-    },
+    // query_schema: {
+    //     test: 'Optional<boolean>',
+    //     test2: 'string'
+    // },
 
     body_schema: {
-        tes2:'string',
-        wth: ()=>'string'
+        // test:'string',
+        test: ()=>'string'
     },
 
-    header_schema: {
-        test: true
-    },
+    // header_schema: {
+    //     test: true
+    // },
 
     handler(request) {
-        Log.info('Query:', request.query);
-        Log.info('Body:', request.body);
-        Log.info('Headers:', request.headers);
-        Log.info('URL:', request.url);
+        // Log.info('Query:', request.query);
+        // Log.info('Body:', request.body);
+        // Log.info('Headers:', request.headers);
+        // Log.info('URL:', request.url);
 
         // Log.info('SESSION ID:', request.middleware.session);
-        let a = request.body.wth[0]
+        // let a = request.body.wth[0]
 
         request.set_header('test', 'test');
 

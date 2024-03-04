@@ -8,7 +8,8 @@ export const merge_nested_schemas = <
 >(
     array: Array<T>
 ): T | Error => {
-
+    if (array.length === 0) return {} as T;
+    if (array.length === 1) return array[0];
 
     try { 
         const merger = mergician({
@@ -43,7 +44,7 @@ export const merge_nested_schemas = <
                 else return a_detail.type;
             }
         });
-
+        
         return merger(...array);
     }
 

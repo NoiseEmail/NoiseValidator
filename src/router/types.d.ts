@@ -11,10 +11,12 @@ declare namespace Router {
     type BinderMap = Map<HTTPMethods, Array<Binder.Generic>>
 
     interface RouteCompatibleObject {
-        body: Binder.ConvertObjectToType<Paramaters.Body>;
-        query: Binder.ConvertObjectToType<Paramaters.Query>;
+        body: Paramaters.ObjectParaseResult<Paramaters.Body>;
+        query: Paramaters.ObjectParaseResult<Paramaters.Query>;
         headers: Binder.ConvertHeaderObjectToType<Paramaters.Headers>;
+        url: DynamicURL.Extracted<any>;
         binder: Binder.Generic;
+        middleware: object;
     }
 
     interface ReturnableObject {

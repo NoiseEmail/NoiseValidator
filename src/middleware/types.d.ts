@@ -1,31 +1,8 @@
 import { Binder, Paramaters } from '../binder/types';
 import RouterError from '../router/error';
+import { Router } from '../router/types';
 
 declare namespace Middleware {
-
-    /**
-     * @name Function
-     * The middleware function type
-     */
-    type Function<
-        MiddlewareData extends any,
-        DynamicUrl extends Paramaters.FlatObject,
-        BodySchema extends Paramaters.NestedObject,
-        QuerySchema extends Paramaters.FlatObject,
-        HeaderSchema extends Paramaters.FlatObject
-    > = (
-        request: Binder.Request<
-            DynamicUrl,
-            BodySchema,
-            QuerySchema,
-            HeaderSchema,
-            MiddlewareData
-        >,
-
-        next: () => Promise<MiddlewareData | void> | MiddlewareData | void,
-        stop: (error: RouterError) => void
-        
-    ) => Promise<void> | void;
 
 
 

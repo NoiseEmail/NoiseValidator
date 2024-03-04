@@ -1,9 +1,9 @@
 import { Paramaters } from '../binder/types';
 import ParserError from './error';
 
-export const headers = (
+export const parse_headers = (
+    header_schema: Paramaters.Headers,
     headers: any,
-    header_schema: Paramaters.Headers
 ): ParserError | null => {
 
     for (const [key, value] of Object.entries(header_schema)) {

@@ -1,8 +1,9 @@
 import { Binder, Paramaters } from '../binder/types';
 import { Middleware } from './types';
 import { mergician } from 'mergician';
-import { error } from '../logger/log';
+import log, { error, info } from '../logger/log';
 import RouterError from '../router/error';
+import { Router } from '../router/types';
 
 
 
@@ -43,19 +44,12 @@ export default class GenericMiddleware<
         request: Request,
         id: string
     ) { 
-        const merged_configuration: Middleware.Configuration<
-            BodySchema, 
-            QuerySchema, 
-            HeaderSchema
-        > = mergician({})(
-            GenericMiddleware.DefaultConfiguration(), 
-            configuration
-        );
+        
 
-        this._configuration = merged_configuration;
-        this._body_schema = merged_configuration.body_schema
-        this._query_schema = merged_configuration.query_schema;
-        this._header_schema = merged_configuration.header_schema;
+        this._configuration = configuration;
+        this._body_schema = configuration.body_schema
+        this._query_schema = configuration.query_schema;
+        this._header_schema = configuration.header_schema;
         this._request = request;
         this._id = id;
     } 
@@ -86,13 +80,22 @@ export default class GenericMiddleware<
         QuerySchema extends Paramaters.Query,
         HeadersSchema extends Paramaters.Headers
     >(
-        configuration: Middleware.Configuration<
+        configuration: Middleware.OptionalConfiguration<
             BodySchema, 
             QuerySchema, 
             HeadersSchema
         >
     ) => {
         const id = Math.random().toString(36).substring(7);
+        const merged_configuration: Middleware.Configuration<
+            BodySchema, 
+            QuerySchema, 
+            HeadersSchema
+        > = mergician({})(
+            GenericMiddleware.DefaultConfiguration(), 
+            configuration
+        );
+
         return <MiddlewareData extends any = void>() => {
             const returnable = class Extended extends GenericMiddleware<
                 MiddlewareData,
@@ -117,48 +120,10 @@ export default class GenericMiddleware<
                         MiddlewareData
                     >
                 ) {    
-                    super(configuration, request, id);
+                    
+                    super(merged_configuration, request, id);
                 }
-                
-                public static New = (
-                    request: Binder.Request<{},
-                        Binder.ConvertObjectToType<BodySchema>,
-                        Binder.ConvertObjectToType<QuerySchema>,
-                        Binder.ConvertHeaderObjectToType<HeadersSchema>,
-                        MiddlewareData
-                    >
-                ) => {
-                    return new Extended(request);
-                }
-
-
-                private _handler: Middleware.Function<
-                    MiddlewareData,
-                    {},
-                    BodySchema,
-                    QuerySchema,
-                    HeadersSchema
-                > = async (request, next, stop) => {};
-                
-
-
-                /**
-                 * @name entrypoint
-                 * This setter is used to define where the 
-                 * entrypoint of the middleware is, this
-                 * will be the function that is called when
-                 * the middleware is executed.
-                 */
-                protected set entrypoint(handler: Middleware.Function<
-                    MiddlewareData,
-                    {},
-                    BodySchema,
-                    QuerySchema,
-                    HeadersSchema
-                >) {
-                    this._handler = handler;
-                }
-
+            
 
 
                 /**
@@ -173,7 +138,7 @@ export default class GenericMiddleware<
                     MiddlewareData = {} as MiddlewareData;
 
                 public static readonly configuration:
-                    Middleware.Configuration<BodySchema, QuerySchema, HeadersSchema> = configuration;
+                    Middleware.Configuration<BodySchema, QuerySchema, HeadersSchema> = merged_configuration;
             
                 public static readonly id: string = id;
             };
@@ -183,6 +148,26 @@ export default class GenericMiddleware<
             return returnable;
         }
     };
+
+
+
+    public static execute = async (
+        data: Binder.Request<any, any, any, any, any>,
+        middleware_class: any
+    ): Promise<RouterError | unknown> => {
+
+        const middleware = new middleware_class(data);        
+        const entrypoint = middleware.handler;
+        if (entrypoint === undefined || !entrypoint) return new RouterError(
+            '500_NOT_IMPLEMENTED', 
+            'The handler is not implemented'
+        );
+
+        try { return await entrypoint(); } 
+        catch (error) { return error; }
+    };
+
+
 
 
 

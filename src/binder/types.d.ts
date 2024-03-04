@@ -229,7 +229,8 @@ declare namespace Paramaters {
     type CustomValidatorWrapper<Returnable = unknown> = {
         function: CustomValidatorFunction<Returnable>,
         path: Array<string>,
-        belongs_to: String,
+        belongs_to: string,
+        type: 'Binder' | 'Middleware'
     };
 
     type Headers = { [key: string]: boolean; }
@@ -260,6 +261,14 @@ declare namespace Paramaters {
         headers: Array<Headers>;
     };
 
+    type ObjectParaseResult<Input> = {
+        parsed_object: Binder.ConvertObjectToType<Input>;
+        custom_validators: Map<string, Array<{
+            path: Array<string>;
+            value: unknown;
+            type: 'Binder' | 'Middleware';
+        }>>;
+    }
 
     /**
      * @name all
