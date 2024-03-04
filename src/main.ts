@@ -27,6 +27,23 @@ class SessionMiddleware extends GenericMiddleware.Builder<{
     };
 };
 
+class AuthMiddleware extends GenericMiddleware.Builder<{
+    perms: Array<string>
+}>({
+    compilable_schemas: CompileSchema.All(),
+    headers_schema: {
+        'x-session-id': true
+    }
+}) {
+    public handler = () => {
+        // const data = this.headers.;
+        
+        this.continue({
+            perms: ['test']
+        });
+    };
+};
+
 
 
 
@@ -40,7 +57,9 @@ Binder.new(route, {
 
 
     middleware: {
-        session: new SessionMiddleware()
+        session: new SessionMiddleware(),
+        more: new SessionMiddleware(),
+        auth: new AuthMiddleware()
     },
 
 
@@ -62,7 +81,7 @@ Binder.new(route, {
         Log.info('Headers:', request.headers);
         Log.info('URL:', request.url);
 
-        Log.info('SESSION ID:', request.middleware.session.id);
+        Log.info('SESSION ID:', request.middleware.auth.perms);
 
         request.set_header('test', 'test');
 
@@ -71,3 +90,4 @@ Binder.new(route, {
 })
 
 router.add_route(route);
+

@@ -78,7 +78,11 @@ declare namespace Middleware {
 
 
     type Dict = { [key: string]: AnyClass; }
-    type Extract<T> = T extends 
-        { [key: string]: { data: infer U } } ? 
-        { [key in keyof T]: U } : never;
+
+
+
+
+    type InferDataType<Value> = Value extends { data: infer U } ? U : never;
+    type BuildObject<T> = { [K in keyof T]: InferDataType<T[K]>; };
+    type Extract<MiddlewareDict extends Dict> = BuildObject<MiddlewareDict>;
 }
