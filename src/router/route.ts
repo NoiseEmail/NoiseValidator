@@ -34,7 +34,7 @@ export default class Route<
         configuration: RouterType.Configuration<path>,
     ): Route<path, RouterType.Configuration<path>> => new Route(
         configuration,
-    );
+    ); 
 
 
     /**

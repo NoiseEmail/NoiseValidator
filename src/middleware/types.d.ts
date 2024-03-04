@@ -1,6 +1,7 @@
 import { Binder, Paramaters } from '../binder/types';
 import RouterError from '../router/error';
 import CompileSchema from '../binder/schema';
+import GenericMiddleware from './middleware';
 
 declare namespace Middleware {
 
@@ -33,9 +34,9 @@ declare namespace Middleware {
     type Class<
         MiddlewareData extends Middleware.Dict,
 
-        BodySchema extends Paramaters.NestedObject,
-        QuerySchema extends Paramaters.FlatObject,
-        HeaderSchema extends Paramaters.FlatObject,
+        BodySchema extends Paramaters.Body,
+        QuerySchema extends Paramaters.Query,
+        HeaderSchema extends Paramaters.Headers,
 
         ParsedBodySchema extends Binder.ConvertObjectToType<BodySchema>,
         ParsedQuerySchema extends Binder.ConvertObjectToType<QuerySchema>,
@@ -48,9 +49,7 @@ declare namespace Middleware {
             MiddlewareData
         >
     > = {
-        handler: (
-            request: Request
-        ) => Promise<MiddlewareData | void> | MiddlewareData | void;
+        readonly _data_type_do_not_call: MiddlewareData;
     };
 
 
@@ -61,10 +60,14 @@ declare namespace Middleware {
     /**
      * @name Configuration
      */
-    type Configuration = {
-        body_schema: Paramaters.Body;
-        query_schema: Paramaters.Query;
-        headers_schema: Paramaters.Headers;
+    type Configuration<
+        BodySchema extends Paramaters.NestedObject = {},
+        QuerySchema extends Paramaters.FlatObject = {},
+        HeadersSchema extends Paramaters.FlatObject = {},
+    > = {
+        body_schema: BodySchema;
+        query_schema: QuerySchema;
+        header_schema: HeadersSchema;
         compilable_schemas: CompileSchema;
     };
 
@@ -74,7 +77,11 @@ declare namespace Middleware {
      * @name OptionalConfiguration
      * Same as Configuration, but all fields are optional
     */
-    type OptionalConfiguration = Partial<Configuration>;
+    type OptionalConfiguration<
+        BodySchema extends Paramaters.NestedObject = {},
+        QuerySchema extends Paramaters.FlatObject = {},
+        HeadersSchema extends Paramaters.FlatObject = {},
+    > = Partial<Configuration<BodySchema, QuerySchema, HeadersSchema>>;
 
 
     type Dict = { [key: string]: AnyClass; }
@@ -82,7 +89,14 @@ declare namespace Middleware {
 
 
 
-    type InferDataType<Value> = Value extends { data: infer U } ? U : never;
-    type BuildObject<T> = { [K in keyof T]: InferDataType<T[K]>; };
+    type InferFromConfiguration<
+        Configuration extends Middleware.Configuration,
+        Key extends keyof Configuration
+    > = Configuration[Key];
+
+
+    type InferDataType<Value> = Value extends { _data_type_do_not_call: infer U } ? U : never;
+    
+    type BuildObject<T extends Dict> = { [K in keyof T]: T[K]['_data_type_do_not_call'] };
     type Extract<MiddlewareDict extends Dict> = BuildObject<MiddlewareDict>;
 }

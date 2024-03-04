@@ -8,47 +8,28 @@ import CompileSchema from './binder/schema';
 const router = Router.instance;
 router.start();
 
-
-
-class SessionMiddleware extends GenericMiddleware.Builder<{
+class AuthMiddleware extends GenericMiddleware.Builder({
+    compilable_schemas: CompileSchema.All(),
+    header_schema: {
+        'x-session-id': true
+    },
+    body_schema: {
+        test1: 'Optional<boolean>'
+    },
+    query_schema: {
+        test2: 'Optional<boolean>'
+    }
+})<{
     id: string | null
-}>({
-    compilable_schemas: CompileSchema.All(),
-    headers_schema: {
-        'x-session-id': true
+}>() {
+    private handler = (request) => {
+        Log.info('Handler');
     }
-}) {
-    public handler = () => {
-        // const data = this.headers.;
-        
-        this.continue({
-            id: 'BLAH'
-        });
-    };
-};
-
-class AuthMiddleware extends GenericMiddleware.Builder<{
-    perms: Array<string>
-}>({
-    compilable_schemas: CompileSchema.All(),
-    headers_schema: {
-        'x-session-id': true
-    }
-}) {
-    public handler = () => {
-        // const data = this.headers.;
-        
-        this.continue({
-            perms: ['test']
-        });
-    };
-};
-
-
+}
 
 
 const route = Route.new({
-    path: '/what/:digit(^\\d+).png:balls',
+    path: '/what',
     friendly_name: 'Test'
 });
 
@@ -57,9 +38,7 @@ Binder.new(route, {
 
 
     middleware: {
-        session: new SessionMiddleware(),
-        more: new SessionMiddleware(),
-        auth: new AuthMiddleware()
+        session: AuthMiddleware
     },
 
 
@@ -81,7 +60,8 @@ Binder.new(route, {
         Log.info('Headers:', request.headers);
         Log.info('URL:', request.url);
 
-        Log.info('SESSION ID:', request.middleware.auth.perms);
+        // Log.info('SESSION ID:', request.middleware.session);
+        request.middleware.session
 
         request.set_header('test', 'test');
 
@@ -90,4 +70,3 @@ Binder.new(route, {
 })
 
 router.add_route(route);
-
