@@ -110,7 +110,9 @@ export default class Route<
                 fastify_reply,
                 result.body,
                 result.query,
-                result.headers
+                result.headers,
+                // dynamic url
+                fastify_request.params as any
             );
         } catch (error) {
             Log.error('Error processing request:', error);

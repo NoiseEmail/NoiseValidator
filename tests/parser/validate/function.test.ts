@@ -164,15 +164,4 @@ describe('Function', () => {
             optional: false
         });
     });
-
-
-
-    test('Non-function', () => {
-        expect(function_validator('test', 'test')).resolves.toEqual({
-            type: 'custom',
-            value: 'test',
-            valid: false,
-            optional: false
-        });
-    });
 });

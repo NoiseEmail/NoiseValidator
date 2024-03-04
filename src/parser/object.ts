@@ -18,7 +18,7 @@ import {validate} from './validate/validate';
  *  Binder.ParserError
  * >} - Returns a promise that resolves to either a converted object or a parser error.
  */
-export const object = async<
+export const parse_object = async<
     Input extends (
         Paramaters.Body |
         Paramaters.Query

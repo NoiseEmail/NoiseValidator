@@ -38,7 +38,7 @@ export default class Binder<
         MiddlewareData
     >
 >{
-    private readonly _id: String = Math.random().toString(36).substring(7);
+    private readonly _id: String = Math.random().toString(36).substring(5);
     private readonly _method: HTTPMethods;
     private readonly _handler: Router.Executable<Request>;
 
@@ -76,7 +76,6 @@ export default class Binder<
         this.compile();
         console.log(this._compiled_body_schemas);
         console.log(this._compiled_query_schemas);
-        console.log(this._compiled_header_schemas);
     }
 
 
@@ -149,17 +148,18 @@ export default class Binder<
 
         // -- Set the compiled schemas
         const merged_body_schemas = merge_nested_schemas(schemas.body);
-        if (merged_body_schemas instanceof ParserError) {
+        if (merged_body_schemas instanceof Error) {
             Log.error('Failed to compile body schemas:', merged_body_schemas);
             throw merged_body_schemas;
         }
 
         const merged_query_schemas = merge_nested_schemas(schemas.query);
-        if (merged_query_schemas instanceof ParserError) {
+        if (merged_query_schemas instanceof Error) {
             Log.error('Failed to compile query schemas:', merged_query_schemas);
             throw merged_query_schemas;
         }
 
+        
         this._compiled_body_schemas = merged_body_schemas;
         this._compiled_query_schemas = merged_query_schemas;
         this._compiled_header_schemas = merge_header_schemas(schemas.headers);
@@ -204,8 +204,9 @@ export default class Binder<
 
     public validate = (
         request: FastifyRequest
-    ): Promise<ParserError | void> => new Promise((resolve) => {
-
+    ): Promise<ParserError | Router.RouteCompatibleObject> => new Promise((resolve) => {
+        Log.info('Validating binder:', this.id);
+        
     });
 
 
@@ -242,11 +243,14 @@ export default class Binder<
 
         body: ParsedBodySchema,
         query: ParsedQuerySchema,
-        headers: ParsedHeaderSchema
+        headers: ParsedHeaderSchema,
+
+        url: ParsedUrlPath
     ): Promise<Router.ExecutableReturnable> => {
 
         // @ts-ignore
         const request_body: Request = {
+            url,
             body: body,
             query: query,
             headers: headers,

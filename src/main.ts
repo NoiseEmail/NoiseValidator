@@ -15,7 +15,8 @@ class AuthMiddleware extends GenericMiddleware.Builder({
     },
     body_schema: {
         test1: 'Optional<boolean>',
-        agh: 'string'
+        agh: 'string',
+        wth: ()=>'string'
     },
     query_schema: {
         test: 'boolean',
