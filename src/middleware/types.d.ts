@@ -1,7 +1,5 @@
 import { Binder, Paramaters } from '../binder/types';
 import RouterError from '../router/error';
-import CompileSchema from '../binder/schema';
-import GenericMiddleware from './middleware';
 
 declare namespace Middleware {
 
@@ -53,7 +51,11 @@ declare namespace Middleware {
     };
 
 
-    type AnyClass = Class<any, any, any, any, any, any, any, any>;
+    type AnyClass = Class<any, any, any, any, any, any, any, any> & { 
+        _data_type_do_not_call: any; 
+        configuration: Configuration;
+        id: string;
+    };
     
 
 
@@ -68,7 +70,6 @@ declare namespace Middleware {
         body_schema: BodySchema;
         query_schema: QuerySchema;
         header_schema: HeadersSchema;
-        compilable_schemas: CompileSchema;
     };
 
 

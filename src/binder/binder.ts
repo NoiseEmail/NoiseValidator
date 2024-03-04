@@ -1,13 +1,16 @@
 import {FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
-import Log from '../logger/log';
+import Log, { info } from '../logger/log';
 import RouterError from '../router/error';
 import Route from '../router/route';
 import { Paramaters } from './types';
 import { Binder as BinderType } from './types';
 import { DynamicURL, Router } from '../router/types';
-import CompileSchema from './schema';
 import { mergician } from 'mergician';
 import { Middleware } from '../middleware/types';
+import ParserError from '../parser/error';
+import { wrapper } from '../parser/validate/wrapper';
+import { merge_nested_schemas } from '../parser/merge';
+import log from '../logger/log';
 
 
 
@@ -37,18 +40,16 @@ export default class Binder<
     private readonly _id: String = Math.random().toString(36).substring(7);
     private readonly _method: HTTPMethods;
     private readonly _handler: Router.Executable<Request>;
-    private readonly _compilable_schemas: CompileSchema;
 
     private readonly _middleware: MiddlewareDict;
 
     private readonly _body_schema: BodySchema;
     private readonly _query_schema: QuerySchema;
-    private readonly _headers_schema: HeaderSchema;
+    private readonly _header_schema: HeaderSchema;
 
-    private _compiled_body_schemas: Array<Paramaters.Body> = [];
-    private _compiled_query_schemas: Array<Paramaters.Query> = [];
-    private _compiled_headers_schemas: Array<Paramaters.Headers> = [];
-
+    private _compiled_body_schemas: Paramaters.WrappedBody = {};
+    private _compiled_query_schemas: Paramaters.WrappedQuery = {};
+    private _compiled_header_schemas: Paramaters.Headers = {};
 
 
     public constructor(
@@ -65,11 +66,15 @@ export default class Binder<
         this._handler = configuration.handler;
         this._body_schema = configuration.body_schema;
         this._query_schema = configuration.query_schema;
-        this._headers_schema = configuration.headers_schema;
-        this._compilable_schemas = configuration.compilable_schemas;
+        this._header_schema = configuration.header_schema;
         this._middleware = configuration.middleware;
     
         route.bind(this);
+
+        // -- Compile the schemas
+        this.compile();
+        console.log(this._compiled_body_schemas);
+        console.log(this._compiled_query_schemas);
     }
 
 
@@ -128,42 +133,78 @@ export default class Binder<
     }
 
 
-
+    
     public compile = (): void => {
 
         // -- Tempp arrays to store the schemas before they are compiled
-        const temp_schemas = {
-            body: [ this._compilable_schemas.body ? this._body_schema : {} ],
-            query: [ this._compilable_schemas.query ? this._query_schema : {} ],
-            headers: [ this._compilable_schemas.headers ? this._headers_schema : {} ]
-        };
-
-        // -- Add the scheams that cant be compiled to the compiled schemas
-        if (!this._compilable_schemas.body) this._compiled_body_schemas.push(this._body_schema);
-        if (!this._compilable_schemas.query) this._compiled_query_schemas.push(this._query_schema);
-        if (!this._compilable_schemas.headers) this._compiled_headers_schemas.push(this._headers_schema);
+        const schemas: Paramaters.SchemaDict = mergician({
+            appendArrays: true,
+        })(
+            this._get_middleware_schemas(), 
+            this._get_binder_schemas()
+        );
 
 
+        // -- Set the compiled schemas
+        const merged_body_schemas = merge_nested_schemas(schemas.body);
+        if (merged_body_schemas instanceof ParserError) {
+            Log.error('Failed to compile body schemas:', merged_body_schemas);
+            throw merged_body_schemas;
+        }
 
+        const merged_query_schemas = merge_nested_schemas(schemas.query);
+        if (merged_query_schemas instanceof ParserError) {
+            Log.error('Failed to compile query schemas:', merged_query_schemas);
+            throw merged_query_schemas;
+        }
+
+        this._compiled_body_schemas = merged_body_schemas;
+        this._compiled_query_schemas = merged_query_schemas;
+        // this._compiled_header_schemas = schemas.headers;
     };
 
 
 
-    private _get_all_middleware_schemas = (): {
-        body: Array<Paramaters.Body>,
-        query: Array<Paramaters.Query>,
-        headers: Array<Paramaters.Headers>
-    } => {
+    private _get_middleware_schemas = (): Paramaters.SchemaDict => {
         
-        const middleware_schemas = {
-            body: [],
-            query: [],
-            headers: []
-        };
+        const middleware_schemas: Paramaters.SchemaDict = {
+            body: [], query: [], headers: [] };
+
+        
+        // -- Loop through all the middleware and add the 
+        //    schemas to the temp_schemas if they are compilable
+        for (const middleware_key in this._middleware) {
+            const middleware = this._middleware[middleware_key];
+            middleware_schemas.body.push(
+                wrapper(middleware.configuration.body_schema, middleware.id));
+            middleware_schemas.query.push(
+                wrapper(middleware.configuration.query_schema, middleware.id));
+            middleware_schemas.headers.push(
+                middleware.configuration.header_schema);
+        }
+
 
         return middleware_schemas;
     }
+    
 
+
+
+    private _get_binder_schemas = (): Paramaters.SchemaDict => {
+        return {
+            body: [wrapper(this._body_schema, this.id)],
+            query: [wrapper(this._query_schema, this.id)],
+            headers: [this._header_schema]
+        };
+    };
+
+
+
+    public validate = (
+        request: FastifyRequest
+    ): Promise<ParserError | void> => new Promise((resolve) => {
+
+    });
 
 
 
@@ -186,10 +227,8 @@ export default class Binder<
 
             body_schema: {} as BodySchema,
             query_schema: {} as QuerySchema,
-            headers_schema: {} as HeaderSchema,
+            header_schema: {} as HeaderSchema,
             middleware: {} as MiddlewareDict,
-
-            compilable_schemas: CompileSchema.All()
         }
     }
 
@@ -296,6 +335,6 @@ export default class Binder<
     public get method(): HTTPMethods { return this._method; }
     public get body_schema(): BodySchema { return this._body_schema; }
     public get query_schema(): QuerySchema { return this._query_schema; }
-    public get headers_schema(): HeaderSchema { return this._headers_schema; }
+    public get header_schema(): HeaderSchema { return this._header_schema; }
     public get handler(): (request: Request) => Promise<any> | any { return this._handler; }
 }

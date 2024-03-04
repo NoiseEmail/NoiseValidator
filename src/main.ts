@@ -3,21 +3,22 @@ import Router from './router/router';
 import Route from './router/route';
 import Binder from './binder/binder';
 import GenericMiddleware from './middleware/middleware';
-import CompileSchema from './binder/schema';
+
 
 const router = Router.instance;
 router.start();
 
 class AuthMiddleware extends GenericMiddleware.Builder({
-    compilable_schemas: CompileSchema.All(),
     header_schema: {
         'x-session-id': true
     },
     body_schema: {
-        test1: 'Optional<boolean>'
+        test1: 'Optional<boolean>',
+        agh: 'string'
     },
     query_schema: {
-        test2: 'Optional<boolean>'
+        test: 'boolean',
+        test2: 'Optional<string>'
     }
 })<{
     id: string | null
@@ -44,13 +45,15 @@ Binder.new(route, {
 
     query_schema: {
         test: 'Optional<boolean>',
+        test2: 'string'
     },
 
     body_schema: {
-        tes2:'string'
+        tes2:'string',
+        wth: ()=>'string'
     },
 
-    headers_schema: {
+    header_schema: {
         test: false
     },
 
@@ -61,7 +64,7 @@ Binder.new(route, {
         Log.info('URL:', request.url);
 
         // Log.info('SESSION ID:', request.middleware.session);
-        request.middleware.session
+        let a = request.body.wth[0]
 
         request.set_header('test', 'test');
 

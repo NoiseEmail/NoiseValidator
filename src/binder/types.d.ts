@@ -1,7 +1,6 @@
 import { DynamicURL, Router } from '../router/types';
 import BinderClass from './binder';
 import {FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
-import CompileSchema from './schema';
 import { Middleware } from '../middleware/types';
 
 declare namespace Binder {
@@ -17,8 +16,7 @@ declare namespace Binder {
         handler: Router.Executable<Request>,
         body_schema: BodySchema,
         query_schema: QuerySchema,
-        headers_schema: HeaderSchema,
-        compilable_schemas: CompileSchema,
+        header_schema: HeaderSchema,
         middleware: MiddlewareDict,
     };
 
@@ -228,14 +226,24 @@ declare namespace Paramaters {
         reject: (reason: string | Error | null | undefined) => void,
     ) => Returnable;
 
-
+    type CustomValidatorWrapper<Returnable = unknown> = {
+        function: CustomValidatorFunction<Returnable>,
+        path: Array<string>,
+        belongs_to: String,
+    };
 
     type Headers = { [key: string]: boolean; }
-    type Body = { [key: string]: TypedPrimative | Optional | Primative | CustomValidatorFunction | Body; }
-    type Query = { [key: string]: TypedPrimative | Optional | Primative | CustomValidatorFunction; }
+    type Body = { [key: string]: | Optional | Primative | CustomValidatorFunction | Body; }
+    type Query = { [key: string]: | Optional | Primative | CustomValidatorFunction; }
 
-    type NestedObject = { [key: string]: TypedPrimative | NestedObject | CustomValidatorFunction | void; }
-    type FlatObject = { [key: string]: TypedPrimative | CustomValidatorFunction | void ; }
+
+    type WrappedBody = { [key: string]: | Optional | Primative | Array<CustomValidatorWrapper> | WrappedBody; }
+    type WrappedQuery = { [key: string]: | Optional | Primative | Array<CustomValidatorWrapper>; }
+    type Wrapped = WrappedBody | WrappedQuery;
+
+
+    type NestedObject = Body;
+    type FlatObject = Query | Headers;
 
 
     type Parsed = {
@@ -246,6 +254,13 @@ declare namespace Paramaters {
     }
 
 
+    type SchemaDict = {
+        body: Array<WrappedBody>;
+        query: Array<WrappedQuery>;
+        headers: Array<Headers>;
+    };
+
+
     /**
      * @name all
      * All of the possible parameter types
@@ -253,6 +268,5 @@ declare namespace Paramaters {
     type All =
         Primative | 
         Optional |
-        TypedPrimative | 
         CustomValidatorFunction;
 }
