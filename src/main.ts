@@ -10,17 +10,16 @@ router.start();
 
 class AuthMiddleware extends GenericMiddleware.Builder({
     body_schema: {
-        test: ()=>'balls'
+        test: (value, reject) => {
+            if (value !== 'test') reject('Invalid value');
+        }
     }
 })<{
     id: string | null
 }>() {
     public handler = () => {
         Log.info('Body:', this.body);
-        Log.info('Query:', this.query);
-
-        Log.info('Headers:', this.headers);
-        
+        Log.info('Query:', this.query);        
     }
 }
 
@@ -45,8 +44,7 @@ Binder.new(route, {
     // },
 
     body_schema: {
-        // test:'string',
-        test: ()=>'string'
+        aaa: ()=>'string'
     },
 
     // header_schema: {
@@ -54,13 +52,9 @@ Binder.new(route, {
     // },
 
     handler(request) {
-        // Log.info('Query:', request.query);
-        // Log.info('Body:', request.body);
-        // Log.info('Headers:', request.headers);
-        // Log.info('URL:', request.url);
+        Log.info('Query:', request.query);
+        Log.info('Body:', request.middleware);
 
-        // Log.info('SESSION ID:', request.middleware.session);
-        // let a = request.body.wth[0]
 
         request.set_header('test', 'test');
 
