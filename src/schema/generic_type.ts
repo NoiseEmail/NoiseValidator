@@ -9,25 +9,15 @@ export default class GenericType <
 > extends Schema.GenericTypeLike<ReturnType> {   
 
     protected readonly _input_value: unknown;
-
-    protected readonly _on_invalid: (
-        error: GenericErrorTypes.GenericErrorLike
-    ) => void;
-
-    protected readonly _on_valid: (
-        result: ReturnType
-    ) => void;
+    protected readonly _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void;
+    protected readonly _on_valid: (result: ReturnType) => void;
 
 
     
     public constructor(
         _input_value: unknown,
-        _on_invalid: (
-            error: GenericErrorTypes.GenericErrorLike
-        ) => void,
-        _on_valid: (
-            result: ReturnType
-        ) => void
+        _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void,
+        _on_valid: (result: ReturnType) => void
     ) {
         super(_input_value, _on_invalid, _on_valid);
         this._input_value = _input_value;
@@ -44,16 +34,16 @@ export default class GenericType <
         return new MissingHandlerError(`Handler not implemented for ${this.constructor.name}`);
     };
 
-    
-
 
     protected invalid = (
-        error: GenericErrorTypes.GenericErrorLike
-    ): void => {
+        error: GenericErrorTypes.GenericErrorLike | string
+    ): GenericErrorTypes.GenericErrorLike => {
+        if (typeof error === 'string') error = new InvalidInputError(error);
         this._on_invalid(error);
+        return error;
     };
 
-
+    
     protected get value(): unknown {
         return this._input_value;
     }
@@ -95,10 +85,20 @@ export async function execute<
     on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void,
     on_valid: (value: unknown) => void
 ): Promise<Schema.GenericTypeLike<any>> {
+    let invalid_executed = false, valid_executed = false;
+
     const instance = new class_constructor(
         input_value, 
-        on_invalid, 
-        on_valid
+        (error) => {
+            if (invalid_executed || valid_executed) return;
+            invalid_executed = true;
+            on_invalid(error);
+        }, 
+        (value) => {
+            if (invalid_executed || valid_executed) return;
+            valid_executed = true;
+            on_valid(value);
+        }
     );
 
     await instance.execute();

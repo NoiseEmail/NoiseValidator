@@ -2,7 +2,8 @@ import { GenericError } from "../error/types";
 
 export namespace Schema {
     export type Returnable<T> = 
-        T | Promise<T> |
+        T | 
+        Promise<T> |
         GenericError.GenericErrorLike |
         Promise<GenericError.GenericErrorLike>;
 
@@ -11,40 +12,24 @@ export namespace Schema {
     > {
         protected constructor(
             _input_value: unknown,
-            _on_invalid: (
-                error: GenericError.GenericErrorLike
-            ) => void,
-            _on_valid: (
-                result: ReturnType
-            ) => void
+            _on_invalid: (error: GenericError.GenericErrorLike) => void,
+            _on_valid: (result: ReturnType) => void
         );
 
         protected _input_value: unknown;
-        protected _on_invalid: (
-            error: GenericError.GenericErrorLike
-        ) => void;
-        protected _on_valid: (
-            result: ReturnType
-        ) => void;
+        protected _on_invalid: (error: GenericError.GenericErrorLike) => void;
+        protected _on_valid: (result: ReturnType) => void;
 
         protected handler: (
             input_value: unknown,
-            invalid: (
-                error: GenericError.GenericErrorLike
-            ) => void,
-            valid: (
-                result: ReturnType
-            ) => void
+            invalid: (error: GenericError.GenericErrorLike) => void,
+            valid: (result: ReturnType) => void
         ) => Returnable<ReturnType>;
 
         protected invalid: (
-            error: GenericError.GenericErrorLike
-        ) => void;
-
-        protected valid: (
-            result: ReturnType
-        ) => void;
-
+            error: GenericError.GenericErrorLike | string
+        ) => GenericError.GenericErrorLike;
+        protected valid: (result: ReturnType) => void;
         public execute: () => Promise<void>;
     }
 
@@ -54,11 +39,7 @@ export namespace Schema {
         ReturnType extends unknown = unknown
     > = new (
         input_value: unknown,
-        on_invalid: (
-            error: GenericError.GenericErrorLike
-        ) => void,
-        on_valid: (
-            result: ReturnType
-        ) => void
+        on_invalid: (error: GenericError.GenericErrorLike) => void,
+        on_valid: (result: ReturnType) => void
     ) => GenericTypeLike<ReturnType>;
 }

@@ -9,6 +9,8 @@ class CustomType extends GenericType<{
 
  
     protected handler = () => {
+        
+        return this.invalid(new MissingHandlerError("balls not implemented"));
 
         return {
             test: "test"
@@ -21,6 +23,6 @@ class CustomType extends GenericType<{
 execute(
     CustomType, 
     "input", 
-    () => { console.log("Invalid"); },
-    (result) => { console.log(result); }
+    (error) => { console.log("Invalid", error.message); },
+    (result) => { console.log('valid', result); }
 );
