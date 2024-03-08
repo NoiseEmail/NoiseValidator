@@ -1,25 +1,51 @@
-export namespace Schema {
-    
+import { GenericError } from "../error/types";
 
+export namespace Schema {
+    export type Returnable<T> = 
+        T | Promise<T> |
+        GenericError.GenericErrorLike |
+        Promise<GenericError.GenericErrorLike>;
 
     export class GenericTypeLike<
         ReturnType extends unknown = unknown
     > {
         protected constructor(
             _input_value: unknown,
-            _on_invalid: () => void
+            _on_invalid: (
+                error: GenericError.GenericErrorLike
+            ) => void,
+            _on_valid: (
+                result: ReturnType
+            ) => void
         );
 
         protected _input_value: unknown;
-        protected _on_invalid: () => void;
+        protected _on_invalid: (
+            error: GenericError.GenericErrorLike
+        ) => void;
+        protected _on_valid: (
+            result: ReturnType
+        ) => void;
 
         protected handler: (
             input_value: unknown,
-            invalid: () => void
-        ) => ReturnType | Promise<ReturnType>;
+            invalid: (
+                error: GenericError.GenericErrorLike
+            ) => void,
+            valid: (
+                result: ReturnType
+            ) => void
+        ) => Returnable<ReturnType>;
 
-        protected invalid: () => void;
-        public execute: () => Promise<ReturnType | void>;
+        protected invalid: (
+            error: GenericError.GenericErrorLike
+        ) => void;
+
+        protected valid: (
+            result: ReturnType
+        ) => void;
+
+        public execute: () => Promise<void>;
     }
 
 
@@ -28,6 +54,11 @@ export namespace Schema {
         ReturnType extends unknown = unknown
     > = new (
         input_value: unknown,
-        on_invalid: () => void
+        on_invalid: (
+            error: GenericError.GenericErrorLike
+        ) => void,
+        on_valid: (
+            result: ReturnType
+        ) => void
     ) => GenericTypeLike<ReturnType>;
 }
