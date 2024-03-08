@@ -6,57 +6,70 @@ export default class GenericType <
 > extends Schema.GenericTypeLike<ReturnType> {   
 
     protected readonly _input_value: unknown;
-    protected readonly _on_valid: (value: ReturnType) => void;
     protected readonly _on_invalid: () => void;
+
+    private _valid: boolean = true;
     
     public constructor(
         _input_value: unknown,
-        _on_valid: (value: ReturnType) => void,
         _on_invalid: () => void
     ) {
-        super(_input_value, _on_valid, _on_invalid);
+        super(_input_value, _on_invalid);
         this._input_value = _input_value;
-        this._on_valid = _on_valid;
         this._on_invalid = _on_invalid;
     };
 
 
 
 
-    protected handler = (): ReturnType => {
+    protected handler = (
+        input_value: unknown,
+        invalid: () => void
+    ): ReturnType => {
         throw log.throw(`No handler implemented for ${this.constructor.name}!`);
     };
 
     
 
 
-    protected valid = (
-        return_value: ReturnType
-    ): void => {
-        try { this._on_valid(return_value); }
-        catch (error) { this._on_invalid(); }
-    };
-
     protected invalid = (
     ): void => {
-        try { this._on_invalid(); }
-        catch (error) { this._on_invalid(); }
+        this._valid = false;
+    };
+
+
+    protected get value(): unknown {
+        return this._input_value;
+    }
+
+
+    public execute = async(
+    ): Promise<ReturnType | void> => {
+        try { 
+            const value = this.handler(this._input_value, this.invalid); 
+            if (this._valid) return value;
+        }
+        catch (error) {
+            
+        }
     }
 };
 
 
 
-export function execute<
+export async function execute<
     Constructor extends Schema.GenericTypeConstructor<any>
 >(
     class_constructor: Constructor,
     input_value: unknown,
-    on_valid: (value: unknown) => void,
-    on_invalid: () => void = () => {}
+    on_invalid: () => void = () => {},
+    on_valid: (value: unknown) => void = () => {}
 ) {
     // Create an instance of the class
-    const instance = new class_constructor(input_value, on_valid, on_invalid);
+    const instance = new class_constructor(input_value, on_invalid),
+        value = await instance.execute();
 
-    // Execute the instance
-    // instance.execute();
+    // If the value is valid, call the on_valid callback
+    if (value) on_valid(value);
+    else on_invalid();
 }

@@ -4,14 +4,9 @@ class CustomType extends GenericType<{
     test: string
 }> {
 
-    // Override the overridableFunction
-    protected overridableFunction = (tes): any => {
-        console.log("Custom implementation of overridableFunction");
-        return false;
-    }
-
-    // Other methods and properties can be here...
+ 
     protected handler = () => {
+
         return {
             test: "test"
         };
@@ -23,6 +18,6 @@ class CustomType extends GenericType<{
 execute(
     CustomType, 
     "input", 
-    (value) => { console.log("Valid: ", value); }, 
-    () => { console.log("Invalid"); }
+    () => { console.log("Invalid"); },
+    (result) => { console.log(result); }
 );
