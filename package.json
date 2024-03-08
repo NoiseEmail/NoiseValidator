@@ -4,7 +4,7 @@
   "type": "module",
   "main": "index.ts",
   "scripts": {
-    "node": "RUNTIME=NODE node --experimental-specifier-resolution=node --loader ts-node/esm ./src/main.ts",
+    "node": "node --experimental-specifier-resolution=node --loader ts-node/esm ./src/main.ts",
     "node:dev": "nodemon --exec \"npm run node\" --watch ./src --ext ts",
     "node:test": "",
     "bun": "RUNTIME=BUN bun ./src/main.ts",

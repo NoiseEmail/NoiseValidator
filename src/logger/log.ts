@@ -49,6 +49,9 @@ export const log = (type: LogType, ...args: Array<unknown>): void => {
     case log_types.DEBUG:
         console.log(`${header}`, ...args);
         break;
+
+    case log_types.THROW:
+        throw new Error(`${header} ${args}`);
     }
 };
 
@@ -56,11 +59,12 @@ export const info = (...args: Array<unknown>): void => log(log_types.INFO, ...ar
 export const warn = (...args: Array<unknown>): void => log(log_types.WARN, ...args);
 export const error = (...args: Array<unknown>): void => log(log_types.ERROR, ...args);
 export const debug = (...args: Array<unknown>): void => log(log_types.DEBUG, ...args);
-
+export const throw_err = (...args: Array<unknown>): void => log(log_types.THROW, ...args);
 
 export default {
     info,
     warn,
     error,
-    debug
+    debug,
+    throw: throw_err
 };

@@ -1,45 +1,28 @@
-import Log from './logger/log';
-import Router from "./router/router";
-import Route from "./router/route";
-import Binder from "./router/binder";
-import { RouterTypes } from './router/types';
+import GenericType, { execute } from "./schema/generic_type";
 
-const router = Router.instance;
-router.start();
+class CustomType extends GenericType<{
+    test: string
+}> {
+
+    // Override the overridableFunction
+    protected overridableFunction = (tes): any => {
+        console.log("Custom implementation of overridableFunction");
+        return false;
+    }
+
+    // Other methods and properties can be here...
+    protected handler = () => {
+        return {
+            test: "test"
+        };
+    }
+}
 
 
-// server.get('/', async (request, reply) => {
-//     return { hello: 'world' };
-// });
 
-// router.add_route(Route.new({
-//     path: ['test'],
-//     friendly_name: 'Test'
-// }));
-
-
-const route = Route.new({
-    path: '/what/:digit(^\\d+).png:balls',
-    friendly_name: 'Test'
-});
-
-Binder.new(route, {
-    method: 'GET',
-
-    required_query: {
-        test: 'Optional<boolean>',
-    },
-
-    required_body: {
-        tes2:'string'
-    },
-
-    handler(request) {
-        Log.info('Query:', request.body.tes2);
-        request.set_header('test', 'test');
-
-        return Binder.respond(200, 'Balls')
-    },
-})
-
-router.add_route(route);
+execute(
+    CustomType, 
+    "input", 
+    (value) => { console.log("Valid: ", value); }, 
+    () => { console.log("Invalid"); }
+);

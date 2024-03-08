@@ -8,6 +8,7 @@ export type LogType =
     'INFO' |
     'WARN' |
     'ERROR' |
+    'THROW' |
     'DEBUG';
 
 export type LogEnum = {
@@ -15,4 +16,5 @@ export type LogEnum = {
     WARN: LogType;
     ERROR: LogType;
     DEBUG: LogType;
+    THROW: LogType;
 };

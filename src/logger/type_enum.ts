@@ -5,4 +5,5 @@ export const log_types: LogEnum = {
     WARN: 'WARN',
     ERROR: 'ERROR',
     DEBUG: 'DEBUG',
+    THROW: 'THROW'
 };
