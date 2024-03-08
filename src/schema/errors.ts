@@ -14,11 +14,9 @@ class InvalidInputError extends GenericError {
     ) {
         super(message, 400);
     }
-}
-
-
+};
 
 export {
     MissingHandlerError,
     InvalidInputError
-}
+};

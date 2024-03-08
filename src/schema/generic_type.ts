@@ -27,13 +27,11 @@ export default class GenericType <
 
 
 
-
     protected handler = (
         input_value: unknown,
     ): ReturnType | GenericErrorTypes.GenericErrorLike => {
         return new MissingHandlerError(`Handler not implemented for ${this.constructor.name}`);
     };
-
 
     protected invalid = (
         error: GenericErrorTypes.GenericErrorLike | string
@@ -43,16 +41,16 @@ export default class GenericType <
         return error;
     };
 
+
     
     protected get value(): unknown {
         return this._input_value;
     }
 
-
     public execute = async (
     ) => {
         try { 
-            const value = this.handler(this._input_value); 
+            const value = await this.handler(this._input_value); 
             if (value instanceof GenericError) this._on_invalid(value);
             else this._on_valid(value as ReturnType);
         }
