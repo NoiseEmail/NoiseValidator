@@ -3,16 +3,17 @@ import { Schema as SchemaTypes } from './types.d';
 
 
 export default class Schema<
-    ValidatedReturnable extends unknown
+    ValidatedReturnable extends unknown,
+    InputSchema extends SchemaTypes.InputSchema
 > { 
     private readonly _id: string = randomUUID();
-    private readonly _schema: SchemaTypes.InputSchema;
+    private readonly _schema: InputSchema;
 
     public constructor(
-        schema: SchemaTypes.InputSchema
+        schema: InputSchema
     ) {
         this._schema = schema;
     };
 
-    
+
 };

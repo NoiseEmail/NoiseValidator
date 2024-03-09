@@ -50,7 +50,7 @@ export namespace Schema {
 
     export type InputSchema = {
         // -- Recursively defined schema
-        [key: string]: GenericTypeLike | InputSchema;
+        [key: string]: GenericTypeConstructor<any> | InputSchema;
     };
 
     

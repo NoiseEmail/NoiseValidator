@@ -1,7 +1,11 @@
 import {
     execute,
     GenericType,
-    MissingHandlerError
+    MissingHandlerError,
+    Schema,
+    Number,
+    Boolean,
+    String
 } from './schema'
 
 class CustomType extends GenericType<{
@@ -18,6 +22,13 @@ class CustomType extends GenericType<{
         };
     }
 }
+
+
+const user_schema = new Schema({
+    name: String,
+    id: Number,
+    admin: Boolean.config(true)
+});
 
 
 
