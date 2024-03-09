@@ -1,7 +1,8 @@
-import { GenericError } from "./error/types";
-import { MissingHandlerError } from "./schema/errors";
-import GenericType, { execute } from "./schema/generic_type";
-import { Schema } from "./schema/types";
+import {
+    execute,
+    GenericType,
+    MissingHandlerError
+} from './schema'
 
 class CustomType extends GenericType<{
     test: string

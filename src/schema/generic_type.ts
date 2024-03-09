@@ -1,8 +1,9 @@
 import { GenericError } from '../error/error';
 import { GenericError as GenericErrorTypes } from '../error/types';
-import log from '../logger/log';
 import { MissingHandlerError, InvalidInputError } from './errors';
 import { Schema } from './types.d';
+import log from '../logger/log';
+
 
 export default class GenericType <
     ReturnType extends unknown = unknown

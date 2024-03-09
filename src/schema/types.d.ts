@@ -33,6 +33,7 @@ export namespace Schema {
         ) => GenericError.GenericErrorLike;
         protected valid: (result: ReturnType) => void;
         public execute: () => Promise<void>;
+        protected get validated(): ReturnType;
     }
 
 
@@ -44,6 +45,15 @@ export namespace Schema {
         on_invalid: (error: GenericError.GenericErrorLike) => void,
         on_valid: (result: ReturnType) => void
     ) => GenericTypeLike<ReturnType>;
+
+
+
+    export type InputSchema = {
+        // -- Recursively defined schema
+        [key: string]: GenericTypeLike | InputSchema;
+    };
+
+    
 }
 
 
