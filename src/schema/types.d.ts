@@ -1,4 +1,4 @@
-import { GenericError } from "../error/types";
+import { GenericError } from '../error/types';
 
 export namespace Schema {
     export type Returnable<T> = 
@@ -52,8 +52,6 @@ export namespace Schema {
         // -- Recursively defined schema
         [key: string]: GenericTypeConstructor<any> | InputSchema;
     };
-
-    
 }
 
 

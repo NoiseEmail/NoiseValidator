@@ -1,5 +1,5 @@
-import GenericType from "../generic_type";
-import { Schema } from "../types";
+import GenericType from '../generic_type';
+import { Schema } from '../types';
 
 export default class Boolean extends GenericType<boolean> {
     protected strict: boolean = false;

@@ -15,10 +15,10 @@ class CustomType extends GenericType<{
  
     protected handler = () => {
         
-        return this.invalid(new MissingHandlerError("balls not implemented"));
+        return this.invalid(new MissingHandlerError('balls not implemented'));
 
         return {
-            test: "test"
+            test: 'test'
         };
     }
 }
@@ -34,7 +34,7 @@ const user_schema = new Schema({
 
 execute(
     CustomType, 
-    "input", 
-    (error) => { console.log("Invalid", error.message); },
+    'input', 
+    (error) => { console.log('Invalid', error.message); },
     (result) => { console.log('valid', result); }
 );
