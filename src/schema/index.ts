@@ -5,6 +5,7 @@ import Schema from './schema';
 import Boolean from './types/boolean';
 import String from './types/string';
 import Number from './types/number';
+import Optional from './types/optional';
 
 export {
     GenericType,
@@ -14,5 +15,7 @@ export {
     Boolean,
     String,
     Number,
-    execute
+
+    execute,
+    Optional
 }

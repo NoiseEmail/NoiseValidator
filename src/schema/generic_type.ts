@@ -12,7 +12,7 @@ export default class GenericType <
     protected readonly _input_value: unknown;
     protected readonly _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void;
     protected readonly _on_valid: (result: ReturnType) => void;
-
+    protected _validated: ReturnType | undefined;
 
     
     public constructor(
@@ -42,18 +42,31 @@ export default class GenericType <
         return error;
     };
 
+    protected valid = (result: ReturnType) => {
+        this._validated = result;
+        this._on_valid(result);
+    }
+
 
     
     protected get value(): unknown {
         return this._input_value;
     }
 
+    public get validated(): ReturnType | undefined {
+        return this._validated;
+    }
+
+
+
     public execute = async (
     ) => {
         try { 
             const value = await this.handler(this._input_value); 
-            if (value instanceof GenericError) this._on_invalid(value);
-            else this._on_valid(value as ReturnType);
+            if (value instanceof GenericError) return this._on_invalid(value);
+
+            this._validated = value as ReturnType;
+            this._on_valid(value as ReturnType);
         }
         catch (error) {
             const message = `An error occurred trying to execute ${this.constructor.name}`;

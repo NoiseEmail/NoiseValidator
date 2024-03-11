@@ -63,11 +63,6 @@ export default class Schema<
 
             // @ts-ignore
             const new_data = data[key];
-
-            // -- If the value is not present in the data, throw an error
-            if (new_data === undefined) 
-                return new SchemaMissingFieldError(new_path);
-
                 
             // check if the value is a constructor: SchemaTypes.GenericTypeConstructor
             if (typeof value === 'function') {
@@ -79,8 +74,13 @@ export default class Schema<
                 );
 
                 // -- If the result is an error, return it
-                if (validator_result instanceof GenericErrorTypes.GenericErrorLike) 
+                if (validator_result instanceof GenericErrorTypes.GenericErrorLike) {
+                    validator_result.data = { 
+                        path: new_path,
+                        expected: value.name
+                    };
                     return validator_result;
+                }
                 else result[key] = validator_result;
             }
             

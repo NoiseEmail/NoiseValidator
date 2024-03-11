@@ -1,3 +1,4 @@
+import { GenericError } from './error/error';
 import {
     execute,
     GenericType,
@@ -5,7 +6,8 @@ import {
     Schema,
     Number,
     Boolean,
-    String
+    String,
+    Optional
 } from './schema'
 
 import { Schema as SchemaTypes } from './schema/types.d';
@@ -25,10 +27,10 @@ class CustomType extends GenericType<{
 
 const user_schema = new Schema.Body({
     name: String,
-    id: Number,
+    id: Optional(Number),
     admin: Boolean.config(true),
     custom: CustomType,
-    test: {
+    a: {
         a: String,
         b: Number
     }
@@ -48,14 +50,14 @@ const user_schema = new Schema.Body({
 
 user_schema.validate({
     name: 'test',
-    id: 123,
+    id: 'test',
     admin: true,
     custom: 'input',
-    test: {
+    a: {
         a: 'test',
-        b: 'fart'
+        b: 1
     }
 }).then((result) => {
-    if (result instanceof Error) console.log('Invalid', result.message);
+    if (result instanceof GenericError) console.log('Invalid', result.serialize());
     else console.log('valid', result);
 })

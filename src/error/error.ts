@@ -7,6 +7,7 @@ export class GenericError extends GenericErrorTypes.GenericErrorLike {
     protected readonly _message: string;
     protected readonly _code: number;
     protected readonly _type: string = this.constructor.name;
+    protected _data: object = {};
 
     public constructor(
         message: string,
@@ -29,7 +30,19 @@ export class GenericError extends GenericErrorTypes.GenericErrorLike {
         return JSON.stringify({
             id: this._id,
             message: this._message,
-            code: this._code
+            code: this._code,
+            type: this._type,
+            ...this._data
         });
-    };
+    };  
+
+
+    public set data(data: object) { this._data = data; }
+    public get data(): object { return this._data; }
+
+
+    public get id(): string { return this._id; }
+    public get message(): string { return this._message; }
+    public get code(): number { return this._code; }
+    public get type(): string { return this._type; }
 }

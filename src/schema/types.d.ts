@@ -33,7 +33,8 @@ export namespace Schema {
         ) => GenericError.GenericErrorLike;
         protected valid: (result: ReturnType) => void;
         public execute: () => Promise<void>;
-        public get validated(): ReturnType;
+
+        public get validated(): ReturnType | undefined;
     }
 
 
