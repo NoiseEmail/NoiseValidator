@@ -1,19 +1,35 @@
+import { GenericError } from '../../error/error';
 import GenericType from '../generic_type';
 import { Schema } from '../types';
 
 
-export default <Constructor extends Schema.GenericTypeConstructor<any>>(
+export default <
+    Constructor extends Schema.GenericTypeConstructor<any>,
+    OrigianlType extends Schema.ExtractParamaterReturnType<Constructor>
+>(
     constructor: Constructor
 ) => class Optional extends GenericType<
-    Schema.Returnable<InstanceType<Constructor>> | undefined
+    OrigianlType | undefined
 > {
-    protected handler = async () => {
-        if (this.value === undefined) return undefined;
-        const instance = new constructor(this.value, this.invalid, this.valid);
-        await instance.execute();
-        return instance.validated;
-    };
+    protected handler = async () => new Promise<OrigianlType | undefined>(
+        async(resolve, reject) => 
+    {
+        if (this.value === undefined) return resolve(undefined);
 
+        const instance = new constructor(this.value, 
+            (error) => {
+                this.invalid(error);
+                reject(error);
+            }, 
+            (value) => {
+                this.valid(value);
+                resolve(value);
+            }
+        );
+
+        await instance.execute();
+    });
+    
     public static get name() {
         return `Optional<${constructor.name}>`;
     }

@@ -12,7 +12,7 @@ export namespace Schema {
     export class GenericTypeLike<
         ReturnType extends unknown = unknown
     > {
-        protected constructor(
+        public constructor(
             _input_value: unknown,
             _on_invalid: (error: GenericError.GenericErrorLike) => void,
             _on_valid: (result: ReturnType) => void
@@ -26,7 +26,11 @@ export namespace Schema {
             input_value: unknown,
             invalid: (error: GenericError.GenericErrorLike) => void,
             valid: (result: ReturnType) => void
-        ) => Returnable<ReturnType>;
+        ) => 
+            ReturnType | 
+            Promise<ReturnType> |  
+            Promise<GenericError.GenericErrorLike> | 
+            GenericError.GenericErrorLike;
 
         protected invalid: (
             error: GenericError.GenericErrorLike | string
@@ -34,7 +38,6 @@ export namespace Schema {
         protected valid: (result: ReturnType) => void;
         public execute: () => Promise<void>;
 
-        public get validated(): ReturnType | undefined;
         public static get name(): string;
     }
 
@@ -45,7 +48,8 @@ export namespace Schema {
     > = new (
         input_value: unknown,
         on_invalid: (error: GenericError.GenericErrorLike) => void,
-        on_valid: (result: ReturnType) => void
+        on_valid: (result: ReturnType) => void,
+        validated?: ReturnType
     ) => GenericTypeLike<ReturnType>;
 
 
@@ -73,23 +77,38 @@ export namespace Schema {
     }
 
 
-    export type ExtractParamaterType<T extends GenericTypeLike<any>> = T['validated'];
 
-    export type ExtractSchemaType<T> = {
+    // -- Sample input 'typeof Whatever;' eg 'InstanceType<Paramater>['_validated'];'
+    export type ExtractParamaterReturnType<Paramater extends GenericTypeConstructor<any>> =
+        Paramater extends new (...args: any) => infer T ? T : never;
 
-        // -- If the value is a GenericTypeLike, extract the return type
-        //    if its another object, recursively call this type
-        [SchemaKey in keyof T]: 
-            // -- If the value is a GenericTypeLike, extract the return type
-            T[SchemaKey] extends GenericTypeLike<any> ? ExtractParamaterType<T[SchemaKey]> :
-
-            // -- If the value is another object, recursively call this type
-            T[SchemaKey] extends object ? ExtractSchemaType<T[SchemaKey]> :
-
-            // -- If the value is neither, return neva neva neva
-            never;
+    /**
+     * @name ParsedSchema
+     * @description Given a `InputSchema` or `FlatSchema` type, it will return a new type
+     * that fits the same structure but with the `GenericTypeConstructor` replaced with
+     * the return type of the validator used for that key.
+     * 
+     * @example
+     * type ReturnType = {
+     *    key1: typeof String, // Return string
+     *    key2: typeof User,   // Return User { id: string, name: string }
+     * };
+     * 
+     * type ParsedReturnType = ParsedSchema<ReturnType>;
+     * ParsedReturnType = {
+     *   key1: string,  
+     *   key2: { id: string, name: string }
+     * }
+     */
+    export type ParsedSchema<Schema extends InputSchema | FlatSchema> = {
+        [K in keyof Schema]: 
+            // -- Run it trough the ExtractParamaterReturnType to get the return type
+            Schema[K] extends GenericTypeConstructor<any>
+            ? ExtractParamaterReturnType<Schema[K]>
+            : Schema[K] extends InputSchema
+            ? ParsedSchema<Schema[K]>
+            : never;
     };
-
 }
 
 

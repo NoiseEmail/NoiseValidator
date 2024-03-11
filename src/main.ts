@@ -1,8 +1,5 @@
 import { GenericError } from './error/error';
 import {
-    execute,
-    GenericType,
-    MissingHandlerError,
     Schema,
     Number,
     Boolean,
@@ -11,40 +8,36 @@ import {
 } from './schema'
 
 import { Schema as SchemaTypes } from './schema/types.d';
-class CustomType extends GenericType<{
-    test: string
-}> {
-
- 
-    protected handler = () => {
-        
-        return {
-            test: 'test'
-        };
-    }
-}
 
 
 const user_schema = new Schema.Body({
     name: String,
-    id: Optional(Number),
-    admin: Boolean.config(true),
-    a: {
-        a: String,
-        b: Optional(Number)
+    age: Number,
+    is_admin: Boolean,
+    email: Optional(Number),
+    password: Optional(String),
+    other: {
+        test: String,
+        other_test: Number
     }
 });
 
 
 user_schema.validate({
     name: 'test',
-    id: 1,
-    admin: true,
-    a: {
-        a: 'test'
-    },
-    balls: 5
+    age: 12,
+    is_admin: true,
+    email: 'sd',
+    password: 'test',
+    other: {
+        test: 'test',
+        other_test: 12
+    }
 }).then((result) => {
-    if (result instanceof GenericError) console.log('Invalid', result.serialize());
-    else console.log('valid', result);
-})
+    console.log('valid', result);
+
+    let test = result.password
+    test._return_type
+}).catch((error) => {
+    console.log('error', error.serialize());
+});

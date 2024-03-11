@@ -18,7 +18,6 @@ export class GenericError extends GenericErrorTypes.GenericErrorLike {
         this._message = message;
         this._code = code;
         if (type) this._type = type;
-        this.log();
     }
 
     public log = (): void => {

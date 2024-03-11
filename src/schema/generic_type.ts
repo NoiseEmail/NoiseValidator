@@ -2,18 +2,17 @@ import { GenericError } from '../error/error';
 import { GenericError as GenericErrorTypes } from '../error/types';
 import { MissingHandlerError, InvalidInputError } from './errors';
 import { Schema } from './types.d';
-import log from '../logger/log';
 
 
 export default class GenericType <
-    ReturnType extends unknown = unknown
+    ReturnType extends unknown | Promise<unknown> = unknown
 > extends Schema.GenericTypeLike<ReturnType> {   
 
     protected readonly _input_value: unknown;
     protected readonly _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void;
     protected readonly _on_valid: (result: ReturnType) => void;
     protected _validated: ReturnType | undefined;
-
+    public readonly _return_type: ReturnType = {} as ReturnType;
     
     public constructor(
         _input_value: unknown,
@@ -30,7 +29,11 @@ export default class GenericType <
 
     protected handler = (
         input_value: unknown,
-    ): ReturnType | GenericErrorTypes.GenericErrorLike => {
+    ): 
+        ReturnType | 
+        Promise<ReturnType> |  
+        Promise<GenericErrorTypes.GenericErrorLike> | 
+        GenericErrorTypes.GenericErrorLike => {
         return new MissingHandlerError(`Handler not implemented for ${this.constructor.name}`);
     };
 
@@ -53,10 +56,6 @@ export default class GenericType <
         return this._input_value;
     }
 
-    public get validated(): ReturnType | undefined {
-        return this._validated;
-    }
-
     public static get name(): string {
         return this.name;
     }
@@ -68,13 +67,11 @@ export default class GenericType <
         try { 
             const value = await this.handler(this._input_value); 
             if (value instanceof GenericError) return this._on_invalid(value);
-
             this._validated = value as ReturnType;
             this._on_valid(value as ReturnType);
         }
         catch (error) {
             const message = `An error occurred trying to execute ${this.constructor.name}`;
-            log.error(message, error);
             this._on_invalid(new InvalidInputError(message));
         }
     }
