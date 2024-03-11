@@ -8,6 +8,7 @@ import {
     String
 } from './schema'
 
+import { Schema as SchemaTypes } from './schema/types.d';
 class CustomType extends GenericType<{
     test: string
 }> {
@@ -15,8 +16,6 @@ class CustomType extends GenericType<{
  
     protected handler = () => {
         
-        return this.invalid(new MissingHandlerError('balls not implemented'));
-
         return {
             test: 'test'
         };
@@ -24,17 +23,39 @@ class CustomType extends GenericType<{
 }
 
 
-const user_schema = new Schema({
+const user_schema = new Schema.Body({
     name: String,
     id: Number,
-    admin: Boolean.config(true)
+    admin: Boolean.config(true),
+    custom: CustomType,
+    test: {
+        a: String,
+        b: Number
+    }
 });
 
+// type test = CustomType['validated']
+
+// type test2 = SchemaTypes.ExtractSchemaType<typeof user_schema.schema>
+
+// execute(
+//     CustomType, 
+//     'input', 
+//     (error) => { console.log('Invalid', error.message); },
+//     (result) => { console.log('valid', result); }
+// );
 
 
-execute(
-    CustomType, 
-    'input', 
-    (error) => { console.log('Invalid', error.message); },
-    (result) => { console.log('valid', result); }
-);
+user_schema.validate({
+    name: 'test',
+    id: 123,
+    admin: true,
+    custom: 'input',
+    test: {
+        a: 'test',
+        b: 'fart'
+    }
+}).then((result) => {
+    if (result instanceof Error) console.log('Invalid', result.message);
+    else console.log('valid', result);
+})

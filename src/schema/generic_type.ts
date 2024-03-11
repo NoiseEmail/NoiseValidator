@@ -71,8 +71,6 @@ export default class GenericType <
  * 
  * @param {Constructor} class_constructor The class constructor to execute
  * @param {unknown} input_value The input value to pass to the class constructor
- * @param {() => void} on_invalid The callback to call if the input value is invalid
- * @param {(value: unknown) => void} on_valid The callback to call if the input value is valid
  * 
  * @returns {Promise<void>} A promise that resolves when the class constructor has been executed
  */
@@ -81,25 +79,24 @@ export async function execute<
 >(
     class_constructor: Constructor,
     input_value: unknown,
-    on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void,
-    on_valid: (value: unknown) => void
-): Promise<Schema.GenericTypeLike<any>> {
+): Promise<GenericErrorTypes.GenericErrorLike | unknown> {
     let invalid_executed = false, valid_executed = false;
 
-    const instance = new class_constructor(
-        input_value, 
-        (error) => {
-            if (invalid_executed || valid_executed) return;
-            invalid_executed = true;
-            on_invalid(error);
-        }, 
-        (value) => {
-            if (invalid_executed || valid_executed) return;
-            valid_executed = true;
-            on_valid(value);
-        }
-    );
+    return new Promise(async (resolve) => {
+        const instance = new class_constructor(
+            input_value, 
+            (error) => {
+                if (invalid_executed || valid_executed) return;
+                invalid_executed = true;
+                resolve(error);
+            }, 
+            (value) => {
+                if (invalid_executed || valid_executed) return;
+                valid_executed = true;
+                resolve(value);
+            }
+        );
 
-    await instance.execute();
-    return instance;
+        await instance.execute();
+    });
 }

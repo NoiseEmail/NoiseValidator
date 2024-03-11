@@ -33,7 +33,7 @@ export namespace Schema {
         ) => GenericError.GenericErrorLike;
         protected valid: (result: ReturnType) => void;
         public execute: () => Promise<void>;
-        protected get validated(): ReturnType;
+        public get validated(): ReturnType;
     }
 
 
@@ -49,9 +49,45 @@ export namespace Schema {
 
 
     export type InputSchema = {
-        // -- Recursively defined schema
         [key: string]: GenericTypeConstructor<any> | InputSchema;
+    }
+
+    export type FlatSchema = {
+        [key: string]: GenericTypeConstructor<any> ;
     };
+
+
+
+    export type SchemaType = 'body' | 'query' | 'headers' | 'cookies';
+
+    export class SchemaLike<
+        InputType extends SchemaType
+    > {
+        public _type: InputType;
+        public _schema: InputSchema | FlatSchema;
+        public _id: string;
+        public id: string;
+        public schema: InputSchema | FlatSchema;
+    }
+
+
+    export type ExtractParamaterType<T extends GenericTypeLike<any>> = T['validated'];
+
+    export type ExtractSchemaType<T> = {
+
+        // -- If the value is a GenericTypeLike, extract the return type
+        //    if its another object, recursively call this type
+        [SchemaKey in keyof T]: 
+            // -- If the value is a GenericTypeLike, extract the return type
+            T[SchemaKey] extends GenericTypeLike<any> ? ExtractParamaterType<T[SchemaKey]> :
+
+            // -- If the value is another object, recursively call this type
+            T[SchemaKey] extends object ? ExtractSchemaType<T[SchemaKey]> :
+
+            // -- If the value is neither, return neva neva neva
+            never;
+    };
+
 }
 
 
