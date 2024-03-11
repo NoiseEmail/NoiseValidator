@@ -16,5 +16,10 @@ export default <
         await instance.execute();
 
         return instance.validated;
+    };
+
+
+    public static get name() {
+        return `Optional<${constructor.name}>`;
     }
 }

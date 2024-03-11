@@ -57,6 +57,10 @@ export default class GenericType <
         return this._validated;
     }
 
+    public static get name(): string {
+        return this.name;
+    }
+
 
 
     public execute = async (

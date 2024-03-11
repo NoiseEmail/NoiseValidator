@@ -35,6 +35,7 @@ export namespace Schema {
         public execute: () => Promise<void>;
 
         public get validated(): ReturnType | undefined;
+        public static get name(): string;
     }
 
 
