@@ -1,13 +1,7 @@
 import { GenericError } from '../error/types';
+import { LogFunctions, LogObject } from '../logger/types';
 
 export namespace Schema {
-    export type Returnable<T> = 
-        T | 
-        Promise<T> |
-        GenericError.GenericErrorLike |
-        Promise<GenericError.GenericErrorLike>;
-
-
 
     export class GenericTypeLike<
         ReturnType extends unknown = unknown
@@ -39,6 +33,8 @@ export namespace Schema {
         public execute: () => Promise<void>;
 
         public static get name(): string;
+        public log: LogFunctions;
+        public get log_stack(): Array<LogObject>;
     }
 
 

@@ -8,6 +8,7 @@ export default class String extends GenericType<string> {
      * it fails, it's invalid
      */
     protected handler = () => {
+        this.log.debug('Handling string');        
 
         try {
             if (typeof this.value === 'string') return this.value;

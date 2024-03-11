@@ -3,6 +3,7 @@ import { Schema as SchemaTypes } from './types.d';
 import { GenericError as GenericErrorTypes } from '../error/types.d';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
 import { execute } from './generic_type';
+import { LogObject } from '../logger/types';
 
 
 
@@ -13,16 +14,14 @@ export default class Schema<
     private readonly _id: string = randomUUID();
     private readonly _schema: InputSchema;
 
-    get data(): ReturnableData {
-        throw new Error('Method not implemented.');
-    }
+    private _log_stacks: Array<LogObject> = new Array<LogObject>();
+    private _errors: Array<GenericErrorTypes.GenericErrorLike> = new Array<GenericErrorTypes.GenericErrorLike>();
 
     private constructor(
         schema: InputSchema
     ) {
         this._schema = schema;
     };
-
 
 
     public static Body = class <
@@ -60,6 +59,7 @@ export default class Schema<
 
     
     private static _walk = async (
+        instance: Schema<any, any>,
         schema: SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
         data: object,
         path: string[] = [],
@@ -72,6 +72,14 @@ export default class Schema<
                 new_path = path.concat(key),
                 new_data = data[key];
 
+
+            // -- If new data is a function, ista error
+            if (new_data instanceof Function) {
+                const error = new SchemaExecutionError(`The value at ${new_path.join('.')} is a function`);
+                instance.push_error(error);
+                return error;
+            }
+
                 
 
             // -- check if the value is a constructor: SchemaTypes.GenericTypeConstructor
@@ -83,23 +91,39 @@ export default class Schema<
                     new_data
                 );
 
+                // -- Add the log stack to the schema
+                instance.set_log_stack(validator_result.instance.log_stack);
+
                 // -- If the result is an error, return it
-                if (validator_result instanceof GenericErrorTypes.GenericErrorLike) {
-                    validator_result.data = { 
+                if (validator_result.result instanceof GenericErrorTypes.GenericErrorLike) {
+                    validator_result.result.data = { 
                         path: new_path,
                         expected: value.name
                     };
+                    instance.push_error(validator_result.result);
                     return validator_result;
                 }
-                else result[key] = validator_result;
+                else if (new_data === undefined) {
+                    const error = new SchemaMissingFieldError(new_path);
+                    instance.push_error(error);
+                    return error;
+                }
+                else result[key] = validator_result.result;
             }
             
 
             
             // -- If the value is an object, walk it
             else if (typeof value === 'object') {
-                const walk_result = await Schema._walk(value, new_data, new_path);
-                if (walk_result instanceof GenericErrorTypes.GenericErrorLike) return walk_result;
+                const walk_result = await Schema._walk(instance, value, new_data, new_path);
+                if (walk_result instanceof GenericErrorTypes.GenericErrorLike) {
+                    walk_result.data = {
+                        path: new_path,
+                        expected: value.constructor.name
+                    };
+                    instance.push_error(walk_result);
+                    return walk_result
+                };
                 result[key] = walk_result;
             }
         }
@@ -121,18 +145,27 @@ export default class Schema<
         data: object
     ): Promise<ReturnableData> => new Promise(async (resolve, reject) => {
         try {
-            const result = await Schema._walk(this._schema, data);
+            const result = await Schema._walk(this, this._schema, data);
             if (result instanceof GenericErrorTypes.GenericErrorLike) return reject(result);
             return resolve(result as ReturnableData);
         }
 
         catch (error) {
-            reject(new SchemaExecutionError(`An error occurred trying to validate ${this._id}`));
+            const error_ = new SchemaExecutionError(`An error occurred trying to validate ${this._id}`);
+            this._errors.push(error_);
+            return reject(error_);
         }
     });
 
 
 
-    public get id(): string { return this._id; }
-    public get schema(): InputSchema { return this._schema; }
+    public get id(): string { return this._id; };
+    public get schema(): InputSchema { return this._schema; };
+    public set_log_stack = (log_stack: Array<LogObject>) => this._log_stacks.push(...log_stack);
+    public get log_stack(): Array<LogObject> { return this._log_stacks; };
+    public get errors(): Array<GenericErrorTypes.GenericErrorLike> { return this._errors; };
+    public get serialized_errors(): string { return this._errors.map(error => error.serialize()).join('\n'); };
+    public get has_errors(): boolean { return this._errors.length > 0; };
+
+    protected push_error = (error: GenericErrorTypes.GenericErrorLike) => this._errors.push(error);
 };

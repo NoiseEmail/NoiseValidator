@@ -23,21 +23,18 @@ const user_schema = new Schema.Body({
 });
 
 
-user_schema.validate({
-    name: 'test',
-    age: 12,
-    is_admin: true,
-    email: 'sd',
-    password: 'test',
-    other: {
-        test: 'test',
-        other_test: 12
-    }
-}).then((result) => {
-    console.log('valid', result);
+(async () => {
+    const result = await user_schema.validate({
+        name: 'test',
+        age: 12,
+        is_admin: true,
+        email: 1,
+        password: 'test',
+        other: {
+            other_test: 12
+        }
+    }).then((result) => console.log()).catch((error) => { })
+    
 
-    let test = result.password
-    test._return_type
-}).catch((error) => {
-    console.log('error', error.serialize());
-});
+    console.log(user_schema.serialized_errors);
+})();

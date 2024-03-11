@@ -18,3 +18,19 @@ export type LogEnum = {
     DEBUG: LogType;
     THROW: LogType;
 };
+
+export type LogFunctions = { 
+    info: (...args: Array<unknown>) => void;
+    warn: (...args: Array<unknown>) => void;
+    error: (...args: Array<unknown>) => void;
+    debug: (...args: Array<unknown>) => void;
+    throw: (...args: Array<unknown>) => void;
+};
+
+export type LogObject = {
+    args: Array<unknown>;
+    type: LogType;
+    header: string;
+    date: Date;
+    group: string;
+};
