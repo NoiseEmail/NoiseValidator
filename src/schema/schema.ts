@@ -143,17 +143,40 @@ export default class Schema<
      */
     public validate = async (
         data: object
-    ): Promise<ReturnableData> => new Promise(async (resolve, reject) => {
+    ): Promise<{
+        type: 'error';
+        error: GenericErrorTypes.GenericErrorLike;
+    } | {
+        type: 'data';
+        data: ReturnableData;
+    }> => new Promise(async (resolve) => {
+
         try {
+            // -- Try to walk the schema
             const result = await Schema._walk(this, this._schema, data);
-            if (result instanceof GenericErrorTypes.GenericErrorLike) return reject(result);
-            return resolve(result as ReturnableData);
+
+            // -- Error
+            if (result instanceof GenericErrorTypes.GenericErrorLike) return resolve({
+                type: 'error',
+                error: result
+            });
+
+            // -- Success
+            return resolve({
+                type: 'data',
+                data: result
+            });
         }
 
         catch (error) {
+
+            // -- Error
             const error_ = new SchemaExecutionError(`An error occurred trying to validate ${this._id}`);
             this._errors.push(error_);
-            return reject(error_);
+            return resolve({
+                type: 'error',
+                error: error_
+            });
         }
     });
 
