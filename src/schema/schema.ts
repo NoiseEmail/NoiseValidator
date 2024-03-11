@@ -94,8 +94,16 @@ export default class Schema<
                 // -- Add the log stack to the schema
                 instance.set_log_stack(validator_result.instance.log_stack);
 
+                // -- If the result is an error and theres no new data, return a missing field error
+                //    as if the data was optional, it would not throw an error
+                if (new_data === undefined && validator_result.result instanceof GenericErrorTypes.GenericErrorLike) {
+                    const error = new SchemaMissingFieldError(new_path);
+                    instance.push_error(error);
+                    return error;
+                }
+
                 // -- If the result is an error, return it
-                if (validator_result.result instanceof GenericErrorTypes.GenericErrorLike) {
+                else if (validator_result.result instanceof GenericErrorTypes.GenericErrorLike) {
                     validator_result.result.data = { 
                         path: new_path,
                         expected: value.name
@@ -103,11 +111,8 @@ export default class Schema<
                     instance.push_error(validator_result.result);
                     return validator_result;
                 }
-                else if (new_data === undefined) {
-                    const error = new SchemaMissingFieldError(new_path);
-                    instance.push_error(error);
-                    return error;
-                }
+
+                // -- If the validator_result is not an error, add it to the result
                 else result[key] = validator_result.result;
             }
             
@@ -162,7 +167,7 @@ export default class Schema<
             });
 
             // -- Success
-            return resolve({
+            else return resolve({
                 type: 'data',
                 data: result
             });

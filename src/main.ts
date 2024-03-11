@@ -17,13 +17,16 @@ const user_schema = new Schema.Body({
     email: Optional(Number),
     password: Optional(String),
     other: {
-        test: String,
+        test: Optional(String),
         other_test: Number
     }
 });
 
 
 (async () => {
+
+    const start_time = process.hrtime();
+
     const result = await user_schema.validate({
         name: 'test',
         age: 12,
@@ -31,10 +34,14 @@ const user_schema = new Schema.Body({
         email: 1,
         password: 'test',
         other: {
+            test: 'test',
             other_test: 12
         }
-    }).then((result) => console.log()).catch((error) => { })
-    
+    });
 
-    console.log(user_schema.serialized_errors);
+    
+    const end_time = process.hrtime(start_time);
+  
+
+    console.log(end_time);
 })();
