@@ -87,15 +87,9 @@ export default class Schema<
 
             // -- If the value is an object, walk it
             else if (typeof value === 'object') {
-                const result = await Schema._walk(
-                    value,
-                    new_data,
-                    new_path
-                );
-
-                // -- If the result is an error, return it
-                if (result instanceof GenericErrorTypes.GenericErrorLike) return result;
-                else result[key] = result;
+                const walk_result = await Schema._walk(value, new_data, new_path);
+                if (walk_result instanceof GenericErrorTypes.GenericErrorLike) return walk_result;
+                result[key] = walk_result;
             }
         }
 
