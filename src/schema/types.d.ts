@@ -26,9 +26,7 @@ export namespace Schema {
             Promise<GenericError.GenericErrorLike> | 
             GenericError.GenericErrorLike;
 
-        protected invalid: (
-            error: GenericError.GenericErrorLike | string
-        ) => GenericError.GenericErrorLike;
+        protected invalid: (error: GenericError.GenericErrorLike | string) => GenericError.GenericErrorLike;
         protected valid: (result: ReturnType) => void;
         public execute: () => Promise<void>;
 
