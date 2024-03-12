@@ -1,4 +1,4 @@
-import { GenericError } from './error/error';
+import { GenericError } from './error/generic';
 import {
     Schema,
     Number,

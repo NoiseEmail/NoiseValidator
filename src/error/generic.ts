@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { GenericError as GenericErrorTypes } from './types.d';
+import { GenericError as GenericErrorTypes } from './types';
 import log from '../logger/log';
 
 export class GenericError extends GenericErrorTypes.GenericErrorLike {

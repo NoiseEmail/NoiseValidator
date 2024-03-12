@@ -1,5 +1,5 @@
-import { GenericError } from '../../error/error';
-import GenericType from '../generic_type';
+import { GenericError } from '../../error/generic';
+import GenericType from '../generic';
 import { Schema } from '../types';
 
 

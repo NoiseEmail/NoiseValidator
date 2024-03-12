@@ -1,10 +1,10 @@
-import { GenericError } from '../error/error';
+import { GenericError } from '../error/generic';
 import { GenericError as GenericErrorTypes } from '../error/types';
 import log, { log_header } from '../logger/log';
 import { log_types } from '../logger/type_enum';
 import { LogFunctions, LogObject, LogType } from '../logger/types';
 import { MissingHandlerError, InvalidInputError } from './errors';
-import { Schema } from './types.d';
+import { Schema } from './types';
 
 
 export default class GenericType <

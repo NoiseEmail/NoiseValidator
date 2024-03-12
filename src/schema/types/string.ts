@@ -1,4 +1,4 @@
-import GenericType from '../generic_type';
+import GenericType from '../generic';
 
 export default class String extends GenericType<string> {
 

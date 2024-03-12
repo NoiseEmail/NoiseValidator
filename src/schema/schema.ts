@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { Schema as SchemaTypes } from './types.d';
 import { GenericError as GenericErrorTypes } from '../error/types.d';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
-import { execute } from './generic_type';
+import { execute } from './generic';
 import { LogObject } from '../logger/types';
 
 

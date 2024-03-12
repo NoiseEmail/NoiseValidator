@@ -1,4 +1,4 @@
-import GenericType from '../generic_type';
+import GenericType from '../generic';
 import { Schema } from '../types';
 
 export default class Boolean extends GenericType<boolean> {

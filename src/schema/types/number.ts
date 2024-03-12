@@ -1,4 +1,4 @@
-import GenericType from '../generic_type';
+import GenericType from '../generic';
 
 export default class Number extends GenericType<number> {
 

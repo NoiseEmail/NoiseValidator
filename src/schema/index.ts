@@ -1,5 +1,5 @@
 import { MissingHandlerError, InvalidInputError } from './errors';
-import GenericType, { execute } from './generic_type';
+import GenericType, { execute } from './generic';
 import Schema from './schema';
 
 import Boolean from './types/boolean';
