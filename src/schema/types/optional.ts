@@ -1,6 +1,5 @@
-import { GenericError } from '../../error/generic';
 import GenericType from '../generic';
-import { Schema } from '../types';
+import { Schema } from '../types.d';
 
 
 export default <

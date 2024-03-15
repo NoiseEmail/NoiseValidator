@@ -4,7 +4,7 @@ import log, { log_header } from '../logger/log';
 import { log_types } from '../logger/type_enum';
 import { LogFunctions, LogObject, LogType } from '../logger/types';
 import { MissingHandlerError, InvalidInputError } from './errors';
-import { Schema } from './types';
+import { Schema } from './types.d';
 
 
 export default class GenericType <

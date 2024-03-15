@@ -1,4 +1,3 @@
-import { GenericError } from './error/generic';
 import {
     Schema,
     Number,
@@ -7,7 +6,6 @@ import {
     Optional
 } from './schema'
 
-import { Schema as SchemaTypes } from './schema/types.d';
 
 
 const user_schema = new Schema.Body({

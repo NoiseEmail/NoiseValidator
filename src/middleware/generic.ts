@@ -1,5 +1,5 @@
 import { LogFunctions, LogObject, LogType } from "../logger/types";
-import { Middleware } from "./types";
+import { Middleware } from "./types.d";
 import { GenericError as GenericErrorTypes } from '../error/types';
 import { MiddlewareGenericError, MissingMiddlewareHandlerError } from "./errors";
 import { log_header } from "../logger/log";

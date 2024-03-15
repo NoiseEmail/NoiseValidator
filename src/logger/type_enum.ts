@@ -1,4 +1,4 @@
-import {LogEnum} from './types';
+import {LogEnum} from './types.d';
 
 export const log_types: LogEnum = {
     INFO: 'INFO',
