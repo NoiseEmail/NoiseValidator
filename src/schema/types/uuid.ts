@@ -1,6 +1,6 @@
 import GenericType from '../generic';
 
-export default class Uuid extends GenericType<string> {
+export default class Uuid extends GenericType<string, string> {
 
     protected handler = () => {
         this.log.debug('Handling UUID');        

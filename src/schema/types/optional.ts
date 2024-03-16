@@ -6,10 +6,13 @@ import { Schema } from '../types.d';
 
 const Optional = <
     Constructor extends Schema.GenericTypeConstructor<any>,
-    ReturnType = Schema.ExtractParamaterReturnType<Constructor>
+    ReturnType = Schema.ExtractParamaterReturnType<Constructor>,
+    InputShape = Schema.ExtractParamaterInputShape<Constructor>
 >(
     constructor: Constructor
-) => class OptionalClass extends GenericType<ReturnType | undefined> {
+) => class OptionalClass extends GenericType<
+    ReturnType | undefined, InputShape | undefined
+> {
     constructor(
         input_value: unknown,
         on_invalid: (error: GenericError.GenericErrorLike) => void,

@@ -8,7 +8,8 @@ import { Schema } from './types.d';
 
 
 export default class GenericType <
-    ReturnType extends unknown | Promise<unknown> = unknown
+    ReturnType extends unknown | Promise<unknown> = unknown,
+    InputShape extends unknown = unknown
 > extends Schema.GenericTypeLike<ReturnType> {   
 
     protected _validated: ReturnType | undefined;
@@ -80,7 +81,7 @@ export default class GenericType <
         this._valid_called = true;
         this._validated = result;
         this._on_valid(result);
-        
+
         return result;
     }
 

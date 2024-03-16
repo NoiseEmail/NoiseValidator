@@ -1,7 +1,7 @@
 import GenericType from '../generic';
 import { Schema } from '../types.d';
 
-export default class Boolean extends GenericType<boolean> {
+export default class Boolean extends GenericType<boolean, boolean> {
     protected strict: boolean = false;
 
     protected handler = () => {

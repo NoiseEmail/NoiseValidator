@@ -1,6 +1,6 @@
 import GenericType from '../generic';
 
-export default class Number extends GenericType<number> {
+export default class Number extends GenericType<number, number> {
 
     /**
      * The input could be a string or a number

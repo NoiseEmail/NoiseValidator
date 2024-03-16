@@ -5,9 +5,11 @@ import { Schema as SchemaClass } from "../schema";
 export namespace Schema {
 
     export class GenericTypeLike<
-        ReturnType extends unknown = unknown
+        ReturnType extends unknown = unknown,
+        InputShape extends unknown = unknown
     > {        
         _return_type: ReturnType;
+        _input_shape: InputShape;
 
         public constructor(
             _input_value: unknown,
@@ -98,6 +100,9 @@ export namespace Schema {
     // -- Sample input 'typeof Whatever;' eg 'InstanceType<Paramater>['_validated'];'
     export type ExtractParamaterReturnType<Paramater extends GenericTypeConstructor<any>> =
         InstanceType<Paramater>['_return_type'];
+
+    export type ExtractParamaterInputShape<Paramater extends GenericTypeConstructor<any>> =
+        InstanceType<Paramater>['_input_shape'];
 
 
 

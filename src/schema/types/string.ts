@@ -1,6 +1,6 @@
 import GenericType from '../generic';
 
-export default class String extends GenericType<string> {
+export default class String extends GenericType<string, string> {
 
     /**
      * Basically anything is a string
@@ -22,7 +22,7 @@ export default class String extends GenericType<string> {
         }
     }
 
-    
+
     
     public static get name() {
         return 'GenericString';
