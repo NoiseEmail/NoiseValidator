@@ -403,4 +403,28 @@ describe('Generic type', () => {
 
         expect(TestType.name).toBe('ExplicitName');
     });
+
+
+
+    test('Log functions', async () => {
+                
+        class TestType extends GenericType<any> {
+            protected handler = () => this.valid(true);
+        }
+
+        const instance = new TestType('test', () => {}, () => {});
+        instance.log.debug('Debug message');
+        instance.log.error('Error message');
+        instance.log.info('Info message');
+        instance.log.warn('Warn message');
+        instance.log.throw('Throw message');
+
+        const logs = instance.log_stack;
+        expect(logs.length).toBe(5);
+        expect(logs[0].type).toBe('DEBUG');
+        expect(logs[1].type).toBe('ERROR');
+        expect(logs[2].type).toBe('INFO');
+        expect(logs[3].type).toBe('WARN');
+        expect(logs[4].type).toBe('THROW');
+    });
 });
