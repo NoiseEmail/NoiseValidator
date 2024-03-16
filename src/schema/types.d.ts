@@ -135,7 +135,29 @@ export namespace Schema {
             
             : never;
     };
-    
+
+
+
+    /**
+     * @name ParsedInputSchema
+     * @description Given a `InputSchema` or `FlatSchema` type, it will return a new type
+     * that fits the same structure but with the `GenericTypeConstructor` replaced with
+     * the desired input shape for that key.
+     * 
+     * This will be used later on to create a client side validation schema for the
+     * frontend, so we can validate the input before sending it to the server.
+     */
+    export type ParsedInputSchema<Schema extends InputSchema | FlatSchema> = {
+        [K in keyof Schema]: 
+            Schema[K] extends GenericTypeConstructor<any>
+                ? ExtractParamaterInputShape<Schema[K]>
+            
+            : Schema[K] extends InputSchema
+                ? ParsedSchema<Schema[K]>
+            
+            : never;
+    };
+        
 }
 
 
