@@ -21,4 +21,10 @@ export default class Number extends GenericType<number> {
         // -- If it's not a number, it's invalid
         else return this.invalid('Invalid number');
     }
+
+
+
+    public static get name() {
+        return 'GenericNumber';
+    }
 }

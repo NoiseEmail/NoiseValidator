@@ -21,4 +21,10 @@ export default class String extends GenericType<string> {
             return this.invalid('Invalid string');
         }
     }
+
+    
+    
+    public static get name() {
+        return 'GenericString';
+    }
 }

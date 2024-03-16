@@ -1,5 +1,5 @@
 import { GenericError } from "./generic";
 
-export default {
+export {
     GenericError,
 };

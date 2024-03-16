@@ -3,7 +3,7 @@ import { GenericError as GenericErrorTypes } from '../error/types';
 import log, { log_header } from '../logger/log';
 import { log_types } from '../logger/type_enum';
 import { LogFunctions, LogObject, LogType } from '../logger/types';
-import { MissingHandlerError, InvalidInputError } from './errors';
+import { MissingHandlerError, InvalidInputError, GenericTypeExecutionError } from './errors';
 import { Schema } from './types.d';
 
 
@@ -19,6 +19,8 @@ export default class GenericType <
     protected readonly _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void;
     protected readonly _on_valid: (result: ReturnType) => void;
 
+    private _valid_called: boolean = false;
+    private _invalid_called: boolean = false;
     
     public constructor(
         _input_value: unknown,
@@ -43,17 +45,42 @@ export default class GenericType <
         return new MissingHandlerError(`Handler not implemented for ${this.constructor.name}`);
     };
 
+    private _already_executed = (
+        type: 'valid' | 'invalid'
+    ) => {
+        if (type === 'valid' && this._invalid_called) 
+            this.log.error(`Valid method called after invalid method already called`, this.constructor.name);
+
+        if (type === 'invalid' && this._valid_called)
+            this.log.error(`Invalid method called after valid method already called`, this.constructor.name);
+
+        if (this._executed) 
+            this.log.error(`The handler has already been executed`, this.constructor.name);
+    };
+
     protected invalid = (
         error: GenericErrorTypes.GenericErrorLike | string
     ): GenericErrorTypes.GenericErrorLike => {
+        this._already_executed('invalid');
+        if (this._invalid_called) throw new GenericTypeExecutionError(
+            `The handler has already been executed`, this.constructor.name);
+
+        this._invalid_called = true;
         if (typeof error === 'string') error = new InvalidInputError(error);
         this._on_invalid(error);
+        
         return error;
     };
 
     protected valid = (result: ReturnType): ReturnType => {
+        this._already_executed('valid');
+        if (this._valid_called) throw new GenericTypeExecutionError(
+            `The valid method has already been called`, this.constructor.name);
+
+        this._valid_called = true;
         this._validated = result;
         this._on_valid(result);
+        
         return result;
     }
 
@@ -169,6 +196,11 @@ export default class GenericType <
         }
 
         catch (error) {
+            if (error instanceof GenericError) {
+                this.log.error(`An error occurred trying to execute ${this.constructor.name}`, error.serialize());
+                return this._on_invalid(error);
+            }
+
             const message = new InvalidInputError(`An error occurred trying to execute ${this.constructor.name}`);
             this.log.error(message.serialize());
             this._on_invalid(message);

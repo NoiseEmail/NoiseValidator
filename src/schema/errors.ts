@@ -16,6 +16,15 @@ class InvalidInputError extends GenericError {
     }
 };
 
+class GenericTypeExecutionError extends GenericError {
+    public constructor(
+        message: string,
+        name: string
+    ) {
+        super('Error executing ' + name + ': ' + message, 500);
+    }
+};
+
 class SchemaExecutionError extends GenericError {
     public constructor(
         message: string,
@@ -33,6 +42,7 @@ class SchemaMissingFieldError extends GenericError {
 };
 
 export {
+    GenericTypeExecutionError,
     SchemaMissingFieldError,
     SchemaExecutionError,
     MissingHandlerError,

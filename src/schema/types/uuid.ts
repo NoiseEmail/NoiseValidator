@@ -16,4 +16,10 @@ export default class Uuid extends GenericType<string> {
             return this.invalid('Invalid string');
         }
     }
+
+
+    
+    public static get name() {
+        return 'GenericUUID';
+    }
 }

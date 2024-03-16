@@ -1,4 +1,10 @@
-import { MissingHandlerError, InvalidInputError } from './errors';
+import { 
+    MissingHandlerError, 
+    InvalidInputError, 
+    GenericTypeExecutionError, 
+    SchemaExecutionError, 
+    SchemaMissingFieldError 
+} from './errors';
 import GenericType, { execute } from './generic';
 import Schema from './schema';
 
@@ -12,6 +18,9 @@ export {
     GenericType,
     Schema,
     MissingHandlerError,
+    GenericTypeExecutionError,
+    SchemaExecutionError,
+    SchemaMissingFieldError,
     InvalidInputError,
     Boolean,
     String,
