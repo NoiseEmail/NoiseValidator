@@ -4,8 +4,11 @@ import {
     Boolean,
     String,
     Optional
-} from './schema'
+} from './schema';
 
+import {
+    GenericMiddleware
+} from './middleware';
 
 
 const user_schema = new Schema.Body({

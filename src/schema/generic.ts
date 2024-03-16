@@ -10,7 +10,7 @@ import { Schema } from './types.d';
 export default class GenericType <
     ReturnType extends unknown | Promise<unknown> = unknown
 > extends Schema.GenericTypeLike<ReturnType> {   
-    public readonly _return_type: ReturnType = {} as ReturnType;
+
     protected _validated: ReturnType | undefined;
     private _executed: boolean = false;
     private _log_stack: Array<LogObject> = [];
@@ -51,9 +51,10 @@ export default class GenericType <
         return error;
     };
 
-    protected valid = (result: ReturnType) => {
+    protected valid = (result: ReturnType): ReturnType => {
         this._validated = result;
         this._on_valid(result);
+        return result;
     }
 
 

@@ -1,11 +1,14 @@
 import { GenericError } from '../error/types';
 import { LogFunctions, LogObject } from '../logger/types';
+import { Schema as SchemaClass } from "../schema";
 
 export namespace Schema {
 
     export class GenericTypeLike<
         ReturnType extends unknown = unknown
-    > {
+    > {        
+        _return_type: ReturnType;
+
         public constructor(
             _input_value: unknown,
             _on_invalid: (error: GenericError.GenericErrorLike) => void,
@@ -27,7 +30,7 @@ export namespace Schema {
             GenericError.GenericErrorLike;
 
         protected invalid: (error: GenericError.GenericErrorLike | string) => GenericError.GenericErrorLike;
-        protected valid: (result: ReturnType) => void;
+        protected valid: (result: ReturnType) => ReturnType;
         public execute: () => Promise<void>;
 
         public static get name(): string;
@@ -44,7 +47,7 @@ export namespace Schema {
         on_invalid: (error: GenericError.GenericErrorLike) => void,
         on_valid: (result: ReturnType) => void,
         validated?: ReturnType
-    ) => GenericTypeLike<ReturnType>;
+    ) => GenericTypeLike<ReturnType>
 
 
 
@@ -59,22 +62,44 @@ export namespace Schema {
 
 
     export type SchemaType = 'body' | 'query' | 'headers' | 'cookies';
+    
+    export type SchemaValidateReturnable<ReturnableData> = Promise<{
+        type: 'error';
+        error: GenericError.GenericErrorLike;
+    } | {
+        type: 'data';
+        data: ReturnableData;
+    }>
 
     export class SchemaLike<
-        InputType extends SchemaType
+        InputType extends SchemaType,
     > {
         public _type: InputType;
         public _schema: InputSchema | FlatSchema;
         public _id: string;
         public id: string;
         public schema: InputSchema | FlatSchema;
-    }
+
+        public constructor(
+            schema: InputSchema | FlatSchema
+        );
+
+        public validate: (
+            data: object
+        ) => SchemaValidateReturnable<any>;
+
+
+        public static get name(): string;
+        public static get schema(): InputSchema | FlatSchema;
+    }        
 
 
 
     // -- Sample input 'typeof Whatever;' eg 'InstanceType<Paramater>['_validated'];'
     export type ExtractParamaterReturnType<Paramater extends GenericTypeConstructor<any>> =
-        Paramater extends new (...args: any) => infer T ? T : never;
+        InstanceType<Paramater>['_return_type'];
+
+
 
     /**
      * @name ParsedSchema
@@ -98,11 +123,14 @@ export namespace Schema {
         [K in keyof Schema]: 
             // -- Run it trough the ExtractParamaterReturnType to get the return type
             Schema[K] extends GenericTypeConstructor<any>
-            ? ExtractParamaterReturnType<Schema[K]>
+                ? ExtractParamaterReturnType<Schema[K]>
+            
             : Schema[K] extends InputSchema
-            ? ParsedSchema<Schema[K]>
+                ? ParsedSchema<Schema[K]>
+            
             : never;
     };
+    
 }
 
 

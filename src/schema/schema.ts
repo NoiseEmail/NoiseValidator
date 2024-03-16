@@ -11,8 +11,10 @@ export default class Schema<
     InputSchema extends SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
     ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
 > { 
-    private readonly _id: string = randomUUID();
-    private readonly _schema: InputSchema;
+    public readonly _return_type: ReturnableData = {} as ReturnableData;
+
+    public readonly _id: string = randomUUID();
+    public readonly _schema: InputSchema;
 
     private _log_stacks: Array<LogObject> = new Array<LogObject>();
     private _errors: Array<GenericErrorTypes.GenericErrorLike> = new Array<GenericErrorTypes.GenericErrorLike>();
@@ -148,13 +150,7 @@ export default class Schema<
      */
     public validate = async (
         data: object
-    ): Promise<{
-        type: 'error';
-        error: GenericErrorTypes.GenericErrorLike;
-    } | {
-        type: 'data';
-        data: ReturnableData;
-    }> => new Promise(async (resolve) => {
+    ): SchemaTypes.SchemaValidateReturnable<ReturnableData> => new Promise(async (resolve) => {
 
         try {
             // -- Try to walk the schema

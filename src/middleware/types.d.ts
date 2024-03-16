@@ -1,6 +1,10 @@
 import { GenericError } from '../error/types';
 import { LogFunctions, LogObject } from '../logger/types';
 import {FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
+import { Schema } from '../schema/types';
+import { Schema as SchemaClass } from "../schema";
+
+
 
 export namespace Middleware {
 
@@ -10,14 +14,23 @@ export namespace Middleware {
         RequestObject extends AnyMiddlewareRequestObject = AnyMiddlewareRequestObject
     > {
         public constructor(
-            _input_value: RequestObject,
+            _request_object: RequestObject,
             _on_invalid: (error: GenericError.GenericErrorLike) => void,
             _on_valid: (result: ReturnType) => void
         );
 
-        protected _input_value: RequestObject;
+        protected _request_object: RequestObject;
         protected _on_invalid: (error: GenericError.GenericErrorLike) => void;
-        protected _on_valid: (result: ReturnType) => void;
+        protected _on_valid: (result: ReturnType) => ReturnType;
+
+        protected validate_input<
+            SchemaType extends Schema.SchemaType,
+            SchemaInput extends SchemaClass<any>,
+            ReturnType extends Schema.ParsedSchema<SchemaInput["_schema"]>
+        >(
+            input_type: SchemaType,
+            schema: SchemaInput
+        ): Promise<ReturnType>
 
         protected handler: (
             input_value: RequestObject,
@@ -58,7 +71,31 @@ export namespace Middleware {
             request: FastifyRequest;
             reply: FastifyReply;
         }
-    };
+    };  
+
+
+
+    export type MiddlewareConfiguration<
+        BodySchema extends Schema.InputSchema,
+        QuerySchema extends Schema.FlatSchema,
+        HeaderSchema extends Schema.FlatSchema,
+    > = {
+        body: BodySchema;
+        query: QuerySchema;
+        headers: HeaderSchema;
+    }
+
+
+    
+    export type OptionalMiddlewareConfiguration<
+        BodySchema extends Schema.InputSchema,
+        QuerySchema extends Schema.FlatSchema,
+        HeaderSchema extends Schema.FlatSchema,
+    > = {
+        body?: BodySchema;
+        query?: QuerySchema;
+        headers?: HeaderSchema;
+    }
 
 
 

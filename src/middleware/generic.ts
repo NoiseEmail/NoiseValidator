@@ -5,6 +5,8 @@ import { MiddlewareGenericError, MissingMiddlewareHandlerError } from "./errors"
 import { log_header } from "../logger/log";
 import { log_types } from "../logger/type_enum";
 import { GenericError } from "../error/generic";
+import { Schema } from "../schema/types";
+import { execute, Schema as SchemaClass } from "../schema";
 
 
 export default class GenericMiddleware <
@@ -18,19 +20,19 @@ export default class GenericMiddleware <
     private _log_stack: Array<LogObject> = [];
 
 
-    protected readonly _input_value: RequestObject;
+    protected readonly _request_object: RequestObject;
     protected readonly _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void;
-    protected readonly _on_valid: (result: ReturnType) => void;
+    protected readonly _on_valid: (result: ReturnType) => ReturnType;
 
     
 
     public constructor(
-        _input_value: RequestObject,
+        _request_object: RequestObject,
         _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void,
-        _on_valid: (result: ReturnType) => void
+        _on_valid: (result: ReturnType) => ReturnType
     ) {
-        super(_input_value, _on_invalid, _on_valid);
-        this._input_value = _input_value;
+        super(_request_object, _on_invalid, _on_valid);
+        this._request_object = _request_object;
         this._on_invalid = _on_invalid;
         this._on_valid = _on_valid;
     };
@@ -56,10 +58,62 @@ export default class GenericMiddleware <
         return error;
     };
 
-    protected valid = (result: ReturnType) => {
+    protected valid = (result: ReturnType): ReturnType => {
         this._validated = result;
         this._on_valid(result);
-    }
+        return result;
+    };
+
+
+
+    /**
+     * @name validate_input
+     * @description This function validates incoming data against
+     * a schema.
+     * 
+     * This function will throw by default, returning a GenericError
+     * causing the request to fail.
+     * 
+     * @param {Schema.SchemaType} input_type - The type of the input
+     * @param {Schema.SchemaLike<SchemaType>} schema - The schema to validate against
+     * 
+     * @returns {Promise<ReturnType>} A promise that resolves when the input has been validated
+     */
+    protected validate_input = async <
+        SchemaType extends Schema.SchemaType,
+        SchemaInput extends SchemaClass<any>,
+        ReturnType extends SchemaInput["_return_type"]
+    >(
+        input_type: SchemaType,
+        schema: SchemaInput
+    ): Promise<ReturnType> => {
+
+        // -- Validate the input type
+        const valid_types = ['body', 'query', 'headers', 'cookies'];
+        if (!valid_types.includes(input_type))
+            throw new MiddlewareGenericError(`Invalid input type: ${input_type}`);
+
+        let data;
+        switch (input_type) {
+            case 'body': data = this._request_object.fastify.request.body; break;
+            case 'query': data = this._request_object.fastify.request.query; break;
+            case 'headers': data = this._request_object.fastify.request.headers; break;
+            // -- TODO: Add cookies, Fastify doesn't have a cookies object
+            case 'cookies': data = {}; break;
+        };
+
+
+        // -- Validate the input
+        const result = await schema.validate(data);
+        if (result.type === 'error') {
+            this.log.error(`Invalid input for ${input_type}`, result.error.serialize());
+            throw result.error;
+        }
+
+        // -- Return the result
+        return result.data as ReturnType;
+    };
+
 
 
 
@@ -151,7 +205,7 @@ export default class GenericMiddleware <
         this._executed = true;
         
         try { 
-            const value = await this.handler(this._input_value); 
+            const value = await this.handler(this._request_object); 
             if (value instanceof GenericError) {
                 this.log.error(`Handler executed with an error`, value.serialize());
                 return this._on_invalid(value);
