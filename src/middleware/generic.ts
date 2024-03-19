@@ -81,7 +81,7 @@ export default class GenericMiddleware <
      */
     protected validate_input = async <
         SchemaType extends Schema.SchemaType,
-        SchemaInput extends SchemaClass<any>,
+        SchemaInput extends Schema.SchemaLike<any>,
         ReturnType extends SchemaInput["_return_type"]
     >(
         input_type: SchemaType,

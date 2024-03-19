@@ -27,6 +27,10 @@ import {
     GenericError
 } from './error';
 
+import {
+    Binder
+} from './binder';
+
 export {
     // -- Schema
     GenericType,
@@ -52,5 +56,8 @@ export {
     Log,
 
     // -- Error
-    GenericError
+    GenericError,
+
+    // -- Binder
+    Binder
 }

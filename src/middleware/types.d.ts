@@ -13,10 +13,12 @@ export namespace Middleware {
         ReturnType extends unknown = unknown,
         RequestObject extends AnyMiddlewareRequestObject = AnyMiddlewareRequestObject
     > {
+        _return_type: ReturnType;
+
         public constructor(
             _request_object: RequestObject,
             _on_invalid: (error: GenericError.GenericErrorLike) => void,
-            _on_valid: (result: ReturnType) => void
+            _on_valid: (result: ReturnType) => ReturnType
         );
 
         protected _request_object: RequestObject;
@@ -25,7 +27,7 @@ export namespace Middleware {
 
         protected validate_input<
             SchemaType extends Schema.SchemaType,
-            SchemaInput extends SchemaClass<any>,
+            SchemaInput extends Schema.SchemaLike<any>,
             ReturnType extends Schema.ParsedSchema<SchemaInput["_schema"]>
         >(
             input_type: SchemaType,
@@ -48,6 +50,17 @@ export namespace Middleware {
         public execute: () => Promise<void>;
         public static get name(): string;
     }
+
+
+
+    export type GenericMiddlewareConstructor<
+        ReturnType extends unknown = unknown,
+        RequestObject extends AnyMiddlewareRequestObject = AnyMiddlewareRequestObject
+    > = new (
+        _request_object: RequestObject,
+        _on_invalid: (error: GenericError.GenericErrorLike) => void,
+        _on_valid: (result: ReturnType) => ReturnType
+    ) => GenericMiddlewareLike<ReturnType, RequestObject>;
 
 
 
@@ -101,4 +114,21 @@ export namespace Middleware {
 
     export type AnyMiddlewareRequestObject = 
         MiddlewareRequestObject<any, any, any, any>;
+
+
+
+    export type MiddlewareObject = {
+        [key: string]: GenericMiddlewareConstructor<any>;
+    }
+
+
+    export type ExtractMiddlewareReturnTypes<Middleware extends GenericMiddlewareConstructor<any>> = 
+        InstanceType<Middleware>['_return_type'];
+
+    export type ParsedMiddlewareObject<Mo extends MiddlewareObject> = {
+        [K in keyof Mo]: 
+            Mo[K] extends GenericMiddlewareConstructor<any>
+                ? ExtractMiddlewareReturnTypes<Mo[K]>
+            : never;
+    };
 }

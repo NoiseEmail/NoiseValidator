@@ -75,24 +75,16 @@ export namespace Schema {
 
     export class SchemaLike<
         InputType extends SchemaType,
+        ReturnableData = ParsedSchema<InputSchema>
     > {
-        public _type: InputType;
-        public _schema: InputSchema | FlatSchema;
-        public _id: string;
-        public id: string;
-        public schema: InputSchema | FlatSchema;
-
-        public constructor(
-            schema: InputSchema | FlatSchema
-        );
-
+        public readonly _type: InputType;
+        public readonly _return_type: ReturnableData;
+        public readonly _id: string;
+        public readonly _schema: InputSchema | FlatSchema;
+        private constructor(schema: InputSchema);
         public validate: (
             data: object
-        ) => SchemaValidateReturnable<any>;
-
-
-        public static get name(): string;
-        public static get schema(): InputSchema | FlatSchema;
+        ) => SchemaValidateReturnable<ReturnableData>;
     }        
 
 
@@ -156,8 +148,9 @@ export namespace Schema {
                 ? ParsedSchema<Schema[K]>
             
             : never;
-    };
-        
+    };        
+
+
 }
 
 

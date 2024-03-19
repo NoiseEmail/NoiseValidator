@@ -10,9 +10,9 @@ import { LogObject } from '../logger/types';
 export default class Schema<
     InputSchema extends SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
     ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
-> { 
-    public readonly _return_type: ReturnableData = {} as ReturnableData;
-
+> {
+    public readonly _return_type: ReturnableData = {} as ReturnableData;    
+    public readonly _type: 'body' | 'query' | 'headers' | 'cookies' = 'body';
     public readonly _id: string = randomUUID();
     public readonly _schema: InputSchema;
 
@@ -190,6 +190,5 @@ export default class Schema<
     public get errors(): Array<GenericErrorTypes.GenericErrorLike> { return this._errors; };
     public get serialized_errors(): string { return this._errors.map(error => error.serialize()).join('\n'); };
     public get has_errors(): boolean { return this._errors.length > 0; };
-
     protected push_error = (error: GenericErrorTypes.GenericErrorLike) => this._errors.push(error);
 };
