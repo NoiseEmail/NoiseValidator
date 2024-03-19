@@ -31,6 +31,27 @@ const body_1_schema = new Schema.Body({
     c: Optional(Uuid)
 });
 
+const body_2_schema = new Schema.Body({
+    a: String,
+    b: Number,
+    c: Uuid
+});
+
+
+
+const query_1_schema = new Schema.Query({
+    a: String,
+    b: Number,
+    c: Optional(Uuid)
+});
+
+const query_2_schema = new Schema.Query({
+    a: String,
+    b: Number,
+    c: Uuid
+});
+
+
 
 Binder({
     middleware: {
@@ -38,7 +59,8 @@ Binder({
         test2: Test2Middleware
     },
     schemas: {
-        body: body_1_schema
+        body: body_1_schema,
+        query: query_1_schema
     }
 }, (data) => {
     data.middleware.test.a;
