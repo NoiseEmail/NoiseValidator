@@ -13,7 +13,7 @@ export default class Route<
 
     private _friendly_name: string | undefined;
     private _binder_map: BinderMap = new Map();
-
+    private _router: Router = Router.instance;
 
 
     public constructor(
@@ -22,10 +22,7 @@ export default class Route<
     ) {
         this._path = path;
         this._friendly_name = configuration?.friendly_name || undefined;
-
-        // -- Get an instance of the router
-        const router = Router.instance;
-        router.add_route(this);
+        this._router.add_route(this);
     };
 
 
@@ -64,11 +61,42 @@ export default class Route<
         if (!binders || binders.length < 0) return this.send_exception(reply, new MethodNotAvailableError(method));
 
         // -- Loop through the binders
+        const errors: Array<GenericError.GenericErrorLike> = [];
+        for (let i = 0; i < binders.length; i++) {
 
+            // -- Check if the response has been sent
+            if (reply.sent) return Log.warn(`
+                Path: ${this._path}
+                Method: ${method}
+                A response has been sent outside of the route handler
+            `);
 
+            try {
+                const binder = binders[i];
 
-        // -- Send the exception
-        this.send_exception(reply, new NoRouteHandlerError('No valid handler found for this route'));
+                const validator_result = await binder.validate(request, reply);
+                if (validator_result instanceof GenericError.GenericErrorLike) errors.push(validator_result);
+                else {
+                    const callback_result = await binder.callback(validator_result);
+                    if (callback_result instanceof GenericError.GenericErrorLike) errors.push(callback_result);
+                    else return;
+                }
+            }
+
+            catch (error) {
+                if (error instanceof GenericError.GenericErrorLike) errors.push(error);
+                else {
+                    const generic_error = new GenericError.GenericErrorLike('An error occurred');
+                    generic_error.data = { error };
+                    errors.push(generic_error);
+                }
+            }
+        }
+
+        // -- Send the exception with the errors if debug is enabled
+        const error = new NoRouteHandlerError('No valid handler found for this route');
+        if (this._router.debug) error.data = errors;
+        this.send_exception(reply, error);
     };
 
 

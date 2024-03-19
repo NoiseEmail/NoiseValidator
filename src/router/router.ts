@@ -1,14 +1,17 @@
 import { Route } from '../route';
 import Log from '../logger/log';
 import Fastify, {FastifyInstance} from 'fastify';
+import { OptionalRouterConfiguration, RouterConfiguration } from './types';
+import { DefailtRouterConfiguration } from '.';
+import { mergician } from 'mergician';
 
 export default class Router {
 
     private static _instance: Router;
     private _routes: Map<String, Route<any>>;
     private _server: FastifyInstance;
-
-
+    private _configuration: RouterConfiguration = DefailtRouterConfiguration;
+    private _started: boolean = false;
 
     private constructor() {
         Log.info('Creating router...');
@@ -29,22 +32,29 @@ export default class Router {
      * @name start
      * Starts the server (Or unpauses it)
      *
-     * @param {number} [port=3000] - The port to start the server on (Default: 3000)
+     * @param {OptionalRouterConfiguration} configuration - The configuration for the server
      *
      * @returns {void} - Nothing
      */
     public start(
-        port: number = 3000
+        configuration: OptionalRouterConfiguration = {}
     ): void {
+        if (this._started) {
+            Log.warn('Server already started!');
+            return;
+        }
+        
         Log.info('Starting server...');
-        this._server.listen({port}, (err, address) => {
+        this._started = true;
+        this._configuration = mergician(configuration, DefailtRouterConfiguration) as RouterConfiguration;
+        this._server.listen({port: configuration.port || 3000}, (err, address) => {
             if (err) {
                 Log.error(err);
                 process.exit(1);
             }
             Log.info(`Server listening at ${address}`);
         });
-    }
+    };
 
 
 
@@ -55,6 +65,11 @@ export default class Router {
      * @returns {Promise<void>} - Nothing
      */
     public stop(): Promise<void> {
+        if (!this._started) {
+            Log.warn('Server already stopped!');
+            return Promise.resolve();
+        }
+
         Log.warn('Stopping server...')
         return this._server.close();
     }
@@ -82,4 +97,8 @@ export default class Router {
         this._routes.set(route.path, route);
         route.listen(this._server);
     }
+
+
+
+    public get debug(): boolean { return this._configuration.debug; }
 }

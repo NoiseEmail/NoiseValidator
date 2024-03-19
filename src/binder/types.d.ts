@@ -1,12 +1,15 @@
 import { Binder } from ".";
+import { GenericError } from "../error/types";
 import { Middleware } from "../middleware/types";
 import { DynamicURL } from "../route/types";
 import { Schema } from "../schema/types";
-import { HTTPMethods } from "fastify";
+import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
 
 
 export type BinderMapObject = {
-    callback: Function,
+    callback: (data: BinderCallbackObject<any, any, any, any, any>) => any,
+    validate: (request: FastifyRequest, reply: FastifyReply) => 
+        Promise<BinderCallbackObject<any, any, any, any, any> | GenericError.GenericErrorLike>,
     middleware: Middleware.MiddlewareObject,
     schemas: BinderConfigurationSchema<any, any, any>
     method: HTTPMethods
@@ -24,7 +27,18 @@ export type BinderCallbackObject<
     body: DeepMergeReturnTypes<CreateArray<Body>>,
     query: DeepMergeReturnTypes<CreateArray<Query>>,
     headers: DeepMergeReturnTypes<CreateArray<Headers>>,
-    url: DynamicURL.Extracted<DynamicURLString>
+    url: DynamicURL.Extracted<DynamicURLString>,
+
+    fastify: {
+        request: FastifyRequest,
+        reply: FastifyReply
+    }
+
+    set_header: (key: string, value: string) => void;
+    set_headers: ([key, value]: [string, string]) => void;
+    
+    remove_header: (key: string) => void;
+    remove_headers: (keys: Array<string>) => void;
 };
 
 

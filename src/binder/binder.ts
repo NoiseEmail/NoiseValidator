@@ -1,4 +1,4 @@
-import { HTTPMethods } from "fastify";
+import { FastifyReply, HTTPMethods } from "fastify";
 import { DefaultBinderConfiguration } from ".";
 import { Middleware } from "../middleware/types";
 import { Schema } from "../schema/types";
@@ -51,4 +51,24 @@ export default function Binder<
 
     // -- Merge the default configuration with the user configuration
     configuration = mergician(configuration, DefaultBinderConfiguration);
+    
+    
+};
+
+
+
+const add_header = (fastify_reply: FastifyReply) => (key: string, value: string) => {
+    fastify_reply.header(key, value);
+};
+
+const add_headers = (fastify_reply: FastifyReply) => ([key, value]: [string, string]) => {
+    fastify_reply.header(key, value);
+};
+
+const remove_header = (fastify_reply: FastifyReply) => (key: string) => {
+    fastify_reply.removeHeader(key);
+};
+
+const remove_headers = (fastify_reply: FastifyReply) => (keys: Array<string>) => {
+    keys.forEach(key => fastify_reply.removeHeader(key));
 };
