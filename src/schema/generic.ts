@@ -17,7 +17,7 @@ export default class GenericType <
     private _log_stack: Array<LogObject> = [];
 
     protected readonly _input_value: unknown;
-    protected readonly _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void;
+    protected readonly _on_invalid: (error: GenericError) => void;
     protected readonly _on_valid: (result: ReturnType) => void;
 
     private _valid_called: boolean = false;
@@ -25,7 +25,7 @@ export default class GenericType <
     
     public constructor(
         _input_value: unknown,
-        _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void,
+        _on_invalid: (error: GenericError) => void,
         _on_valid: (result: ReturnType) => void
     ) {
         super(_input_value, _on_invalid, _on_valid);
@@ -41,8 +41,8 @@ export default class GenericType <
     ): 
         ReturnType | 
         Promise<ReturnType> |  
-        Promise<GenericErrorTypes.GenericErrorLike> | 
-        GenericErrorTypes.GenericErrorLike => {
+        Promise<GenericError> | 
+        GenericError => {
         return new MissingHandlerError(`Handler not implemented for ${this.constructor.name}`);
     };
 
@@ -60,8 +60,8 @@ export default class GenericType <
     };
 
     protected invalid = (
-        error: GenericErrorTypes.GenericErrorLike | string
-    ): GenericErrorTypes.GenericErrorLike => {
+        error: GenericError | string
+    ): GenericError => {
         this._already_executed('invalid');
         if (this._invalid_called) throw new GenericTypeExecutionError(
             `The handler has already been executed`, this.constructor.name);
@@ -186,9 +186,9 @@ export default class GenericType <
         
         try { 
             const value = await this.handler(this._input_value); 
-            if (value instanceof GenericError) {
-                this.log.error(`Handler executed with an error`, value.serialize());
-                return this._on_invalid(value);
+            if (GenericError.is_generic_error(value)) {
+                this.log.error(`Handler executed with an error`, (value as GenericError).serialize());
+                return this._on_invalid(value as GenericError);
             }
 
             this.log.info(`Handler executed successfully`);
@@ -197,9 +197,9 @@ export default class GenericType <
         }
 
         catch (error) {
-            if (error instanceof GenericError) {
-                this.log.error(`An error occurred trying to execute ${this.constructor.name}`, error.serialize());
-                return this._on_invalid(error);
+            if (GenericError.is_generic_error(error)) {
+                this.log.error(`An error occurred trying to execute ${this.constructor.name}`, (error as GenericError).serialize());
+                return this._on_invalid(error as GenericError);
             }
 
             const message = new InvalidInputError(`An error occurred trying to execute ${this.constructor.name}`);
@@ -228,7 +228,7 @@ export async function execute<
     input_value: unknown,
 ): Promise<{
     instance: Schema.GenericTypeLike;
-    result: GenericErrorTypes.GenericErrorLike | ReturnType;
+    result: GenericError | ReturnType;
 }> {
     let invalid_executed = false, valid_executed = false;
 

@@ -2,7 +2,7 @@ import { FastifyReply, HTTPMethods } from "fastify";
 import { BinderFailedToExecuteError, DefaultBinderConfiguration, validate_binder_request, validate_output } from ".";
 import { Middleware } from "../middleware/types.d";
 import { Schema } from "../schema/types.d";
-import { BinderCallbackObject, BinderCallbackReturn, CreateArray, DeepMergeReturnTypes, GetOutputType, OptionalBinderConfiguration, SchemasValidator } from "./types.d";
+import { BinderCallbackObject, BinderCallbackReturn, BinderValidatorResult, CreateArray, DeepMergeReturnTypes, GetOutputType, OptionalBinderConfiguration, SchemasValidator } from "./types.d";
 import { mergician } from "mergician";
 import { Route } from "../route";
 import { GenericError } from "../error";
@@ -69,12 +69,12 @@ export default function Binder<
         callback: async (data) => {
             try {
                 const result = await callback(data as CallbackObject);
-                if (result instanceof GenericError) throw result;
+                if (GenericError.is_generic_error(result)) throw result;
 
                 // -- If there is an output schema, validate the output
                 if (schemas.output.length > 0) {
                     const validated = await validate_output(result, schemas.output);
-                    if (validated instanceof GenericError) throw validated;
+                    if (GenericError.is_generic_error(validated)) throw validated;
                     return validated;
                 }
 
@@ -82,7 +82,7 @@ export default function Binder<
             }
 
             catch (error) { 
-                if (error instanceof GenericError) return error;
+                if (GenericError.is_generic_error(error)) return error;
                 const schema_error = new BinderFailedToExecuteError('schema');
                 schema_error.data = { error };
                 return schema_error;
@@ -95,15 +95,15 @@ export default function Binder<
 
             const validated = await validate_binder_request(request, schemas, route.path);
             if (route.debug) Log.debug(`Request for ${route.path} with method: ${method} has been validated`, validated);
-            if (validated instanceof GenericError) return validated;
-
+            if (GenericError.is_generic_error(validated)) return validated as GenericError;
             if (route.debug) Log.debug(`Request for ${route.path} with method: ${method} has successfully been validated`);
+            
             return {
                 middleware: configuration.middleware,
-                body: validated.body,
-                query: validated.query,
-                headers: validated.headers,
-                url: validated.url,
+                body: (validated as BinderValidatorResult).body,
+                query: (validated as BinderValidatorResult).query,
+                headers: (validated as BinderValidatorResult).headers,
+                url: (validated as BinderValidatorResult).url,
 
                 fastify: { request, reply },
 

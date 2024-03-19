@@ -44,4 +44,10 @@ export class GenericError extends GenericErrorTypes.GenericErrorLike {
     public get message(): string { return this._message; }
     public get code(): number { return this._code; }
     public get type(): string { return this._type; }
+
+
+
+    public static is_generic_error = (error: unknown): GenericError => {
+        return error instanceof GenericError ? error : new GenericError('Unknown Error', 500);
+    };
 }

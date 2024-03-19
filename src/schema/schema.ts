@@ -92,7 +92,7 @@ export default class Schema<
             if (typeof value === 'function') {
                 
                 // -- If it's a constructor, execute it
-                const validator_result = await execute(
+                let validator_result = await execute(
                     value as SchemaTypes.GenericTypeConstructor, 
                     new_data
                 );
@@ -102,19 +102,19 @@ export default class Schema<
 
                 // -- If the result is an error and theres no new data, return a missing field error
                 //    as if the data was optional, it would not throw an error
-                if (new_data === undefined && validator_result.result instanceof GenericError) {
+                if (new_data === undefined && GenericError.is_generic_error(validator_result.result)) {
                     const error = new SchemaMissingFieldError(new_path);
                     instance.push_error(error);
                     return error;
                 }
 
                 // -- If the result is an error, return it
-                else if (validator_result.result instanceof GenericError) {
-                    validator_result.result.data = { 
+                else if (GenericError.is_generic_error(validator_result.result)) {
+                    (validator_result.result as GenericError).data = { 
                         path: new_path,
                         expected: value.name
                     };
-                    instance.push_error(validator_result.result);
+                    instance.push_error(validator_result.result as GenericError);
                     return validator_result;
                 }
 
@@ -127,7 +127,7 @@ export default class Schema<
             // -- If the value is an object, walk it
             else if (typeof value === 'object') {
                 const walk_result = await Schema._walk(instance, value, new_data, new_path);
-                if (walk_result instanceof GenericError) {
+                if (GenericError.is_generic_error(walk_result)) {
                     walk_result.data = {
                         path: new_path,
                         expected: value.constructor.name
@@ -161,7 +161,7 @@ export default class Schema<
             const result = await Schema._walk(this, this._schema, data);
 
             // -- Error
-            if (result instanceof GenericError) return resolve({
+            if (GenericError.is_generic_error(result)) return resolve({
                 type: 'error',
                 error: result
             });

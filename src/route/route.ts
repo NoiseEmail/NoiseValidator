@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { BinderMap, BinderMapObject } from "../binder/types.d";
+import { BinderCallbackObject, BinderMap, BinderMapObject } from "../binder/types.d";
 import { RouteConfiguration } from "./types.d";
 import { Log, MethodNotAvailableError, NoRouteHandlerError, Router } from "..";
 import { FastifyInstance, FastifyReply, HTTPMethods } from "fastify";
@@ -86,18 +86,18 @@ export default class Route<
                 const binder = binders[i];
 
                 const validator_result = await binder.validate(request, reply);
-                if (validator_result instanceof GenericError) errors.push(validator_result);
+                if (GenericError.is_generic_error(validator_result)) errors.push(validator_result as GenericError);
 
                 else {
-                    const callback_result = await binder.callback(validator_result);
-                    if (callback_result instanceof GenericError) errors.push(callback_result);
+                    const callback_result = await binder.callback(validator_result as BinderCallbackObject<any, any, any, any, any>);
+                    if (GenericError.is_generic_error(callback_result)) errors.push(callback_result);
                     else return (this._router.configuration.debug) ? Log.debug(`Route: ${this._path} has been processed`) : void (0);
                 }
             }
 
             catch (error) {
                 if (this._router.configuration.debug) Log.debug(error);
-                if (error instanceof GenericError) errors.push(error);
+                if (GenericError.is_generic_error(error)) errors.push(error as GenericError);
                 else {
                     const generic_error = new GenericError('An error occurred', 500);
                     generic_error.data = { error };

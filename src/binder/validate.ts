@@ -14,13 +14,13 @@ export const validate_binder_request = async (
     try {
 
         const body = await validate_inputs(fastify_request.body, schemas.body);
-        if (body instanceof GenericError) throw body;
+        if (GenericError.is_generic_error(body)) throw body;
 
         const query = await validate_inputs(fastify_request.query, schemas.query);
-        if (query instanceof GenericError) throw query;
+        if (GenericError.is_generic_error(query)) throw query;
 
         const headers = await validate_inputs(fastify_request.headers, schemas.headers);
-        if (headers instanceof GenericError) throw headers;
+        if (GenericError.is_generic_error(headers)) throw headers;
 
         // -- We are entrusting the url to be parsed by Fastify
         const url = fastify_request.params;
@@ -28,7 +28,7 @@ export const validate_binder_request = async (
     }
 
     catch (error) {
-        if (error instanceof GenericError) return Promise.resolve(error);
+        if (GenericError.is_generic_error(error)) return Promise.resolve(error as GenericError);
         const validator_error = new FailedToValidateInputError(name);
         validator_error.data = { error };
         return Promise.resolve(validator_error);
@@ -43,12 +43,12 @@ export const validate_output = async (
 ): Promise<any | GenericError> => {
     try {
         const result = await validate_inputs(data, schema);
-        if (result instanceof GenericError) throw result;
+        if (GenericError.is_generic_error(result)) throw result;
         return result;
     }
 
     catch (error) {
-        if (error instanceof GenericError) return Promise.resolve(error);
+        if (GenericError.is_generic_error(error)) return Promise.resolve(error);
         const schema_error = new FailedToValidateInputError('schema');
         schema_error.data = { error };
         return Promise.resolve(schema_error);
@@ -68,7 +68,7 @@ const validate_input = async (
     }
 
     catch (error) {
-        if (error instanceof GenericError) return Promise.resolve(error);
+        if (GenericError.is_generic_error(error)) return Promise.resolve(error);
         const schema_error = new FailedToValidateInputError('schema');
         schema_error.data = { error };
         return Promise.resolve(schema_error);
@@ -90,7 +90,7 @@ const validate_inputs = async (
     }
 
     catch (error) {
-        if (error instanceof GenericError) return Promise.resolve(error);
+        if (GenericError.is_generic_error(error)) return Promise.resolve(error);
         const validator_error = new FailedToValidateInputError('validator');
         validator_error.data = { error };
         return Promise.resolve(validator_error);
