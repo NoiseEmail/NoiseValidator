@@ -1,4 +1,3 @@
-import { Binder } from ".";
 import { GenericError } from "../error/types";
 import { Middleware } from "../middleware/types";
 import { DynamicURL } from "../route/types";
@@ -14,20 +13,26 @@ export type BinderValidatorResult = {
 };
 
 
+export type BinderCallbackReturn = 
+    any | 
+    GenericError.GenericErrorLike | 
+    Promise<
+        GenericError.GenericErrorLike |
+        any
+    >;
 
 export type SchemasValidator = {
     body: Array<Schema.SchemaLike<'body'>>,
     query: Array<Schema.SchemaLike<'query'>>,
-    headers: Array<Schema.SchemaLike<'headers'>>
+    headers: Array<Schema.SchemaLike<'headers'>>,
+    output: Array<Schema.SchemaLike<any>>
 };
 
 
 export type BinderMapObject = {
-    callback: (data: BinderCallbackObject<any, any, any, any, any>) => any,
+    callback: (data: BinderCallbackObject<any, any, any, any, any>) => BinderCallbackReturn,
     validate: (request: FastifyRequest, reply: FastifyReply) => 
         Promise<BinderCallbackObject<any, any, any, any, any> | GenericError.GenericErrorLike>,
-    middleware: Middleware.MiddlewareObject,
-    schemas: BinderConfigurationSchema<any, any, any>
     method: HTTPMethods
 };
 
@@ -63,10 +68,11 @@ export type BinderConfiguration<
     Middleware extends Middleware.MiddlewareObject,
     Body extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
     Query extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>
+    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    Output extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
 > = {
     middleware: Middleware,
-    schemas: BinderConfigurationSchema<Body, Query, Headers>
+    schemas: BinderConfigurationSchema<Body, Query, Headers, Output>,
 };
 
 
@@ -74,11 +80,13 @@ export type BinderConfiguration<
 export type BinderConfigurationSchema<
     Body extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
     Query extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>
+    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    Output extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
 > = {
     body: Body,
     query: Query,
-    headers: Headers
+    headers: Headers,
+    output: Output
 };
 
 
@@ -87,10 +95,11 @@ export type OptionalBinderConfiguration<
     Middleware extends Middleware.MiddlewareObject,
     Body extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
     Query extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>
+    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    Output extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
 > = {
     middleware?: Middleware,
-    schemas?: Partial<BinderConfigurationSchema<Body, Query, Headers>>
+    schemas?: Partial<BinderConfigurationSchema<Body, Query, Headers, Output>>
 };
 
 
@@ -126,3 +135,18 @@ type DeepMergeReturnTypes<
 
 
 export type BinderMap = Map<HTTPMethods, Array<BinderMapObject>>;
+
+
+
+/**
+ * @name GetOutputType
+ * @description If the input extends { [x: string]: never; }
+ * than the output is void, otherwise the output is the input
+ */
+export type GetOutputType<
+    Input extends Object,
+    ParsedOutput extends Object
+> =
+    Input extends { [x: string]: never; }
+        ? void
+        : ParsedOutput;

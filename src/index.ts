@@ -32,7 +32,8 @@ import {
     DefaultBinderConfiguration,
     BinderFailedToExecuteError,
     FailedToValidateInputError,
-    validate_binder_request
+    validate_binder_request,
+    validate_output
 } from './binder';
 
 import {
@@ -78,6 +79,7 @@ export {
     BinderFailedToExecuteError,
     FailedToValidateInputError,
     validate_binder_request,
+    validate_output,
 
     // -- Router / Route
     Router,

@@ -6,6 +6,7 @@ export default {
     schemas: {
         body: {},
         query: {},
-        headers: {}
+        headers: {},
+        output: void 0
     }
-} as BinderConfiguration<any, any, any, any>;
+} as BinderConfiguration<any, any, any, any, any>;

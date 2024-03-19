@@ -5,12 +5,13 @@ import {
     FailedToValidateInputError
 } from "./errors";
 
-import { validate_binder_request } from "./validate";
+import { validate_binder_request, validate_output } from "./validate";
 
 export {
     Binder,
     DefaultBinderConfiguration,
     BinderFailedToExecuteError,
     FailedToValidateInputError,
-    validate_binder_request
+    validate_binder_request,
+    validate_output
 }

@@ -37,6 +37,26 @@ export const validate_binder_request = async (
 
 
 
+export const validate_output = async (
+    data: any,
+    schema: Array<Schema.SchemaLike<any>>
+): Promise<any | GenericError.GenericErrorLike> => {
+    try {
+        const result = await validate_inputs(data, schema);
+        if (result instanceof GenericError.GenericErrorLike) throw result;
+        return result;
+    }
+
+    catch (error) {
+        if (error instanceof GenericError.GenericErrorLike) return Promise.resolve(error);
+        const schema_error = new FailedToValidateInputError('schema');
+        schema_error.data = { error };
+        return Promise.resolve(schema_error);
+    }
+};
+
+
+
 const validate_input = async (
     data: any,
     schema: Schema.SchemaLike<any>

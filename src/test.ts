@@ -9,7 +9,6 @@ import {
     Router,
     Route
 } from 'gs';
-import { Middleware } from './middleware/types';
 
 
 
@@ -65,11 +64,35 @@ Binder(basic_route, 'GET', {
     },
     schemas: {
         body: body_1_schema,
-        query: query_1_schema
+        query: query_1_schema,
+        output: body_1_schema,
     }
 }, (data) => {
     data.middleware.test.a;
 
     data.body.a;
     data.url.id;
+
+    return {
+        a: 'a',
+        b: 1,
+        c: 'c'
+    }
+});
+
+Binder(basic_route, 'GET', {
+    middleware: {
+        test: Test1Middleware,
+        test2: Test2Middleware
+    },
+    schemas: {
+        body: body_1_schema,
+        query: query_1_schema,
+    }
+}, (data) => {
+    data.middleware.test.a;
+
+    data.body.a;
+    data.url.id;
+    
 });
