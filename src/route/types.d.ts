@@ -1,3 +1,9 @@
+export type RouteConfiguration = {
+    friendly_name?: string;
+};
+
+
+
 export namespace DynamicURL {
 
     export type StartsWithColon<str extends string> =

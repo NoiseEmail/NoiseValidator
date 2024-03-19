@@ -4,6 +4,7 @@ import { Middleware } from "../middleware/types";
 import { Schema } from "../schema/types";
 import { BinderCallbackObject, OptionalBinderConfiguration } from "./types";
 import { mergician } from "mergician";
+import { Route } from "../route";
 
 export default function Binder<
     Middleware extends Middleware.MiddlewareObject,
@@ -11,14 +12,18 @@ export default function Binder<
     Body extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
     Query extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
     Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+
+    DynamicURL extends string,
     
     CallbackObject = BinderCallbackObject<
         Middleware,
         Body,
         Query,
-        Headers
+        Headers,
+        DynamicURL
     >
 >(
+    route: Route<DynamicURL>,
     method: HTTPMethods,
     configuration: OptionalBinderConfiguration<
         Middleware,

@@ -1,5 +1,6 @@
 import { Binder } from ".";
 import { Middleware } from "../middleware/types";
+import { DynamicURL } from "../route/types";
 import { Schema } from "../schema/types";
 import { HTTPMethods } from "fastify";
 
@@ -16,12 +17,14 @@ export type BinderCallbackObject<
     Middleware extends Middleware.MiddlewareObject,
     Body extends Schema.SchemaLike<any> | Array<Schema.SchemaLike<any>>,
     Query extends Schema.SchemaLike<any> | Array<Schema.SchemaLike<any>>,
-    Headers extends Schema.SchemaLike<any> | Array<Schema.SchemaLike<any>>
+    Headers extends Schema.SchemaLike<any> | Array<Schema.SchemaLike<any>>,
+    DynamicURLString extends string
 > = {
     middleware: Middleware.ParsedMiddlewareObject<Middleware>,
     body: DeepMergeReturnTypes<CreateArray<Body>>,
     query: DeepMergeReturnTypes<CreateArray<Query>>,
     headers: DeepMergeReturnTypes<CreateArray<Headers>>,
+    url: DynamicURL.Extracted<DynamicURLString>
 };
 
 

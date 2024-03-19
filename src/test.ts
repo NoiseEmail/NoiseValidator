@@ -5,7 +5,9 @@ import {
     Uuid,
     Number,
     String,
-    Optional
+    Optional,
+    Router,
+    Route
 } from 'gs';
 import { Middleware } from './middleware/types';
 
@@ -52,8 +54,11 @@ const query_2_schema = new Schema.Query({
 });
 
 
+Router.instance.start();
+const basic_route = new Route('/basic/:id');
 
-Binder('GET', {
+
+Binder(basic_route, 'GET', {
     middleware: {
         test: Test1Middleware,
         test2: Test2Middleware
@@ -66,4 +71,5 @@ Binder('GET', {
     data.middleware.test.a;
 
     data.body.a;
+    data.url.id;
 });

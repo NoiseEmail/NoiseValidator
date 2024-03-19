@@ -28,8 +28,19 @@ import {
 } from './error';
 
 import {
-    Binder
+    Binder,
+    DefaultBinderConfiguration
 } from './binder';
+
+import {
+    Router
+} from './router';
+
+import {
+    Route,
+    MethodNotAvailableError,
+    NoRouteHandlerError
+} from './route';
 
 export {
     // -- Schema
@@ -59,5 +70,12 @@ export {
     GenericError,
 
     // -- Binder
-    Binder
+    Binder,
+    DefaultBinderConfiguration,
+
+    // -- Router / Route
+    Router,
+    Route,
+    MethodNotAvailableError,
+    NoRouteHandlerError
 }
