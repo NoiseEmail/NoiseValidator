@@ -29,7 +29,10 @@ import {
 
 import {
     Binder,
-    DefaultBinderConfiguration
+    DefaultBinderConfiguration,
+    BinderFailedToExecuteError,
+    FailedToValidateInputError,
+    validate_binder_request
 } from './binder';
 
 import {
@@ -72,6 +75,9 @@ export {
     // -- Binder
     Binder,
     DefaultBinderConfiguration,
+    BinderFailedToExecuteError,
+    FailedToValidateInputError,
+    validate_binder_request,
 
     // -- Router / Route
     Router,

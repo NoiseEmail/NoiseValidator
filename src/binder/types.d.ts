@@ -6,6 +6,22 @@ import { Schema } from "../schema/types";
 import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
 
 
+export type BinderValidatorResult = {
+    body: any,
+    query: any,
+    headers: any,
+    url: any
+};
+
+
+
+export type SchemasValidator = {
+    body: Array<Schema.SchemaLike<'body'>>,
+    query: Array<Schema.SchemaLike<'query'>>,
+    headers: Array<Schema.SchemaLike<'headers'>>
+};
+
+
 export type BinderMapObject = {
     callback: (data: BinderCallbackObject<any, any, any, any, any>) => any,
     validate: (request: FastifyRequest, reply: FastifyReply) => 
