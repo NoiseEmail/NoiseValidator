@@ -1,3 +1,4 @@
+import { HTTPMethods } from "fastify";
 import { DefaultBinderConfiguration } from ".";
 import { Middleware } from "../middleware/types";
 import { Schema } from "../schema/types";
@@ -18,6 +19,7 @@ export default function Binder<
         Headers
     >
 >(
+    method: HTTPMethods,
     configuration: OptionalBinderConfiguration<
         Middleware,
         Body,

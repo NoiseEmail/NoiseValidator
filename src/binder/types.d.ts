@@ -1,8 +1,15 @@
+import { Binder } from ".";
 import { Middleware } from "../middleware/types";
 import { Schema } from "../schema/types";
-import { Schema as SchemaClass } from "../schema";
+import { HTTPMethods } from "fastify";
 
 
+export type BinderMapObject = {
+    callback: Function,
+    middleware: Middleware.MiddlewareObject,
+    schemas: BinderConfigurationSchema<any, any, any>
+    method: HTTPMethods
+};
 
 
 export type BinderCallbackObject<
@@ -81,3 +88,8 @@ type DeepMergeReturnTypes<
         : never;
     }['_return_type']
 >;
+
+
+
+
+export type BinderMap = Map<HTTPMethods, Array<BinderMapObject>>;

@@ -53,7 +53,7 @@ const query_2_schema = new Schema.Query({
 
 
 
-Binder({
+Binder('GET', {
     middleware: {
         test: Test1Middleware,
         test2: Test2Middleware

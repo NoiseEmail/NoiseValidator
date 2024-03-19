@@ -1,6 +1,7 @@
 import { BinderConfiguration } from "./types";
 
 export default {
+    method: 'GET',
     middleware: {},
     schemas: {
         body: {},
