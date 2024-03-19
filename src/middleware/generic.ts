@@ -1,11 +1,11 @@
-import { LogFunctions, LogObject, LogType } from "../logger/types";
+import { LogFunctions, LogObject, LogType } from "../logger/types.d";
 import { Middleware } from "./types.d";
-import { GenericError as GenericErrorTypes } from '../error/types';
+import { GenericError as GenericErrorTypes } from '../error/types.d';
 import { MiddlewareGenericError, MissingMiddlewareHandlerError } from "./errors";
 import { log_header } from "../logger/log";
 import { log_types } from "../logger/type_enum";
 import { GenericError } from "../error/generic";
-import { Schema } from "../schema/types";
+import { Schema } from "../schema/types.d";
 import { execute, Schema as SchemaClass } from "../schema";
 
 

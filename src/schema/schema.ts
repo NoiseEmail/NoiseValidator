@@ -4,6 +4,7 @@ import { GenericError as GenericErrorTypes } from '../error/types.d';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
 import { execute } from './generic';
 import { LogObject } from '../logger/types';
+import { GenericError } from '../error';
 
 
 
@@ -16,14 +17,17 @@ export default class Schema<
     public readonly _id: string = randomUUID();
     public readonly _schema: InputSchema;
 
-    private _log_stacks: Array<LogObject> = new Array<LogObject>();
-    private _errors: Array<GenericErrorTypes.GenericErrorLike> = new Array<GenericErrorTypes.GenericErrorLike>();
+    private _log_stacks: Array<LogObject>;
+    private _errors: Array<GenericErrorTypes.GenericErrorLike>;
 
     private constructor(
         schema: InputSchema
     ) {
         this._schema = schema;
+        this._log_stacks = [];
+        this._errors = [];
     };
+
 
 
     public static Body = class <
@@ -98,14 +102,14 @@ export default class Schema<
 
                 // -- If the result is an error and theres no new data, return a missing field error
                 //    as if the data was optional, it would not throw an error
-                if (new_data === undefined && validator_result.result instanceof GenericErrorTypes.GenericErrorLike) {
+                if (new_data === undefined && validator_result.result instanceof GenericError) {
                     const error = new SchemaMissingFieldError(new_path);
                     instance.push_error(error);
                     return error;
                 }
 
                 // -- If the result is an error, return it
-                else if (validator_result.result instanceof GenericErrorTypes.GenericErrorLike) {
+                else if (validator_result.result instanceof GenericError) {
                     validator_result.result.data = { 
                         path: new_path,
                         expected: value.name
@@ -123,7 +127,7 @@ export default class Schema<
             // -- If the value is an object, walk it
             else if (typeof value === 'object') {
                 const walk_result = await Schema._walk(instance, value, new_data, new_path);
-                if (walk_result instanceof GenericErrorTypes.GenericErrorLike) {
+                if (walk_result instanceof GenericError) {
                     walk_result.data = {
                         path: new_path,
                         expected: value.constructor.name
@@ -157,7 +161,7 @@ export default class Schema<
             const result = await Schema._walk(this, this._schema, data);
 
             // -- Error
-            if (result instanceof GenericErrorTypes.GenericErrorLike) return resolve({
+            if (result instanceof GenericError) return resolve({
                 type: 'error',
                 error: result
             });
@@ -187,8 +191,5 @@ export default class Schema<
     public get schema(): InputSchema { return this._schema; };
     public set_log_stack = (log_stack: Array<LogObject>) => this._log_stacks.push(...log_stack);
     public get log_stack(): Array<LogObject> { return this._log_stacks; };
-    public get errors(): Array<GenericErrorTypes.GenericErrorLike> { return this._errors; };
-    public get serialized_errors(): string { return this._errors.map(error => error.serialize()).join('\n'); };
-    public get has_errors(): boolean { return this._errors.length > 0; };
     protected push_error = (error: GenericErrorTypes.GenericErrorLike) => this._errors.push(error);
 };

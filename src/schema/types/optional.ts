@@ -15,7 +15,7 @@ const Optional = <
 > {
     constructor(
         input_value: unknown,
-        on_invalid: (error: GenericError.GenericErrorLike) => void,
+        on_invalid: (error: GenericError) => void,
         on_valid: (result: ReturnType | undefined) => void,
     ) {
         super(input_value, on_invalid, on_valid);
@@ -65,7 +65,7 @@ const create_optional: <T>(
     constructor: Schema.GenericTypeConstructor<T>
 ) => new (
     input_value: unknown,
-    on_invalid: (error: GenericError.GenericErrorLike) => void,
+    on_invalid: (error: GenericError) => void,
     on_valid: (result: T | undefined) => void,
 ) => GenericType<T | undefined> = Optional;
 

@@ -1,7 +1,7 @@
-import { GenericError } from "../error/types";
-import { Middleware } from "../middleware/types";
-import { DynamicURL } from "../route/types";
-import { Schema } from "../schema/types";
+import { GenericError } from "../error";
+import { Middleware } from "../middleware/types.d";
+import { DynamicURL } from "../route/types.d";
+import { Schema } from "../schema/types.d";
 import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
 
 
@@ -15,9 +15,9 @@ export type BinderValidatorResult = {
 
 export type BinderCallbackReturn = 
     any | 
-    GenericError.GenericErrorLike | 
+    GenericError | 
     Promise<
-        GenericError.GenericErrorLike |
+        GenericError |
         any
     >;
 
@@ -32,7 +32,7 @@ export type SchemasValidator = {
 export type BinderMapObject = {
     callback: (data: BinderCallbackObject<any, any, any, any, any>) => BinderCallbackReturn,
     validate: (request: FastifyRequest, reply: FastifyReply) => 
-        Promise<BinderCallbackObject<any, any, any, any, any> | GenericError.GenericErrorLike>,
+        Promise<BinderCallbackObject<any, any, any, any, any> | GenericError>,
     method: HTTPMethods
 };
 

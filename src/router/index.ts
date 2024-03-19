@@ -1,7 +1,7 @@
 import Router from "./router";
-import DefailtRouterConfiguration from "./configuration";
+import DefualtRouterConfiguration from "./configuration";
 
 export {
     Router,
-    DefailtRouterConfiguration
+    DefualtRouterConfiguration
 }

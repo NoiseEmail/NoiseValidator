@@ -1,4 +1,4 @@
-import { GenericError } from '../error/types';
+import { GenericError } from '../error';
 import { LogFunctions, LogObject } from '../logger/types';
 import { Schema as SchemaClass } from "../schema";
 
@@ -13,25 +13,25 @@ export namespace Schema {
 
         public constructor(
             _input_value: unknown,
-            _on_invalid: (error: GenericError.GenericErrorLike) => void,
+            _on_invalid: (error: GenericError) => void,
             _on_valid: (result: ReturnType) => void
         );
 
         protected _input_value: unknown;
-        protected _on_invalid: (error: GenericError.GenericErrorLike) => void;
+        protected _on_invalid: (error: GenericError) => void;
         protected _on_valid: (result: ReturnType) => void;
 
         protected handler: (
             input_value: unknown,
-            invalid: (error: GenericError.GenericErrorLike) => void,
+            invalid: (error: GenericError) => void,
             valid: (result: ReturnType) => void
         ) => 
             ReturnType | 
             Promise<ReturnType> |  
-            Promise<GenericError.GenericErrorLike> | 
-            GenericError.GenericErrorLike;
+            Promise<GenericError> | 
+            GenericError;
 
-        protected invalid: (error: GenericError.GenericErrorLike | string) => GenericError.GenericErrorLike;
+        protected invalid: (error: GenericError | string) => GenericError;
         protected valid: (result: ReturnType) => ReturnType;
         public execute: () => Promise<void>;
 
@@ -46,7 +46,7 @@ export namespace Schema {
         ReturnType extends unknown = unknown
     > = new (
         input_value: unknown,
-        on_invalid: (error: GenericError.GenericErrorLike) => void,
+        on_invalid: (error: GenericError) => void,
         on_valid: (result: ReturnType) => void,
         validated?: ReturnType
     ) => GenericTypeLike<ReturnType>
@@ -67,7 +67,7 @@ export namespace Schema {
     
     export type SchemaValidateReturnable<ReturnableData> = Promise<{
         type: 'error';
-        error: GenericError.GenericErrorLike;
+        error: GenericError;
     } | {
         type: 'data';
         data: ReturnableData;

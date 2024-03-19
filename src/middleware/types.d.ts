@@ -1,4 +1,4 @@
-import { GenericError } from '../error/types';
+import { GenericError } from '../error/types.d';
 import { LogFunctions, LogObject } from '../logger/types';
 import {FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
 import { Schema } from '../schema/types';

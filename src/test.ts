@@ -53,8 +53,8 @@ const query_2_schema = new Schema.Query({
 });
 
 
-Router.instance.start();
-const basic_route = new Route('/basic/:id');
+Router.instance.start({ debug: true });
+const basic_route = new Route('/basic', { friendly_name: 'Basic Route' });
 
 
 Binder(basic_route, 'GET', {
@@ -71,28 +71,11 @@ Binder(basic_route, 'GET', {
     data.middleware.test.a;
 
     data.body.a;
-    data.url.id;
+    // data.url.id;
 
     return {
         a: 'a',
         b: 1,
         c: 'c'
     }
-});
-
-Binder(basic_route, 'GET', {
-    middleware: {
-        test: Test1Middleware,
-        test2: Test2Middleware
-    },
-    schemas: {
-        body: body_1_schema,
-        query: query_1_schema,
-    }
-}, (data) => {
-    data.middleware.test.a;
-
-    data.body.a;
-    data.url.id;
-    
 });

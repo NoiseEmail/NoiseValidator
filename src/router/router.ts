@@ -2,7 +2,7 @@ import { Route } from '../route';
 import Log from '../logger/log';
 import Fastify, {FastifyInstance} from 'fastify';
 import { OptionalRouterConfiguration, RouterConfiguration } from './types';
-import { DefailtRouterConfiguration } from '.';
+import { DefualtRouterConfiguration } from '.';
 import { mergician } from 'mergician';
 
 export default class Router {
@@ -10,7 +10,7 @@ export default class Router {
     private static _instance: Router;
     private _routes: Map<String, Route<any>>;
     private _server: FastifyInstance;
-    private _configuration: RouterConfiguration = DefailtRouterConfiguration;
+    private _configuration: RouterConfiguration = DefualtRouterConfiguration;
     private _started: boolean = false;
 
     private constructor() {
@@ -46,7 +46,7 @@ export default class Router {
         
         Log.info('Starting server...');
         this._started = true;
-        this._configuration = mergician(configuration, DefailtRouterConfiguration) as RouterConfiguration;
+        this._configuration = mergician(DefualtRouterConfiguration, configuration) as RouterConfiguration;
         this._server.listen({port: configuration.port || 3000}, (err, address) => {
             if (err) {
                 Log.error(err);
@@ -100,5 +100,5 @@ export default class Router {
 
 
 
-    public get debug(): boolean { return this._configuration.debug; }
+    public get configuration(): RouterConfiguration { return this._configuration; }
 }

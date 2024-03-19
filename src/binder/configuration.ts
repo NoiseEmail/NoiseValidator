@@ -1,4 +1,4 @@
-import { BinderConfiguration } from "./types";
+import { BinderConfiguration } from "./types.d";
 
 export default {
     method: 'GET',

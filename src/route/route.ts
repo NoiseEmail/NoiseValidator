@@ -1,9 +1,9 @@
 import { randomUUID } from "crypto";
-import { BinderMap, BinderMapObject } from "../binder/types";
-import { RouteConfiguration } from "./types";
+import { BinderMap, BinderMapObject } from "../binder/types.d";
+import { RouteConfiguration } from "./types.d";
 import { Log, MethodNotAvailableError, NoRouteHandlerError, Router } from "..";
 import { FastifyInstance, FastifyReply, HTTPMethods } from "fastify";
-import { GenericError } from "../error/types";
+import { GenericError } from "../error";
 
 export default class Route<
     UrlPath extends string
@@ -40,8 +40,18 @@ export default class Route<
      */
     public send_exception = (
         reply: FastifyReply,
-        error: GenericError.GenericErrorLike
-    ): void => {};
+        error: GenericError
+    ): void => {
+        if (this._router.configuration.debug) Log.error(error);
+
+        reply.code(error.code).send
+        ({
+            error: {
+                message: error.message,
+                data: error.data
+            }
+        });
+    };
 
 
 
@@ -55,13 +65,14 @@ export default class Route<
         request: any,
         reply: any
     ): Promise<void> => {
+        if (this._router.configuration.debug) Log.debug(`Processing route: ${this._path} with method: ${method}`)
 
         // -- Get the binders for the method
         const binders = this._binder_map.get(method);
         if (!binders || binders.length < 0) return this.send_exception(reply, new MethodNotAvailableError(method));
 
         // -- Loop through the binders
-        const errors: Array<GenericError.GenericErrorLike> = [];
+        const errors: Array<GenericError> = [];
         for (let i = 0; i < binders.length; i++) {
 
             // -- Check if the response has been sent
@@ -75,18 +86,20 @@ export default class Route<
                 const binder = binders[i];
 
                 const validator_result = await binder.validate(request, reply);
-                if (validator_result instanceof GenericError.GenericErrorLike) errors.push(validator_result);
+                if (validator_result instanceof GenericError) errors.push(validator_result);
+
                 else {
                     const callback_result = await binder.callback(validator_result);
-                    if (callback_result instanceof GenericError.GenericErrorLike) errors.push(callback_result);
-                    else return;
+                    if (callback_result instanceof GenericError) errors.push(callback_result);
+                    else return (this._router.configuration.debug) ? Log.debug(`Route: ${this._path} has been processed`) : void (0);
                 }
             }
 
             catch (error) {
-                if (error instanceof GenericError.GenericErrorLike) errors.push(error);
+                if (this._router.configuration.debug) Log.debug(error);
+                if (error instanceof GenericError) errors.push(error);
                 else {
-                    const generic_error = new GenericError.GenericErrorLike('An error occurred');
+                    const generic_error = new GenericError('An error occurred', 500);
                     generic_error.data = { error };
                     errors.push(generic_error);
                 }
@@ -95,7 +108,7 @@ export default class Route<
 
         // -- Send the exception with the errors if debug is enabled
         const error = new NoRouteHandlerError('No valid handler found for this route');
-        if (this._router.debug) error.data = errors;
+        if (this._router.configuration.debug) error.data = errors;
         this.send_exception(reply, error);
     };
 
@@ -148,4 +161,5 @@ export default class Route<
     public get path(): UrlPath { return this._path; }
     public get id(): string { return this._id; }
     public get friendly_name(): string | undefined { return this._friendly_name; }
+    public get debug(): boolean { return this._router.configuration.debug; }
 }

@@ -1,5 +1,5 @@
 import { GenericError } from '../error/generic';
-import { GenericError as GenericErrorTypes } from '../error/types';
+import { GenericError as GenericErrorTypes } from '../error';
 import log, { log_header } from '../logger/log';
 import { log_types } from '../logger/type_enum';
 import { LogFunctions, LogObject, LogType } from '../logger/types';

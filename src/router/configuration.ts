@@ -1,4 +1,4 @@
-import { RouterConfiguration } from "./types";
+import { RouterConfiguration } from "./types.d";
 
 export default {
     port: 8080,

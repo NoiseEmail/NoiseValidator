@@ -1,11 +1,12 @@
 import { FastifyReply, HTTPMethods } from "fastify";
 import { BinderFailedToExecuteError, DefaultBinderConfiguration, validate_binder_request, validate_output } from ".";
-import { Middleware } from "../middleware/types";
-import { Schema } from "../schema/types";
-import { BinderCallbackObject, BinderCallbackReturn, CreateArray, DeepMergeReturnTypes, GetOutputType, OptionalBinderConfiguration, SchemasValidator } from "./types";
+import { Middleware } from "../middleware/types.d";
+import { Schema } from "../schema/types.d";
+import { BinderCallbackObject, BinderCallbackReturn, CreateArray, DeepMergeReturnTypes, GetOutputType, OptionalBinderConfiguration, SchemasValidator } from "./types.d";
 import { mergician } from "mergician";
 import { Route } from "../route";
-import { GenericError } from "../error/types";
+import { GenericError } from "../error";
+import { Log } from "..";
 
 export default function Binder<
     Middleware extends Middleware.MiddlewareObject,
@@ -40,8 +41,8 @@ export default function Binder<
     callback: (data: CallbackObject) => 
         OutputType | 
         Promise<OutputType> |
-        GenericError.GenericErrorLike | 
-        Promise<GenericError.GenericErrorLike>
+        GenericError | 
+        Promise<GenericError>
 ) {
     
 
@@ -63,26 +64,25 @@ export default function Binder<
 
 
     // -- Merge the default configuration with the user configuration
-    configuration = mergician(configuration, DefaultBinderConfiguration);
+    configuration = mergician(DefaultBinderConfiguration, configuration);
     route.add_binder({
         callback: async (data) => {
             try {
                 const result = await callback(data as CallbackObject);
-                if (result instanceof GenericError.GenericErrorLike) throw result;
+                if (result instanceof GenericError) throw result;
 
                 // -- If there is an output schema, validate the output
                 if (schemas.output.length > 0) {
                     const validated = await validate_output(result, schemas.output);
-                    if (validated instanceof GenericError.GenericErrorLike) throw validated;
+                    if (validated instanceof GenericError) throw validated;
                     return validated;
                 }
 
-                // -- If theres no schema, just return the result
-                return result;
+                // -- No output schema, no returned data.
             }
 
             catch (error) { 
-                if (error instanceof GenericError.GenericErrorLike) return error;
+                if (error instanceof GenericError) return error;
                 const schema_error = new BinderFailedToExecuteError('schema');
                 schema_error.data = { error };
                 return schema_error;
@@ -90,8 +90,14 @@ export default function Binder<
         },
 
         validate: async (request, reply) => {
+
+            if (route.debug) Log.debug(`Validating request for ${route.path} with method: ${method}`);
+
             const validated = await validate_binder_request(request, schemas, route.path);
-            if (validated instanceof GenericError.GenericErrorLike) return validated;
+            if (route.debug) Log.debug(`Request for ${route.path} with method: ${method} has been validated`, validated);
+            if (validated instanceof GenericError) return validated;
+
+            if (route.debug) Log.debug(`Request for ${route.path} with method: ${method} has successfully been validated`);
             return {
                 middleware: configuration.middleware,
                 body: validated.body,
