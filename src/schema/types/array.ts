@@ -56,7 +56,7 @@ const ArrayType = <
 
 
 const create_array: <T>(
-    constructor: Schema.GenericTypeConstructor<Array<T>>
+    constructor: Schema.GenericTypeConstructor<T>
 ) => new (
     input_value: unknown,
     on_invalid: (error: GenericError) => void,
