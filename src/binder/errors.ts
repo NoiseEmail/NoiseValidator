@@ -12,7 +12,7 @@ class FailedToValidateInputError extends GenericError {
     public constructor(
         binder_name: string,
     ) {
-        super(`Failed to validate input ${binder_name}`, 500);
+        super(`Failed to validate input [${binder_name}]`, 500);
     }
 };    
 

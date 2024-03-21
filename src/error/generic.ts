@@ -35,7 +35,7 @@ export class GenericError extends GenericErrorTypes.GenericErrorLike {
         });
     };  
 
-
+    public toString = (): string => this.serialize();
     public set data(data: object) { this._data = data; }
     public get data(): object { return this._data; }
 
@@ -47,7 +47,13 @@ export class GenericError extends GenericErrorTypes.GenericErrorLike {
 
 
 
-    public static is_generic_error = (error: unknown): GenericError => {
-        return error instanceof GenericError ? error : new GenericError('Unknown Error', 500);
+    public static is_generic_error = (error: unknown): boolean => {
+        // -- If the error is anything bar a class its 100% not a generic error
+        if (typeof error !== 'object' || error === null) return false;
+        return (
+            error instanceof GenericError || 
+            error instanceof GenericErrorTypes.GenericErrorLike ||
+            ['id', 'message', 'code', 'type', 'data'].every((key) => key in error)
+        );
     };
 }

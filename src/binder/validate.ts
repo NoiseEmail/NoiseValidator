@@ -3,6 +3,7 @@ import { BinderValidatorResult, SchemasValidator } from "./types.d";
 import { GenericError } from "../error";
 import { FailedToValidateInputError } from "./errors";
 import { Schema } from "../schema/types.d";
+import { mergician } from "mergician";
 
 
 
@@ -28,10 +29,10 @@ export const validate_binder_request = async (
     }
 
     catch (error) {
-        if (GenericError.is_generic_error(error)) return Promise.resolve(error as GenericError);
+        if (GenericError.is_generic_error(error)) error as GenericError;
         const validator_error = new FailedToValidateInputError(name);
         validator_error.data = { error };
-        return Promise.resolve(validator_error);
+        return validator_error;
     }
 };
 
@@ -43,15 +44,15 @@ export const validate_output = async (
 ): Promise<any | GenericError> => {
     try {
         const result = await validate_inputs(data, schema);
-        if (GenericError.is_generic_error(result)) throw result;
+        if (GenericError.is_generic_error(result)) return result;
         return result;
     }
 
     catch (error) {
-        if (GenericError.is_generic_error(error)) return Promise.resolve(error);
-        const schema_error = new FailedToValidateInputError('schema');
+        if (GenericError.is_generic_error(error)) error as GenericError;
+        const schema_error = new FailedToValidateInputError('schema, validate_output');
         schema_error.data = { error };
-        return Promise.resolve(schema_error);
+        return schema_error;
     }
 };
 
@@ -63,15 +64,15 @@ const validate_input = async (
 ): Promise<any | GenericError> => {
     try {
         const result = await schema.validate(data);
-        if (result.type !== 'data') throw result.error;
+        if (result.type !== 'data') return result.error;
         else return result.data;
     }
 
     catch (error) {
-        if (GenericError.is_generic_error(error)) return Promise.resolve(error);
-        const schema_error = new FailedToValidateInputError('schema');
+        if (GenericError.is_generic_error(error)) return error;
+        const schema_error = new FailedToValidateInputError('schema, validate_input');
         schema_error.data = { error };
-        return Promise.resolve(schema_error);
+        return schema_error;
     }
 };
 
@@ -83,15 +84,21 @@ const validate_inputs = async (
 ): Promise<any | GenericError> => {
     try {
         const result = await Promise.all(schemas.map(async (schema) => {
-            return await validate_input(data, schema);
+            const validated =  await validate_input(data, schema);
+            if (GenericError.is_generic_error(validated)) 
+                throw validated;
+            return validated;
         }));
 
-        return result;
+
+        if (result.length <= 1) return result[0];
+        else return mergician({}, ...result);
     }
 
     catch (error) {
-        if (GenericError.is_generic_error(error)) return Promise.resolve(error);
-        const validator_error = new FailedToValidateInputError('validator');
+        console.log('error', error);
+        if (GenericError.is_generic_error(error)) error as GenericError;
+        const validator_error = new FailedToValidateInputError('validator, validate_inputs');
         validator_error.data = { error };
         return Promise.resolve(validator_error);
     }

@@ -63,7 +63,7 @@ export default class GenericType <
         error: GenericError | string
     ): GenericError => {
         this._already_executed('invalid');
-        if (this._invalid_called) throw new GenericTypeExecutionError(
+        if (this._invalid_called) return new GenericTypeExecutionError(
             `The handler has already been executed`, this.constructor.name);
 
         this._invalid_called = true;
@@ -187,7 +187,7 @@ export default class GenericType <
         try { 
             const value = await this.handler(this._input_value); 
             if (GenericError.is_generic_error(value)) {
-                this.log.error(`Handler executed with an error`, (value as GenericError).serialize());
+                this.log.error(`Handler executed with an error`, (value as GenericError).message);
                 return this._on_invalid(value as GenericError);
             }
 
@@ -198,7 +198,7 @@ export default class GenericType <
 
         catch (error) {
             if (GenericError.is_generic_error(error)) {
-                this.log.error(`An error occurred trying to execute ${this.constructor.name}`, (error as GenericError).serialize());
+                this.log.error(`An error occurred trying to execute ${this.constructor.name}`, (error as GenericError));
                 return this._on_invalid(error as GenericError);
             }
 
@@ -229,6 +229,7 @@ export async function execute<
 ): Promise<{
     instance: Schema.GenericTypeLike;
     result: GenericError | ReturnType;
+    is_error: boolean;
 }> {
     let invalid_executed = false, valid_executed = false;
 
@@ -240,7 +241,8 @@ export async function execute<
                 invalid_executed = true;
                 resolve({
                     instance,
-                    result: error
+                    result: error,
+                    is_error: true
                 });
             }, 
             
@@ -249,7 +251,8 @@ export async function execute<
                 valid_executed = true;
                 resolve({
                     instance,
-                    result: value
+                    result: value,
+                    is_error: false
                 });
             }
         );

@@ -75,7 +75,7 @@ export default function Binder<
                 if (schemas.output.length > 0) {
                     const validated = await validate_output(result, schemas.output);
                     if (GenericError.is_generic_error(validated)) throw validated;
-                    return validated;
+                    data.fastify.reply.send(validated);
                 }
 
                 // -- No output schema, no returned data.
@@ -94,7 +94,7 @@ export default function Binder<
             if (route.debug) Log.debug(`Validating request for ${route.path} with method: ${method}`);
 
             const validated = await validate_binder_request(request, schemas, route.path);
-            if (route.debug) Log.debug(`Request for ${route.path} with method: ${method} has been validated`, validated);
+            if (route.debug) Log.debug(`Request for ${route.path} with method: ${method} has been validated`);
             if (GenericError.is_generic_error(validated)) return validated as GenericError;
             if (route.debug) Log.debug(`Request for ${route.path} with method: ${method} has successfully been validated`);
             

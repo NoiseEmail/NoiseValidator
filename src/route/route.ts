@@ -14,7 +14,7 @@ export default class Route<
     private _friendly_name: string | undefined;
     private _binder_map: BinderMap = new Map();
     private _router: Router = Router.instance;
-
+    private _added_to_router: boolean = false;
 
     public constructor(
         path: UrlPath,
@@ -22,7 +22,6 @@ export default class Route<
     ) {
         this._path = path;
         this._friendly_name = configuration?.friendly_name || undefined;
-        this._router.add_route(this);
     };
 
 
@@ -42,16 +41,29 @@ export default class Route<
         reply: FastifyReply,
         error: GenericError
     ): void => {
-        if (this._router.configuration.debug) Log.error(error);
+        if (this._router.configuration.debug) Log.error(error.message);
 
-        reply.code(error.code).send
-        ({
+        reply.code(error.code).send({
             error: {
                 message: error.message,
                 data: error.data
             }
         });
     };
+
+
+
+    /**
+     * @name add_to_router
+     * @description Adds the route to the router
+     * 
+     * @returns {void} - Nothing
+     */
+    public add_to_router = (): void => {
+        if (this._added_to_router) return Log.warn(`Route: ${this._path} has already been added to the router`);
+        this._router.add_route(this);
+        this._added_to_router = true;
+    }
 
 
 
@@ -73,6 +85,7 @@ export default class Route<
 
         // -- Loop through the binders
         const errors: Array<GenericError> = [];
+        let error_response: GenericError | undefined;
         for (let i = 0; i < binders.length; i++) {
 
             // -- Check if the response has been sent
@@ -86,17 +99,27 @@ export default class Route<
                 const binder = binders[i];
 
                 const validator_result = await binder.validate(request, reply);
-                if (GenericError.is_generic_error(validator_result)) errors.push(validator_result as GenericError);
+                if (GenericError.is_generic_error(validator_result)) {
+                    if (this._router.configuration.debug) Log.debug(`Route: ${this._path} has FAILED validation`);
+                    errors.push(validator_result as GenericError);
+                }
 
                 else {
+                    if (this._router.configuration.debug) Log.debug(`Route: ${this._path} has been validated`);
                     const callback_result = await binder.callback(validator_result as BinderCallbackObject<any, any, any, any, any>);
-                    if (GenericError.is_generic_error(callback_result)) errors.push(callback_result);
+
+                    if (GenericError.is_generic_error(callback_result)) {
+                        if (this._router.configuration.debug) Log.debug(`Route: ${this._path} has returned an error`);
+                        error_response = callback_result as GenericError;
+                        break;
+                    }
+                    
                     else return (this._router.configuration.debug) ? Log.debug(`Route: ${this._path} has been processed`) : void (0);
                 }
             }
 
             catch (error) {
-                if (this._router.configuration.debug) Log.debug(error);
+                if (this._router.configuration.debug) Log.debug('CATCH', error);
                 if (GenericError.is_generic_error(error)) errors.push(error as GenericError);
                 else {
                     const generic_error = new GenericError('An error occurred', 500);
@@ -107,8 +130,9 @@ export default class Route<
         }
 
         // -- Send the exception with the errors if debug is enabled
-        const error = new NoRouteHandlerError('No valid handler found for this route');
-        if (this._router.configuration.debug) error.data = errors;
+        let error = new NoRouteHandlerError('No valid handler found for this route');
+        if (error_response) error = error_response;
+        if (this._router.configuration.debug) error.data = {errors};
         this.send_exception(reply, error);
     };
 

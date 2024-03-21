@@ -47,7 +47,10 @@ export default class Router {
         Log.info('Starting server...');
         this._started = true;
         this._configuration = mergician(DefualtRouterConfiguration, configuration) as RouterConfiguration;
-        this._server.listen({port: configuration.port || 3000}, (err, address) => {
+        this._server.listen({
+            port: configuration.port || 3000,
+            host: configuration.host || '0.0.0.0'
+        }, (err, address) => {
             if (err) {
                 Log.error(err);
                 process.exit(1);

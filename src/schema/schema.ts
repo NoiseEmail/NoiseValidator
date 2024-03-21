@@ -5,6 +5,7 @@ import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
 import { execute } from './generic';
 import { LogObject } from '../logger/types';
 import { GenericError } from '../error';
+import { Log } from '..';
 
 
 
@@ -102,20 +103,22 @@ export default class Schema<
 
                 // -- If the result is an error and theres no new data, return a missing field error
                 //    as if the data was optional, it would not throw an error
-                if (new_data === undefined && GenericError.is_generic_error(validator_result.result)) {
+                if (new_data === undefined && validator_result.is_error) {
                     const error = new SchemaMissingFieldError(new_path);
                     instance.push_error(error);
                     return error;
                 }
 
                 // -- If the result is an error, return it
-                else if (GenericError.is_generic_error(validator_result.result)) {
-                    (validator_result.result as GenericError).data = { 
+                else if (validator_result.is_error) {
+
+                    let thrown_error: GenericError = validator_result.result as GenericError;
+                    thrown_error.data = { 
                         path: new_path,
                         expected: value.name
                     };
-                    instance.push_error(validator_result.result as GenericError);
-                    return validator_result;
+                    instance.push_error(thrown_error);
+                    return thrown_error;
                 }
 
                 // -- If the validator_result is not an error, add it to the result
@@ -158,26 +161,28 @@ export default class Schema<
 
         try {
             // -- Try to walk the schema
-            const result = await Schema._walk(this, this._schema, data);
+            const result = await Schema._walk(this, this._schema, data) as 
+                { [key: string]: unknown } | GenericError;
 
-            // -- Error
+                // -- Error
             if (GenericError.is_generic_error(result)) return resolve({
                 type: 'error',
-                error: result
+                error: result as GenericError
             });
 
             // -- Success
             else return resolve({
                 type: 'data',
-                data: result
+                data: result as ReturnableData
             });
         }
 
         catch (error) {
 
-            // -- Error
             const error_ = new SchemaExecutionError(`An error occurred trying to validate ${this._id}`);
-            this._errors.push(error_);
+            this.push_error(error as GenericError);
+            error_.data = { error: error, errors: this.errors };
+
             return resolve({
                 type: 'error',
                 error: error_
@@ -191,5 +196,7 @@ export default class Schema<
     public get schema(): InputSchema { return this._schema; };
     public set_log_stack = (log_stack: Array<LogObject>) => this._log_stacks.push(...log_stack);
     public get log_stack(): Array<LogObject> { return this._log_stacks; };
+
+    public get errors(): Array<GenericErrorTypes.GenericErrorLike> { return this._errors; };
     protected push_error = (error: GenericErrorTypes.GenericErrorLike) => this._errors.push(error);
 };
