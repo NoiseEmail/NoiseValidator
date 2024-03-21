@@ -13,6 +13,7 @@ import String from './types/string';
 import Number from './types/number';
 import Optional from './types/optional';
 import Uuid from './types/uuid';
+import Array from './types/array';
 
 export {
     GenericType,
@@ -26,7 +27,8 @@ export {
     String,
     Number,
     Uuid,
-
+    
+    Array,
     execute,
     Optional
 }

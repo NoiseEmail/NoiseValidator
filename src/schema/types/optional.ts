@@ -1,4 +1,4 @@
-import { GenericError } from '../../error/types';
+import { GenericError } from '../../error';
 import GenericType from '../generic';
 import { Schema } from '../types.d';
 

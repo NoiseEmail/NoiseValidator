@@ -10,7 +10,7 @@ import {
     String,
     Number,
     Uuid,
-
+    Array,
     execute,
     Optional
 } from './schema';
@@ -61,6 +61,7 @@ export {
     Uuid,
     execute,
     Optional,
+    Array,
 
     // -- Middleware
     GenericMiddleware,
