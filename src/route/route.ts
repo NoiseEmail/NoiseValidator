@@ -44,10 +44,7 @@ export default class Route<
         if (this._router.configuration.debug) Log.error(error.message);
 
         reply.code(error.code).send({
-            error: {
-                message: error.message,
-                data: error.data
-            }
+            error: error.serialize()
         });
     };
 
@@ -77,7 +74,7 @@ export default class Route<
         request: any,
         reply: any
     ): Promise<void> => {
-        if (this._router.configuration.debug) Log.debug(`Processing route: ${this._path} with method: ${method}`)
+        Log.debug(`Processing route: ${this._path} with method: ${method}`)
 
         // -- Get the binders for the method
         const binders = this._binder_map.get(method);
@@ -86,6 +83,7 @@ export default class Route<
         // -- Loop through the binders
         const errors: Array<GenericError> = [];
         let error_response: GenericError | undefined;
+
         for (let i = 0; i < binders.length; i++) {
 
             // -- Check if the response has been sent
@@ -96,43 +94,54 @@ export default class Route<
             `);
 
             try {
+                // -- Get the binder
                 const binder = binders[i];
-
                 const validator_result = await binder.validate(request, reply);
-                if (GenericError.is_error(validator_result)) {
-                    if (this._router.configuration.debug) Log.debug(`Route: ${this._path} has FAILED validation`);
-                    errors.push(validator_result as GenericError);
+
+
+                // -- FAILED Schema validation
+                if (validator_result instanceof Error) {
+                    Log.debug(`Route: ${this._path} has FAILED schema validation`);
+                    errors.push(GenericError.from_unknown(validator_result));
+                    continue;
                 }
 
-                else {
-                    if (this._router.configuration.debug) Log.debug(`Route: ${this._path} has been validated`);
-                    const callback_result = await binder.callback(validator_result as BinderCallbackObject<any, any, any, any, any>);
 
-                    if (GenericError.is_error(callback_result)) {
-                        if (this._router.configuration.debug) Log.debug(`Route: ${this._path} has returned an error`);
-                        error_response = callback_result as GenericError;
-                        break;
+                // -- PASSED Schema validation
+                else {
+                    Log.debug(`Route: ${this._path} has PASSED schema validation`);
+                    const callback_result = await binder.callback(validator_result);
+
+
+                    // -- Check if the response is an error
+                    if (callback_result instanceof Error) {
+                        error_response = GenericError.from_unknown(callback_result);
+                        Log.debug(`Route: ${this._path} has returned an error`);
+                        break; // -- So we can return an error
                     }
 
-                    else return (this._router.configuration.debug) ? Log.debug(`Route: ${this._path} has been processed`) : void (0);
+
+                    // - If the response has been sent, break the loop
+                    else {
+                        Log.debug(`Route: ${this._path} has been processed`);
+                        return; // -- Reply has been sent
+                    }
                 }
             }
 
-            catch (error) {
-                if (this._router.configuration.debug) Log.debug('CATCH', error);
-                if (GenericError.is_error(error)) errors.push(error as GenericError);
-                else {
-                    const generic_error = new GenericError('An error occurred', 500);
-                    generic_error.data = { error };
-                    errors.push(generic_error);
-                }
+            catch (unknown_error) {
+                const error = GenericError.from_unknown(unknown_error);
+                Log.debug(`Route: ${this._path} has FAILED to process`, error.serialize());
+                errors.push(error);                      
             }
         }
 
         // -- Send the exception with the errors if debug is enabled
         let error = new NoRouteHandlerError('No valid handler found for this route');
         if (error_response) error = error_response;
-        if (this._router.configuration.debug) error.data = {errors};
+
+        // -- Append the error data if debug is enabled
+        if (this._router.configuration.debug) errors.forEach(e => error.add_error(e));
         this.send_exception(reply, error);
     };
 
@@ -185,5 +194,4 @@ export default class Route<
     public get path(): UrlPath { return this._path; }
     public get id(): string { return this._id; }
     public get friendly_name(): string | undefined { return this._friendly_name; }
-    public get debug(): boolean { return this._router.configuration.debug; }
 }
