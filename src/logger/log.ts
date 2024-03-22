@@ -7,6 +7,7 @@ import { log_types } from './type_enum';
 //    with some better config stuff, but fornow thissldo
 let debug_mode: boolean = false;
 export const _debug_mode = (value: boolean): boolean => debug_mode = value;
+export const is_debug = (): boolean => debug_mode;
 
 
 
