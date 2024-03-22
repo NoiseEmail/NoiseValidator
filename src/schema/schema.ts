@@ -64,13 +64,13 @@ export default class Schema<
 
 
     
-    private static _walk = async (
+    private static _walk = async <ReturnableData>(
         instance: Schema<any, any>,
         schema: SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
         data: object,
         path: string[] = [],
         result: { [key: string]: unknown } = {}
-    ) => {
+    ): Promise<ReturnableData | GenericError> => {
         for (const key in schema) {
 
             // -- Check if the key is missing
@@ -129,19 +129,23 @@ export default class Schema<
             // -- If the value is an object, walk it
             else if (typeof value === 'object') {
                 const walk_result = await Schema._walk(instance, value, new_data, new_path);
-                if (GenericError.is_error(walk_result)) {
-                    walk_result.data = {
+
+                if (walk_result instanceof Error) {
+                    const error = GenericError.from_unknown(walk_result);
+                    error.data = {
                         path: new_path,
                         expected: value.constructor.name
                     };
-                    instance.push_error(walk_result);
-                    return walk_result
+
+                    instance.push_error(error);
+                    return error;
                 };
+                
                 result[key] = walk_result;
             }
         }
 
-        return result;
+        return result as ReturnableData;
     };
 
 
@@ -160,32 +164,29 @@ export default class Schema<
 
         try {
             // -- Try to walk the schema
-            const result = await Schema._walk(this, this._schema, data) as 
-                { [key: string]: unknown } | GenericError;
+            const result = await Schema._walk<ReturnableData>(this, this._schema, data);
 
-                // -- Error
-            if (GenericError.is_error(result)) return resolve({
+            // -- Error
+            if (result instanceof Error) return resolve({
                 type: 'error',
-                error: result as GenericError
+                error: GenericError.from_unknown(result)
             });
+
 
             // -- Success
-            else return resolve({
-                type: 'data',
-                data: result as ReturnableData
-            });
+            else return resolve({ type: 'data', data: result });
         }
 
-        catch (error) {
+        catch (unknown_error) {
+            // -- Convert anything to a generic error
+            const error = GenericError.from_unknown(
+                unknown_error,
+                new SchemaExecutionError(`An error occurred trying to validate ${this._id}`)
+            );  
 
-            const error_ = new SchemaExecutionError(`An error occurred trying to validate ${this._id}`);
-            this.push_error(error as GenericError);
-            error_.data = { error: error, errors: this.errors };
-
-            return resolve({
-                type: 'error',
-                error: error_
-            });
+            this.errors.forEach((error) => error.add_error(error));
+            this.push_error(error);
+            return resolve({ type: 'error', error });
         }
     });
 

@@ -20,8 +20,7 @@ export default class GenericType <
     protected readonly _on_invalid: (error: GenericError) => void;
     protected readonly _on_valid: (result: ReturnType) => void;
 
-    private _valid_called: boolean = false;
-    private _invalid_called: boolean = false;
+    
     
     public constructor(
         _input_value: unknown,
@@ -42,46 +41,27 @@ export default class GenericType <
         ReturnType | 
         Promise<ReturnType> |  
         Promise<GenericError> | 
-        GenericError => {
+        GenericError => 
+    {
+        // -- By default, throw an error, as each middleware should implement their own handler
         return new MissingHandlerError(`Handler not implemented for ${this.constructor.name}`);
-    };
-
-    private _already_executed = (
-        type: 'valid' | 'invalid'
-    ) => {
-        if (type === 'valid' && this._invalid_called) 
-            this.log.error(`Valid method called after invalid method already called`, this.constructor.name);
-
-        if (type === 'invalid' && this._valid_called)
-            this.log.error(`Invalid method called after valid method already called`, this.constructor.name);
-
-        if (this._executed) 
-            this.log.error(`The handler has already been executed`, this.constructor.name);
     };
 
     protected invalid = (
         error: GenericError | string
     ): GenericError => {
-        this._already_executed('invalid');
-        if (this._invalid_called) return new GenericTypeExecutionError(
-            `The handler has already been executed`, this.constructor.name);
-
-        this._invalid_called = true;
+        // -- Construct the error
         if (typeof error === 'string') error = new InvalidInputError(error);
+        error.data = { middleware: this.constructor.name };
+
+        // -- Return the error
         this._on_invalid(error);
-        
         return error;
     };
 
     protected valid = (result: ReturnType): ReturnType => {
-        this._already_executed('valid');
-        if (this._valid_called) throw new GenericTypeExecutionError(
-            `The valid method has already been called`, this.constructor.name);
-
-        this._valid_called = true;
         this._validated = result;
         this._on_valid(result);
-
         return result;
     }
 
@@ -186,25 +166,30 @@ export default class GenericType <
         
         try { 
             const value = await this.handler(this._input_value); 
-            if (GenericError.is_error(value)) {
-                this.log.error(`Handler executed with an error`, (value as GenericError).message);
-                return this._on_invalid(value as GenericError);
+
+            if (value instanceof Error) {
+                this.log.debug(`Schema handler failed to execute`);
+                const error = GenericError.from_unknown(value);
+                return this._on_invalid(error);
             }
 
-            this.log.info(`Handler executed successfully`);
+
+            this.log.debug(`Schema handler executed successfully`);
             this._validated = value as ReturnType;
             this._on_valid(value as ReturnType);
         }
 
-        catch (error) {
-            if (GenericError.is_error(error)) {
-                this.log.error(`An error occurred trying to execute ${this.constructor.name}`, (error as GenericError));
-                return this._on_invalid(error as GenericError);
-            }
+        catch (unknown_error) {
 
-            const message = new InvalidInputError(`An error occurred trying to execute ${this.constructor.name}`);
-            this.log.error(message.serialize());
-            this._on_invalid(message);
+            // -- Convert anything to a generic error
+            const error = GenericError.from_unknown(
+                unknown_error,
+                new InvalidInputError(`An error occurred trying to execute ${this.constructor.name}`)
+            );  
+
+            // -- Log and return the error
+            this.log.error(error.serialize());
+            this._on_invalid(error);
         }
     }
 };

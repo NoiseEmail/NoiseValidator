@@ -213,11 +213,12 @@ export default class GenericMiddleware <
             if (value instanceof Error) {
 
                 // -- Make sure to return a generic error not just any error
+                this.log.debug(`Schema handler failed to execute`);
                 const error = GenericError.from_unknown(value);
                 return this._on_invalid(error);
             }
 
-            this.log.info(`Handler executed successfully`);
+            this.log.debug(`Middleware handler executed successfully`);
             this._validated = value;
             this._on_valid(value);
         }
