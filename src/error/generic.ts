@@ -101,10 +101,13 @@ export class GenericError extends Error {
 
 
 
-    public static from_unknown = (error: unknown): GenericError => {
+    public static from_unknown = (
+        error: unknown,
+        else_error: GenericError = new GenericError('An unknown error occurred', 500)
+    ): GenericError => {
         if (error instanceof Error) return GenericError.from_error(error);
         if (typeof error === 'string') return new GenericError(error, 500);
         if (error instanceof GenericError) return error;
-        return new GenericError('An unknown error occurred', 500);
+        return else_error;
     };
 }

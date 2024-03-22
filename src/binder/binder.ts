@@ -68,42 +68,49 @@ export default function Binder<
     route.add_binder({
         callback: async (data) => {
             try {
+                // -- Check if the callback returned an error
                 const result = await callback(data as CallbackObject);
-                if (GenericError.is_error(result)) throw result;
+                if (result instanceof GenericError) throw result;
+
 
                 // -- If there is an output schema, validate the output
                 if (schemas.output.length > 0) {
                     const validated = await validate_output(result, schemas.output);
-                    if (GenericError.is_error(validated)) throw validated;
+                    if (validated instanceof GenericError) throw validated;
                     data.fastify.reply.send(validated);
                 }
 
                 // -- No output schema, no returned data.
             }
 
-            catch (error) { 
-                if (GenericError.is_error(error)) return error;
-                const schema_error = new BinderFailedToExecuteError('schema');
-                schema_error.data = { error };
-                return schema_error;
+            catch (unknown_error) { 
+                return GenericError.from_unknown(
+                    unknown_error, 
+                    new BinderFailedToExecuteError('Unknown error occurred in binder callback')
+                );
             }
         },
 
-        validate: async (request, reply) => {
 
-            if (route.debug) Log.debug(`Validating request for ${route.path} with method: ${method}`);
 
+        validate: async (request, reply) => {   
+
+            // -- Validate the request inputs
+            Log.debug(`Validating request for ${route.path} with method: ${method}`);
             const validated = await validate_binder_request(request, schemas, route.path);
-            if (route.debug) Log.debug(`Request for ${route.path} with method: ${method} has been validated`);
-            if (GenericError.is_error(validated)) return validated as GenericError;
-            if (route.debug) Log.debug(`Request for ${route.path} with method: ${method} has successfully been validated`);
-            
+
+            // -- Check if the validation failed
+            Log.debug(`Request for ${route.path} with method: ${method} has been validated`);
+            if (validated instanceof GenericError) return validated;
+            Log.debug(`Request for ${route.path} with method: ${method} has successfully been validated`);
+
+            // -- Return the validated data
             return {
                 middleware: configuration.middleware,
-                body: (validated as BinderValidatorResult).body,
-                query: (validated as BinderValidatorResult).query,
-                headers: (validated as BinderValidatorResult).headers,
-                url: (validated as BinderValidatorResult).url,
+                body: validated.body,
+                query: validated.query,
+                headers: validated.headers,
+                url: validated.url,
 
                 fastify: { request, reply },
 
@@ -121,17 +128,21 @@ export default function Binder<
 
 
 const add_header = (fastify_reply: FastifyReply) => (key: string, value: string) => {
+    Log.debug(`Adding header: ${key} with value: ${value}`);
     fastify_reply.header(key, value);
 };
 
 const add_headers = (fastify_reply: FastifyReply) => ([key, value]: [string, string]) => {
+    Log.debug(`Adding headers: ${key} with value: ${value}`);
     fastify_reply.header(key, value);
 };
 
 const remove_header = (fastify_reply: FastifyReply) => (key: string) => {
+    Log.debug(`Removing header: ${key}`);
     fastify_reply.removeHeader(key);
 };
 
 const remove_headers = (fastify_reply: FastifyReply) => (keys: Array<string>) => {
+    Log.debug(`Removing headers: ${keys}`);
     keys.forEach(key => fastify_reply.removeHeader(key));
 };

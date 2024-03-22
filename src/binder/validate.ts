@@ -14,25 +14,27 @@ export const validate_binder_request = async (
 ): Promise<BinderValidatorResult | GenericError> => {
     try {
 
+
         const body = await validate_inputs(fastify_request.body, schemas.body);
-        if (GenericError.is_error(body)) throw body;
+        if (body instanceof GenericError) throw body;
 
         const query = await validate_inputs(fastify_request.query, schemas.query);
-        if (GenericError.is_error(query)) throw query;
+        if (body instanceof GenericError) throw query;
 
         const headers = await validate_inputs(fastify_request.headers, schemas.headers);
-        if (GenericError.is_error(headers)) throw headers;
+        if (body instanceof GenericError) throw headers;
+
 
         // -- We are entrusting the url to be parsed by Fastify
         const url = fastify_request.params;
-        return Promise.resolve({ body, query, headers, url });
+        return { body, query, headers, url }
     }
 
-    catch (error) {
-        if (GenericError.is_error(error)) error as GenericError;
-        const validator_error = new FailedToValidateInputError(name);
-        validator_error.data = { error };
-        return validator_error;
+    catch (unknown_error) {
+        return GenericError.from_unknown(
+            unknown_error, 
+            new FailedToValidateInputError(name + ' - validate_binder_request')
+        );
     }
 };
 
@@ -44,15 +46,15 @@ export const validate_output = async (
 ): Promise<any | GenericError> => {
     try {
         const result = await validate_inputs(data, schema);
-        if (GenericError.is_error(result)) return result;
+        if (result instanceof GenericError) throw result;
         return result;
     }
 
-    catch (error) {
-        if (GenericError.is_error(error)) error as GenericError;
-        const schema_error = new FailedToValidateInputError('schema, validate_output');
-        schema_error.data = { error };
-        return schema_error;
+    catch (unknown_error) {
+        return GenericError.from_unknown(
+            unknown_error, 
+            new FailedToValidateInputError('validator, validate_output')
+        );
     }
 };
 
@@ -64,15 +66,15 @@ const validate_input = async (
 ): Promise<any | GenericError> => {
     try {
         const result = await schema.validate(data);
-        if (result.type !== 'data') return result.error;
+        if (result.type !== 'data') throw result.error;
         else return result.data;
     }
 
-    catch (error) {
-        if (GenericError.is_error(error)) return error;
-        const schema_error = new FailedToValidateInputError('schema, validate_input');
-        schema_error.data = { error };
-        return schema_error;
+    catch (unknown_error) {
+        return GenericError.from_unknown(
+            unknown_error, 
+            new FailedToValidateInputError('validator, validate_input')
+        );
     }
 };
 
@@ -83,23 +85,23 @@ const validate_inputs = async (
     schemas: Array<Schema.SchemaLike<any>>
 ): Promise<any | GenericError> => {
     try {
+        // -- Attempt to validate the data against all the schemas
         const result = await Promise.all(schemas.map(async (schema) => {
-            const validated =  await validate_input(data, schema);
-            if (GenericError.is_error(validated)) 
-                throw validated;
+            const validated = await validate_input(data, schema);
+            if (validated instanceof GenericError) throw validated;
             return validated;
         }));
 
 
+        // -- Cant merge a single or no objects
         if (result.length <= 1) return result[0];
         else return mergician({}, ...result);
     }
 
-    catch (error) {
-        console.log('error', error);
-        if (GenericError.is_error(error)) error as GenericError;
-        const validator_error = new FailedToValidateInputError('validator, validate_inputs');
-        validator_error.data = { error };
-        return Promise.resolve(validator_error);
+    catch (unknown_error) {
+        return GenericError.from_unknown(
+            unknown_error, 
+            new FailedToValidateInputError('validator, validate_inputs')
+        );
     }
 };
