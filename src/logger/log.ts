@@ -1,6 +1,15 @@
 import { LogType } from './types.d';
 import { log_types } from './type_enum';
 
+
+// -- Globa space less gooo, this is only used by the router
+//    and is set as you start the server, it will get replaced
+//    with some better config stuff, but fornow thissldo
+let debug_mode: boolean = false;
+export const _debug_mode = (value: boolean): boolean => debug_mode = value;
+
+
+
 /**
  * @name log_header
  * Logs a header to the console
@@ -47,6 +56,7 @@ export const log = (type: LogType, ...args: Array<unknown>): void => {
         break;
 
     case log_types.DEBUG:
+        if (!_debug_mode) return;
         console.log(`${header}`, ...args);
         break;
 

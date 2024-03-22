@@ -1,5 +1,5 @@
 import { Route } from '../route';
-import Log from '../logger/log';
+import Log, { _debug_mode } from '../logger/log';
 import Fastify, {FastifyInstance} from 'fastify';
 import { OptionalRouterConfiguration, RouterConfiguration } from './types';
 import { DefualtRouterConfiguration } from '.';
@@ -46,6 +46,7 @@ export default class Router {
         
         Log.info('Starting server...');
         this._started = true;
+        _debug_mode(configuration.debug || false);
         this._configuration = mergician(DefualtRouterConfiguration, configuration) as RouterConfiguration;
         this._server.listen({
             port: configuration.port || 3000,
