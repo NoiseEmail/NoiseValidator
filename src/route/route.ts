@@ -99,7 +99,7 @@ export default class Route<
                 const binder = binders[i];
 
                 const validator_result = await binder.validate(request, reply);
-                if (GenericError.is_generic_error(validator_result)) {
+                if (GenericError.is_error(validator_result)) {
                     if (this._router.configuration.debug) Log.debug(`Route: ${this._path} has FAILED validation`);
                     errors.push(validator_result as GenericError);
                 }
@@ -108,19 +108,19 @@ export default class Route<
                     if (this._router.configuration.debug) Log.debug(`Route: ${this._path} has been validated`);
                     const callback_result = await binder.callback(validator_result as BinderCallbackObject<any, any, any, any, any>);
 
-                    if (GenericError.is_generic_error(callback_result)) {
+                    if (GenericError.is_error(callback_result)) {
                         if (this._router.configuration.debug) Log.debug(`Route: ${this._path} has returned an error`);
                         error_response = callback_result as GenericError;
                         break;
                     }
-                    
+
                     else return (this._router.configuration.debug) ? Log.debug(`Route: ${this._path} has been processed`) : void (0);
                 }
             }
 
             catch (error) {
                 if (this._router.configuration.debug) Log.debug('CATCH', error);
-                if (GenericError.is_generic_error(error)) errors.push(error as GenericError);
+                if (GenericError.is_error(error)) errors.push(error as GenericError);
                 else {
                     const generic_error = new GenericError('An error occurred', 500);
                     generic_error.data = { error };

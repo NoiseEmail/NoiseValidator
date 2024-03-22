@@ -186,7 +186,7 @@ export default class GenericType <
         
         try { 
             const value = await this.handler(this._input_value); 
-            if (GenericError.is_generic_error(value)) {
+            if (GenericError.is_error(value)) {
                 this.log.error(`Handler executed with an error`, (value as GenericError).message);
                 return this._on_invalid(value as GenericError);
             }
@@ -197,7 +197,7 @@ export default class GenericType <
         }
 
         catch (error) {
-            if (GenericError.is_generic_error(error)) {
+            if (GenericError.is_error(error)) {
                 this.log.error(`An error occurred trying to execute ${this.constructor.name}`, (error as GenericError));
                 return this._on_invalid(error as GenericError);
             }

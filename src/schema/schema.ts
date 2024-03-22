@@ -130,7 +130,7 @@ export default class Schema<
             // -- If the value is an object, walk it
             else if (typeof value === 'object') {
                 const walk_result = await Schema._walk(instance, value, new_data, new_path);
-                if (GenericError.is_generic_error(walk_result)) {
+                if (GenericError.is_error(walk_result)) {
                     walk_result.data = {
                         path: new_path,
                         expected: value.constructor.name
@@ -165,7 +165,7 @@ export default class Schema<
                 { [key: string]: unknown } | GenericError;
 
                 // -- Error
-            if (GenericError.is_generic_error(result)) return resolve({
+            if (GenericError.is_error(result)) return resolve({
                 type: 'error',
                 error: result as GenericError
             });

@@ -206,7 +206,7 @@ export default class GenericMiddleware <
         
         try { 
             const value = await this.handler(this._request_object); 
-            if (GenericError.is_generic_error(value)) {
+            if (GenericError.is_error(value)) {
                 this.log.error(`Handler executed with an error`, (value as GenericError).serialize());
                 return this._on_invalid(value as GenericError);
             }
