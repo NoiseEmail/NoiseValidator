@@ -41,8 +41,7 @@ export default class Route<
         reply: FastifyReply,
         error: GenericError
     ): void => {
-        if (this._router.configuration.debug) Log.error(error.message);
-
+        Log.debug(error.message);
         reply.code(error.code).send({
             error: error.serialize()
         });
