@@ -76,7 +76,7 @@ export default class Schema<
             // -- Check if the key is missing
             const value = schema[key],
                 new_path = path.concat(key),
-                new_data = data[key];
+                new_data = (data instanceof Object) ? data[key] : data;
 
 
             // -- If new data is a function, ista error
@@ -167,23 +167,26 @@ export default class Schema<
             const result = await Schema._walk<ReturnableData>(this, this._schema, data);
 
             // -- Error
-            if (result instanceof Error) return resolve({
-                type: 'error',
-                error: GenericError.from_unknown(result)
-            });
-
+            if (result instanceof Error) {
+                const error = GenericError.from_unknown(result);
+                error.data = { schema: this._id };
+                return resolve({ type: 'error', error });
+            }
 
             // -- Success
             else return resolve({ type: 'data', data: result });
         }
 
         catch (unknown_error) {
+            Log.debug(`An error occurred trying to validate ${this._id}`);
+
             // -- Convert anything to a generic error
             const error = GenericError.from_unknown(
                 unknown_error,
                 new SchemaExecutionError(`An error occurred trying to validate ${this._id}`)
             );  
-
+            
+            error.data = { schema: this._id };
             this.errors.forEach((error) => error.add_error(error));
             this.push_error(error);
             return resolve({ type: 'error', error });

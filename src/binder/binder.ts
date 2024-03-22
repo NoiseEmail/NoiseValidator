@@ -76,7 +76,18 @@ export default function Binder<
                 // -- If there is an output schema, validate the output
                 if (schemas.output.length > 0) {
                     const validated = await validate_output(result, schemas.output);
-                    if (validated instanceof GenericError) throw validated;
+                    if (validated instanceof Error) {
+
+                        // -- Make sure the error is a GenericError
+                        const error = GenericError.from_unknown(
+                            validated, 
+                            new BinderFailedToExecuteError('Failed to validate output')
+                        );
+
+                        // -- Add a hint to the error
+                        error.hint = 'The output of the binder failed to validate against the output schema';
+                        throw validated;
+                    };
                     data.fastify.reply.send(validated);
                 }
 

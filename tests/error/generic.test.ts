@@ -65,6 +65,13 @@ describe('GenericError', () => {
 
 
 
+    test('Error instance of GenericError', () => {
+        const error = new Error('Test');
+        expect(error instanceof GenericError).toBe(false);
+    });
+
+
+
     test('GenericError has a message', () => {
         const error = new GenericError('Test', 500);
         expect(error.message).toBe('Test');
@@ -115,7 +122,6 @@ describe('GenericError', () => {
         const error2 = new GenericError('Test2', 500);
         error.add_error(error2);
 
-        console.log(error.serialize());
         expect(error.serialize().errors).toEqual([ error2.serialize() ]);
     });
 
@@ -134,10 +140,12 @@ describe('GenericError', () => {
     // -- Serializing
     test('GenericError can serialize', () => {
         const error = new GenericError('Test', 500);
+        error.hint = 'a';
         expect(error.serialize()).toEqual({
             id: error.id,
             message: 'Test',
             code: 500,
+            hint: 'a',
             data: {},
             type: 'GenericError',
             errors: []
@@ -165,5 +173,15 @@ describe('GenericError', () => {
         expect(GenericError.from_unknown(generic_error).message).toBe('Test');
         expect(GenericError.from_unknown(string).message).toBe('Other');
         expect(GenericError.from_unknown(invalid).message).toBe('An unknown error occurred');
+    });
+
+
+
+    // -- From unknown, keep same id
+    test('GenericError keeps the same id when created from an unknown', () => {
+        const error = new GenericError('Test', 500);
+        const from_unknown = GenericError.from_unknown(error);
+
+        expect(GenericError.from_unknown(error).id).toBe(from_unknown.id);
     });
 });

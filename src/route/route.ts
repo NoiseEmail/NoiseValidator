@@ -116,7 +116,7 @@ export default class Route<
                     // -- Check if the response is an error
                     if (callback_result instanceof Error) {
                         error_response = GenericError.from_unknown(callback_result);
-                        Log.debug(`Route: ${this._path} has returned an error`);
+                        Log.debug(`Route: ${this._path} has returned an error`, error_response.id);
                         break; // -- So we can return an error
                     }
 

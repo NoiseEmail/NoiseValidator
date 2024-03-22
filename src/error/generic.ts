@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import log from '../logger/log';
+import { SerializedGenericError } from './types';
 
 export class GenericError extends Error {
     private _other_errors: Map<string, GenericError> = new Map();
@@ -9,6 +10,7 @@ export class GenericError extends Error {
     protected readonly _code: number;
     protected readonly _type: string = this.constructor.name;
     protected _data: object = {};
+    protected _hint: string = '';
 
     public constructor(
         message: string,
@@ -22,25 +24,13 @@ export class GenericError extends Error {
     }
 
     // -- Function that should be overridden by child classes
-    public serialize = (): {
-        id: string,
-        message: string,
-        code: number,
-        data: object,
-        type: string
-        errors: Array<{
-            id: string,
-            message: string,
-            code: number,
-            data: object,
-            type: string
-        }>
-    } => {
+    public serialize = (): SerializedGenericError => {
         return {
             id: this._id,
             message: this._message,
             code: this._code,
             data: this._data,
+            hint: this._hint,
             type: this._type,
             errors: this.errors.map((error) => error.serialize())
         };
@@ -63,13 +53,17 @@ export class GenericError extends Error {
 
     public set data(data: object) { this._data = data; }
     public get data(): object { return this._data; }
+
+    public get hint(): string { return this._hint; }
+    public set hint(hint: string) { this._hint = hint; }
+
+
     public get id(): string { return this._id; }
     public get message(): string { return this._message; }
     public get code(): number { return this._code; }
     public get type(): string { return this._type; }
 
 
-    
     public add_error = (error: GenericError): void => {
         // -- Ensure that the error is not already in the map
         if (this._other_errors.has(error.id)) return;
@@ -105,9 +99,9 @@ export class GenericError extends Error {
         error: unknown,
         else_error: GenericError = new GenericError('An unknown error occurred', 500)
     ): GenericError => {
+        if (error instanceof GenericError) return error;
         if (error instanceof Error) return GenericError.from_error(error);
         if (typeof error === 'string') return new GenericError(error, 500);
-        if (error instanceof GenericError) return error;
         return else_error;
     };
 }
