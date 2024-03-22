@@ -5,6 +5,7 @@ import { log_types } from '../logger/type_enum';
 import { LogFunctions, LogObject, LogType } from '../logger/types';
 import { MissingHandlerError, InvalidInputError, GenericTypeExecutionError } from './errors';
 import { Schema } from './types.d';
+import { Log } from '..';
 
 
 export default class GenericType <
@@ -188,6 +189,7 @@ export default class GenericType <
             );  
 
             // -- Log and return the error
+            Log.debug(`An error occurred trying to execute ${this.constructor.name}: ${error.id}`);
             this.log.error(error.serialize());
             this._on_invalid(error);
         }

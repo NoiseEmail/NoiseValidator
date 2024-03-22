@@ -4,6 +4,7 @@ import { GenericError } from "../error";
 import { FailedToValidateInputError } from "./errors";
 import { Schema } from "../schema/types.d";
 import { mergician } from "mergician";
+import { Log } from "..";
 
 
 
@@ -31,10 +32,13 @@ export const validate_binder_request = async (
     }
 
     catch (unknown_error) {
-        return GenericError.from_unknown(
+        const error = GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError(name + ' - validate_binder_request')
         );
+
+        Log.debug(`validate_binder_request: Binder failed to validate request: ${error.id}`);
+        return error;
     }
 };
 
@@ -51,10 +55,13 @@ export const validate_output = async (
     }
 
     catch (unknown_error) {
-        return GenericError.from_unknown(
+        const error = GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError('validator, validate_output')
         );
+
+        Log.debug(`validate_output: Failed to validate output: ${error.id}`);
+        return error;
     }
 };
 
@@ -71,10 +78,13 @@ const validate_input = async (
     }
 
     catch (unknown_error) {
-        return GenericError.from_unknown(
+        const error = GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError('validator, validate_input')
         );
+
+        Log.debug(`validate_input: Failed to validate input: ${error.id}`);
+        return error;
     }
 };
 
@@ -99,9 +109,12 @@ const validate_inputs = async (
     }
 
     catch (unknown_error) {
-        return GenericError.from_unknown(
+        const error = GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError('validator, validate_inputs')
         );
+
+        Log.debug(`validate_inputs: Failed to validate inputs: ${error.id}`);
+        return error;
     }
 };

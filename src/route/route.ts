@@ -131,7 +131,7 @@ export default class Route<
 
             catch (unknown_error) {
                 const error = GenericError.from_unknown(unknown_error);
-                Log.debug(`Route: ${this._path} has FAILED to process`, error.serialize());
+                Log.debug(`Route: ${this._path} has FAILED to process`, error.id);
                 errors.push(error);                      
             }
         }

@@ -178,14 +178,14 @@ export default class Schema<
         }
 
         catch (unknown_error) {
-            Log.debug(`An error occurred trying to validate ${this._id}`);
 
             // -- Convert anything to a generic error
             const error = GenericError.from_unknown(
                 unknown_error,
                 new SchemaExecutionError(`An error occurred trying to validate ${this._id}`)
-            );  
-            
+            );      
+
+            Log.debug(`Schema validate: An error occurred trying to validate ${this._id}: ${error.id}`);
             error.data = { schema: this._id };
             this.errors.forEach((error) => error.add_error(error));
             this.push_error(error);

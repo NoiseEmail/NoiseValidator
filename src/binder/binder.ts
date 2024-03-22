@@ -95,10 +95,13 @@ export default function Binder<
             }
 
             catch (unknown_error) { 
-                return GenericError.from_unknown(
+                const error = GenericError.from_unknown(
                     unknown_error, 
                     new BinderFailedToExecuteError('Unknown error occurred in binder callback')
                 );
+
+                Log.debug(`Binder failed to execute: ${error.id}`);
+                return error;
             }
         },
 

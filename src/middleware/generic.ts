@@ -6,6 +6,7 @@ import { log_header } from "../logger/log";
 import { log_types } from "../logger/type_enum";
 import { Schema } from "../schema/types.d";
 import { execute, Schema as SchemaClass } from "../schema";
+import { Log } from "..";
 
 
 export default class GenericMiddleware <
@@ -231,6 +232,7 @@ export default class GenericMiddleware <
             );  
 
             // -- Log and return the error
+            Log.debug(`An error occurred trying to execute ${this.constructor.name}: ${error.id}`);
             this.log.error(error.serialize());
             this._on_invalid(error);
         }
