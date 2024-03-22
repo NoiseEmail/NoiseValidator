@@ -1,10 +1,9 @@
 import { randomUUID } from 'crypto';
 import { Schema as SchemaTypes } from './types.d';
-import { GenericError as GenericErrorTypes } from '../error/types.d';
+import { GenericError } from '../error';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
 import { execute } from './generic';
 import { LogObject } from '../logger/types';
-import { GenericError } from '../error';
 import { Log } from '..';
 
 
@@ -19,7 +18,7 @@ export default class Schema<
     public readonly _schema: InputSchema;
 
     private _log_stacks: Array<LogObject>;
-    private _errors: Array<GenericErrorTypes.GenericErrorLike>;
+    private _errors: Array<GenericError>;
 
     private constructor(
         schema: InputSchema
@@ -197,6 +196,6 @@ export default class Schema<
     public set_log_stack = (log_stack: Array<LogObject>) => this._log_stacks.push(...log_stack);
     public get log_stack(): Array<LogObject> { return this._log_stacks; };
 
-    public get errors(): Array<GenericErrorTypes.GenericErrorLike> { return this._errors; };
-    protected push_error = (error: GenericErrorTypes.GenericErrorLike) => this._errors.push(error);
+    public get errors(): Array<GenericError> { return this._errors; };
+    protected push_error = (error: GenericError) => this._errors.push(error);
 };

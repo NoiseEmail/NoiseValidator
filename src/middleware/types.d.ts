@@ -1,8 +1,6 @@
-import { GenericError } from '../error/types.d';
-import { LogFunctions, LogObject } from '../logger/types';
-import {FastifyReply, FastifyRequest, HTTPMethods} from 'fastify';
+import { GenericError } from '../error';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { Schema } from '../schema/types';
-import { Schema as SchemaClass } from "../schema";
 
 
 
@@ -17,12 +15,12 @@ export namespace Middleware {
 
         public constructor(
             _request_object: RequestObject,
-            _on_invalid: (error: GenericError.GenericErrorLike) => void,
+            _on_invalid: (error: GenericError) => void,
             _on_valid: (result: ReturnType) => ReturnType
         );
 
         protected _request_object: RequestObject;
-        protected _on_invalid: (error: GenericError.GenericErrorLike) => void;
+        protected _on_invalid: (error: GenericError) => void;
         protected _on_valid: (result: ReturnType) => ReturnType;
 
         protected validate_input<
@@ -36,15 +34,15 @@ export namespace Middleware {
 
         protected handler: (
             input_value: RequestObject,
-            invalid: (error: GenericError.GenericErrorLike) => void,
+            invalid: (error: GenericError) => void,
             valid: (result: ReturnType) => void
         ) => 
             ReturnType | 
             Promise<ReturnType> |  
-            Promise<GenericError.GenericErrorLike> | 
-            GenericError.GenericErrorLike;
+            Promise<GenericError> | 
+            GenericError;
 
-        protected invalid: (error: GenericError.GenericErrorLike | string) => GenericError.GenericErrorLike;
+        protected invalid: (error: GenericError | string) => GenericError;
         protected valid: (result: ReturnType) => void;
 
         public execute: () => Promise<void>;
@@ -58,7 +56,7 @@ export namespace Middleware {
         RequestObject extends AnyMiddlewareRequestObject = AnyMiddlewareRequestObject
     > = new (
         _request_object: RequestObject,
-        _on_invalid: (error: GenericError.GenericErrorLike) => void,
+        _on_invalid: (error: GenericError) => void,
         _on_valid: (result: ReturnType) => ReturnType
     ) => GenericMiddlewareLike<ReturnType, RequestObject>;
 

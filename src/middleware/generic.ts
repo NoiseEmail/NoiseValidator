@@ -1,10 +1,9 @@
 import { LogFunctions, LogObject, LogType } from "../logger/types.d";
 import { Middleware } from "./types.d";
-import { GenericError as GenericErrorTypes } from '../error/types.d';
+import { GenericError } from '../error';
 import { MiddlewareGenericError, MissingMiddlewareHandlerError } from "./errors";
 import { log_header } from "../logger/log";
 import { log_types } from "../logger/type_enum";
-import { GenericError } from "../error/generic";
 import { Schema } from "../schema/types.d";
 import { execute, Schema as SchemaClass } from "../schema";
 
@@ -21,14 +20,14 @@ export default class GenericMiddleware <
 
 
     protected readonly _request_object: RequestObject;
-    protected readonly _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void;
+    protected readonly _on_invalid: (error: GenericError) => void;
     protected readonly _on_valid: (result: ReturnType) => ReturnType;
 
     
 
     public constructor(
         _request_object: RequestObject,
-        _on_invalid: (error: GenericErrorTypes.GenericErrorLike) => void,
+        _on_invalid: (error: GenericError) => void,
         _on_valid: (result: ReturnType) => ReturnType
     ) {
         super(_request_object, _on_invalid, _on_valid);
@@ -44,16 +43,21 @@ export default class GenericMiddleware <
     ): 
         ReturnType | 
         Promise<ReturnType> |  
-        Promise<GenericErrorTypes.GenericErrorLike> | 
-        GenericErrorTypes.GenericErrorLike => {
+        Promise<GenericError> | 
+        GenericError => 
+    {
+        // -- By default, throw an error, as each middleware should implement their own handler
         return new MissingMiddlewareHandlerError(`Handler not implemented for ${this.constructor.name}`);
     };
 
     protected invalid = (
-        error: GenericErrorTypes.GenericErrorLike | string
-    ): GenericErrorTypes.GenericErrorLike => {
+        error: GenericError | string
+    ): GenericError => {
+        // -- Construct the error
         if (typeof error === 'string') error = new MiddlewareGenericError(error);
-        error.data = { middleware: this.constructor.name }
+        error.data = { middleware: this.constructor.name };
+
+        // -- Return the error
         this._on_invalid(error);
         return error;
     };
@@ -105,11 +109,8 @@ export default class GenericMiddleware <
 
         // -- Validate the input
         const result = await schema.validate(data);
-        if (result.type === 'error') {
-            this.log.error(`Invalid input for ${input_type}`, result.error.serialize());
-            throw result.error;
-        }
-
+        if (result.type === 'error') throw result.error;
+        
         // -- Return the result
         return result.data as ReturnType;
     };
@@ -206,20 +207,31 @@ export default class GenericMiddleware <
         
         try { 
             const value = await this.handler(this._request_object); 
-            if (GenericError.is_error(value)) {
-                this.log.error(`Handler executed with an error`, (value as GenericError).serialize());
-                return this._on_invalid(value as GenericError);
+
+            // -- We check for error instead of generic error as we dont
+            //    want to miss anything here
+            if (value instanceof Error) {
+
+                // -- Make sure to return a generic error not just any error
+                const error = GenericError.from_unknown(value);
+                return this._on_invalid(error);
             }
 
             this.log.info(`Handler executed successfully`);
-            this._validated = value as ReturnType;
-            this._on_valid(value as ReturnType);
+            this._validated = value;
+            this._on_valid(value);
         }
 
-        catch (error) {
-            const message = new MiddlewareGenericError(`An error occurred trying to execute ${this.constructor.name}`);
-            this.log.error(message.serialize());
-            this._on_invalid(message);
+        catch (unknown_error) {
+            // -- Convert anything to a generic error
+            const error = GenericError.from_unknown(
+                unknown_error,
+                new MiddlewareGenericError(`An error occurred trying to execute ${this.constructor.name}`)
+            );  
+
+            // -- Log and return the error
+            this.log.error(error.serialize());
+            this._on_invalid(error);
         }
     }
     
