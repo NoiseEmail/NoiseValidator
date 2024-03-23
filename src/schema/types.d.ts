@@ -26,10 +26,8 @@ export namespace Schema {
             invalid: (error: GenericError) => void,
             valid: (result: ReturnType) => void
         ) => 
-            ReturnType | 
-            Promise<ReturnType> |  
-            Promise<GenericError> | 
-            GenericError;
+            (ReturnType | Promise<ReturnType>) |
+            (Promise<GenericError> | GenericError);
 
         protected invalid: (error: GenericError | string) => GenericError;
         protected valid: (result: ReturnType) => ReturnType;
