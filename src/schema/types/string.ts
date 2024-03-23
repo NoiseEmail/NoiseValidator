@@ -1,3 +1,4 @@
+import { GenericError } from '../../error';
 import GenericType from '../generic';
 
 export default class String extends GenericType<string, string> {
@@ -8,17 +9,36 @@ export default class String extends GenericType<string, string> {
      * it fails, it's invalid
      */
     protected handler = () => {
-        this.log.debug('Handling string');        
 
-        try {
-            if (typeof this.value === 'string') return this.value;
+        try {   
 
-            // @ts-ignore
-            return this.value.toString();
+            // -- If the value is not provided, return undefined
+            if (
+                this.value === undefined ||
+                this.value === null ||
+                this.value === void 0
+            ) throw new Error('Value not provided');
+
+
+            // -- If the value is a string, return it
+            if (typeof this.value === 'string') 
+                return this.value;
+
+            // -- Check if the value contains a 'toString' method
+            if (typeof this?.value?.toString === 'function') {
+                const string = this.value.toString();
+                if (typeof string === 'string') return string;
+            }
+
+            // -- Throw an error if the value is not a string
+            throw new Error('Invalid string');
         }
         
-        catch {
-            return this.invalid('Invalid string');
+        catch (unknown_error) {
+            return this.invalid(GenericError.from_unknown(
+                unknown_error, 
+                new GenericError('Unknown error occurred parsing string', 500)
+            ));
         }
     }
 
