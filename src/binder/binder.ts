@@ -2,7 +2,15 @@ import { FastifyReply, HTTPMethods } from "fastify";
 import { BinderFailedToExecuteError, DefaultBinderConfiguration, validate_binder_request, validate_output } from ".";
 import { Middleware } from "../middleware/types.d";
 import { Schema } from "../schema/types.d";
-import { BinderCallbackObject, BinderCallbackReturn, BinderValidatorResult, CreateArray, DeepMergeReturnTypes, GetOutputType, OptionalBinderConfiguration, SchemasValidator } from "./types.d";
+import { 
+    BinderCallbackObject, 
+    CreateArray, 
+    DeepMergeReturnTypes, 
+    GetOutputType, 
+    SplitObject, 
+    OptionalBinderConfiguration, 
+    SchemasValidator 
+} from "./types.d";
 import { mergician } from "mergician";
 import { Route } from "../route";
 import { GenericError } from "../error";
@@ -17,7 +25,8 @@ export default function Binder<
 
     Output extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
     ParsedOutput extends DeepMergeReturnTypes<CreateArray<Output>>,
-    OutputType extends GetOutputType<ParsedOutput, ParsedOutput>,
+    OutputTypes extends SplitObject<GetOutputType<ParsedOutput, ParsedOutput>>,
+    OutputType extends OutputTypes['required'] & OutputTypes['optional'],
 
     DynamicURL extends string,
     
@@ -41,6 +50,7 @@ export default function Binder<
     callback: (data: CallbackObject) => 
         OutputType | 
         Promise<OutputType> |
+        
         GenericError | 
         Promise<GenericError>
 ) {

@@ -11,17 +11,17 @@ const Optional = <
 >(
     constructor: Constructor
 ) => class OptionalClass extends GenericType<
-    ReturnType | undefined | void | null, InputShape | undefined 
+    ReturnType | undefined | void, InputShape | undefined | Partial<InputShape>
 > {
     constructor(
         input_value: unknown,
         on_invalid: (error: GenericError) => void,
-        on_valid: (result: ReturnType | undefined | void | null) => void,
+        on_valid: (result: ReturnType | undefined | void) => void,
     ) {
         super(input_value, on_invalid, on_valid);
     }
 
-    protected handler = async (): Promise<ReturnType | undefined | void | null> => {
+    protected handler = async (): Promise<ReturnType | undefined | void> => {
         if (this.value === undefined) return undefined;
 
         return new Promise<ReturnType | undefined>((resolve, reject) => {

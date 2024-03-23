@@ -97,7 +97,7 @@ export namespace Schema {
         InstanceType<Paramater>['_input_shape'];
 
 
-
+        
     /**
      * @name ParsedSchema
      * @description Given a `InputSchema` or `FlatSchema` type, it will return a new type
@@ -128,6 +128,16 @@ export namespace Schema {
             : never;
     };
 
+
+    type ExtractOptional<T> = {
+        [K in keyof T as Exclude<T[K], undefined> extends never ? never : K]: T[K] extends object
+          ? ExtractOptional<T[K]>
+          : T[K];
+      };
+      
+    export type OptionalParsedSchema<
+        Schema 
+    > = ExtractOptional<Schema>;
 
 
     /**

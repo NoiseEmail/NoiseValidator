@@ -1,81 +1,68 @@
-// import {
-//     Binder,
-//     GenericMiddleware,
-//     Schema,
-//     Uuid,
-//     Number,
-//     String,
-//     Optional,
-//     Router,
-//     Route
-// } from 'gs';
+import {
+    Binder,
+    GenericMiddleware,
+    Schema,
+    Uuid,
+    Number,
+    String,
+    Optional,
+    Router,
+    Route
+} from 'gs';
+import { ExcludeNonOptional, ExtractOtional, Split } from './binder/types';
 
 
 
-// class Test1Middleware extends GenericMiddleware<{
-//     a: string
-// }> {
+class Test1Middleware extends GenericMiddleware<{
+    a: string
+}> {
     
-// };
+};
 
-// class Test2Middleware extends GenericMiddleware<{
-//     b: string
-// }> {
+class Test2Middleware extends GenericMiddleware<{
+    b: string
+}> {
     
-// };
+};
 
 
 
-// const body_1_schema = new Schema.Body({
-//     a: String,
-//     b: Number,
-//     c: Optional(Uuid)
-// });
-
-// const body_2_schema = new Schema.Body({
-//     a: String,
-//     b: Number,
-//     c: Uuid
-// });
+const body_1_schema = new Schema.Body({
+    a: String,
+    b: Number,
+    c: Optional(Number)
+});
 
 
 
-// const query_1_schema = new Schema.Query({
-//     a: String,
-//     b: Number,
-//     c: Optional(Uuid)
-// });
-
-// const query_2_schema = new Schema.Query({
-//     a: String,
-//     b: Number,
-//     c: Uuid
-// });
+Router.instance.start({ debug: true });
+const basic_route = new Route('/basic', { friendly_name: 'Basic Route' });
 
 
-// Router.instance.start({ debug: true });
-// const basic_route = new Route('/basic', { friendly_name: 'Basic Route' });
+Binder(basic_route, 'GET', {
+    schemas: {
+        output: body_1_schema,
+    }
+}, (data) => {
 
 
-// Binder(basic_route, 'GET', {
-//     middleware: {
-//         test: Test1Middleware,
-//         test2: Test2Middleware
-//     },
-//     schemas: {
-//         body: body_1_schema,
-//         query: query_1_schema,
-//         output: body_1_schema,
-//     }
-// }, (data) => {
-//     data.middleware.test.a;
+    return {
+        a: 'test',
+        b: 1,
+        c: 2
+    }
+});
 
-//     data.body.a;
-//     // data.url.id;
 
-//     return {
-//         a: 'a',
-//         b: 1,
-//         c: 'c'
-//     }
-// });
+type test = Split<ExcludeNonOptional<{
+    a: string,
+    b: undefined | number,
+}>>;
+
+
+let b: test['optional'] = {
+  
+};
+let c: test['required'] = {
+    
+};

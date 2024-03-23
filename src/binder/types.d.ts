@@ -135,6 +135,7 @@ type DeepMergeReturnTypes<
 
 
 export type BinderMap = Map<HTTPMethods, Array<BinderMapObject>>;
+type IsOptional<Input> = Input extends void | undefined ? true : false;
 
 
 
@@ -150,3 +151,93 @@ export type GetOutputType<
     Input extends { [x: string]: never; }
         ? void
         : ParsedOutput;
+
+
+
+// -- Man, I really fucking hated making these.
+export type DeepExcludeNonOptional<T> = {
+    [K in keyof T]: 
+        T[K] extends object ? DeepExcludeNonOptional<T[K]> : 
+            Extract<T[K], undefined> extends never ? never : T[K]
+}
+
+export type DeepExcludeOptional<T> = {
+    [K in keyof T]: 
+        T[K] extends object ? DeepExcludeOptional<T[K]> : 
+            Extract<T[K], undefined> extends never ? T[K] : never
+}
+
+export type DeepOmit<T, OmitType> = {
+    [K in keyof T as T[K] extends OmitType ? never : K]: 
+        T[K] extends object ? DeepOmit<T[K], OmitType> : T[K];
+};
+  
+export type DeepPartial<T> = {
+    [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K] | undefined;
+};
+
+
+
+/**
+ * @name DeepOptional
+ * @description Given an object, it will return a new object with all the keys
+ * that have a value of `undefined` Marked as optional.
+ * 
+ * @example
+ * type Input = {
+ *   a: string,
+ *   b: undefined | number,
+ * }
+ * 
+ * type Output = OmitNonOptional<Input>;
+ * Output = {
+ *    b: number | undefined
+ * }
+ */
+export type DeepOptional<Input> = DeepPartial<DeepOmit<DeepExcludeNonOptional<Input>, never>>;
+
+
+
+/**
+ * @name DeepRequired
+ * @description Given an object, it will return a new object with all the keys
+ * that are optional removed.
+ * 
+ * @example
+ * type Input = {
+ *   a: string,
+ *   b?: number,
+ * }
+ * 
+ * type Output = OmitOptional<Input>;
+ * Output = {
+ *   a: string
+ * }
+ */
+export type DeepRequired<Input> = DeepOmit<DeepExcludeOptional<Input>, undefined>;
+
+
+  
+/**
+ * @name SplitObject
+ * @description Given an object, it will return an object with two keys:
+ * `required` and `optional`. The `required` key will contain all the keys
+ * that are required, and the `optional` key will contain all the keys that
+ * are optional.
+ * 
+ * @example
+ * type Input = {
+ *  a: string,
+ *  b?: number | undefined,
+ * }
+ * 
+ * type Output = SplitObject<Input>;
+ * Output = {
+ *    required: { a: string },
+ *    optional: { b: number | undefined }
+ * }
+ */
+export type SplitObject<Input> = {
+    required: DeepRequired<Input>,
+    optional: DeepOptional<Input>
+};
