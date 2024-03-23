@@ -16,6 +16,8 @@ NoiseValidator is a robust schema validation layer built in TypeScript. It serve
 
 ## Getting Started
 
+Small note: NoiseValidator is still in development and is not yet ready for production use. If you'd like to contribute, please feel free to open a pull request.
+
 To get started with NoiseValidator, you'll need to install it as a remote.
 
 ```bash
@@ -98,5 +100,10 @@ Binder(follow_account, 'POST', {
 });
 
 ```
+
+### Example of NoiseValidator's Type Inference in Action
+
 [Schema Type Inference](https://github.com/NoiseEmail/NoiseValidator/assets/83783716/ba6b9f09-10cc-45cc-b386-018cec6e2b2c)
+
 [Output Schema Inference](https://github.com/NoiseEmail/NoiseValidator/assets/83783716/b3cd7dea-35fd-4a10-8495-e5f4b1b7d28a)
+
