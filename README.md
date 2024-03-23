@@ -96,6 +96,7 @@ Binder(follow_account, 'POST', {
 });
 
 ```
-[Screencast from 2024-03-23 19-29-56.webm](https://github.com/NoiseEmail/NoiseValidator/assets/83783716/504a21ab-2eec-480e-8a4a-b6752c246018)
+[Schema Type Inference.webm](https://github.com/NoiseEmail/NoiseValidator/assets/83783716/ba6b9f09-10cc-45cc-b386-018cec6e2b2c)
+
 
 
