@@ -12,6 +12,7 @@ import {
     Uuid,
     Array,
     execute,
+    Enum,
     Optional
 } from './schema';
 
@@ -60,6 +61,7 @@ export {
     Number,
     Uuid,
     execute,
+    Enum,
     Optional,
     Array,
 

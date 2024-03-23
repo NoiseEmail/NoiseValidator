@@ -14,6 +14,7 @@ import Number from './types/number';
 import Optional from './types/optional';
 import Uuid from './types/uuid';
 import Array from './types/array';
+import Enum from './types/enum';
 
 export {
     GenericType,
@@ -27,7 +28,8 @@ export {
     String,
     Number,
     Uuid,
-    
+
+    Enum,
     Array,
     execute,
     Optional
