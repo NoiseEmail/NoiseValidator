@@ -134,6 +134,7 @@ export default class GenericMiddleware <
     *    return `SomeWrapperClass<${input.name}>`;    
     * }
     */
+    // deepcode ignore StaticAccessThis: Cant access on an inherited class
     public static get name(): string { return this.name; }
 
 

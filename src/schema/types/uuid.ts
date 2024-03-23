@@ -6,7 +6,6 @@ import {
     validate, 
     version 
 } from 'uuid';
-import { Schema } from '../types';
 import { GenericError } from '../../error';
 
 export default class Uuid extends GenericType<string, string> {
@@ -55,12 +54,10 @@ export default class Uuid extends GenericType<string, string> {
             }
 
             // -- Create an error and return it
-            const error = GenericError.from_unknown(
+            return this.invalid(GenericError.from_unknown(
                 unknown_error, 
                 new GenericError('Unknown error occurred in UUID handler', 500)
-            );
-        
-            return this.invalid(error);
+            ));
         }
     }
 
@@ -77,7 +74,7 @@ export default class Uuid extends GenericType<string, string> {
         protected version = configuration.version ?? 4;
     }
 
-    
+
     
     public static get name() {
         return 'UUID';

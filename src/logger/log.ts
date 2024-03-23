@@ -44,17 +44,11 @@ export const log = (type: LogType, ...args: Array<unknown>): void => {
         bold_style = 'font-weight: bold;';
 
     switch (type) {
-    case log_types.INFO:
-        console.log(`${header}`, ...args);
-        break;
-
-    case log_types.WARN:
-        console.log(`${header}`, ...args);
-        break;
-
-    case log_types.ERROR:
-        console.log(`${header}`, ...args);
-        break;
+        case log_types.INFO:
+        case log_types.WARN:
+        case log_types.ERROR:
+            console.log(`${header}`, ...args);
+            break;
 
     case log_types.DEBUG:
         if (!_debug_mode) return;
