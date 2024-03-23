@@ -41,8 +41,8 @@ export namespace Schema {
 
 
     export type GenericTypeConstructor<
-        ReturnType extends unknown = unknown,
-        InputShape extends unknown = unknown
+        ReturnType extends any = any,
+        InputShape extends any = any
     > = new (
         input_value: unknown,
         on_invalid: (error: GenericError) => void,

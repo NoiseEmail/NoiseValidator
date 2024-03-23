@@ -1,7 +1,8 @@
 import {
     Boolean,
     Array,
-    Uuid,
+    
+    Number,
     String,
     execute,
     Optional
@@ -12,12 +13,12 @@ import {
 describe('Type: Optional', () => {
 
     test('Valid Optional (String)', async () => {
-        const optional = Optional(String);
+        const optional = Optional(String, 'test');
 
         expect((await execute(optional, 'hello')).is_error).toBe(false);
         expect((await execute(optional, 'hello')).result).toBe('hello');
     });
-    
+
     test('Valid Optional (Boolean)', async () => {
         const optional = Optional(Boolean);
 
@@ -74,5 +75,34 @@ describe('Type: Optional', () => {
         const optional = Optional(Number);
 
         expect((await execute(optional, 'hello')).is_error).toBe(true);
+    });
+
+
+    test('Default Value', async () => {
+        const optional = Optional(String, 'hello');
+
+        expect((await execute(optional, void 0)).is_error).toBe(false);
+        expect((await execute(optional, void 0)).result).toBe('hello');
+    });
+
+    test('Default Value (Null)', async () => {
+        const optional = Optional(String, null);
+
+        expect((await execute(optional, void 0)).is_error).toBe(true);
+        expect((await execute(optional, void 0)).result.message).toBe('Value not provided');
+    });
+
+    test('Default Value (Boolean)', async () => {
+        const optional = Optional(Boolean, true);
+
+        expect((await execute(optional, void 0)).is_error).toBe(false);
+        expect((await execute(optional, void 0)).result).toBe(true);
+    });
+
+    test('Default Value (Boolean)', async () => {
+        const optional = Optional(Boolean, 1);
+
+        expect((await execute(optional, void 0)).is_error).toBe(true);
+        expect((await execute(optional, void 0)).result.message).toBe('Invalid boolean');
     });
 });

@@ -5,31 +5,82 @@ import { Schema } from '../types.d';
 
 
 const Optional = <
-    Constructor extends Schema.GenericTypeConstructor<any>,
-    ReturnType = Schema.ExtractParamaterReturnType<Constructor>,
-    InputShape = Schema.ExtractParamaterInputShape<Constructor>
+
+    Constructor extends Schema.GenericTypeConstructor,
+    OriginalReturnType extends Schema.ExtractParamaterReturnType<Constructor>,
+    OriginalInputShape extends Schema.ExtractParamaterInputShape<Constructor>,
+
+    DefaultValue extends OriginalReturnType | undefined,
+    ReturnType = DefaultValue extends undefined ? OriginalReturnType | undefined : OriginalReturnType,
 >(
     constructor: Constructor
 ) => class OptionalClass extends GenericType<
-    ReturnType | undefined | void, InputShape
-> {
+    ReturnType, 
+    OriginalInputShape
+> { 
+    private readonly _default_value: ReturnType | undefined;
+
     constructor(
         input_value: unknown,
         on_invalid: (error: GenericError) => void,
-        on_valid: (result: ReturnType | undefined | void) => void,
+        on_valid: (result: ReturnType) => void,
+        default_value?: DefaultValue
     ) {
         super(input_value, on_invalid, on_valid);
+
+        if (default_value !== undefined) 
+            this._default_value = default_value;
     }
+
+
+
+    private validate_optional = (): Promise<ReturnType | GenericError> => new Promise((resolve) => {
+        try {
+            const instance = new constructor(this._default_value,
+                (unknown_error) => {
+                    const error = GenericError.from_unknown(
+                        unknown_error, 
+                        new GenericError('Error in Optional handler', 500)
+                    );
+    
+                    error.hint = 'Error occurred while processing the optional defualt value';
+                    resolve(error);
+                },
+                (value) => resolve(value)
+            );
+    
+            // -- Execute the constructor and check if it is valid
+            instance.execute();
+        }
+
+        catch (unknown_error) {
+            resolve(GenericError.from_unknown(
+                unknown_error, 
+                new GenericError('Unknown error occurred in optional handler', 500)
+            ));
+        }
+    });
+
+
 
     protected handler = async (): Promise<any> => {
         try {
-
             // -- If the value is not provided, return undefined
             if (
                 this.value === undefined ||
                 this.value === null ||
                 this.value === void 0
-            ) return undefined;
+            ) {
+
+                // -- Check if a default value is provided
+                if (this._default_value !== undefined) {
+                    const default_value = await this.validate_optional();
+                    if (default_value instanceof GenericError) throw default_value;
+                    return this.valid(default_value);
+                }
+
+                else return;
+            };
 
 
             // -- Attempt to execute the original constructor 
@@ -80,13 +131,34 @@ const Optional = <
  * 
  * @returns {OptionalClass} A class that wraps the constructor
  */
-const create_optional: <T>(
-    constructor: Schema.GenericTypeConstructor<T>
-) => new (
-    input_value: unknown,
-    on_invalid: (error: GenericError) => void,
-    on_valid: (result: T | undefined | void | null) => void,
-) => GenericType<T | undefined | void | null> = Optional;
+const create_optional = <
+
+    Constructor extends Schema.GenericTypeConstructor,
+    OriginalReturnType extends Schema.ExtractParamaterReturnType<Constructor>,
+    OriginalInputShape extends Schema.ExtractParamaterInputShape<Constructor>,
+
+    DefaultValue extends OriginalReturnType | undefined,
+    ReturnType = DefaultValue extends undefined ? OriginalReturnType | undefined : OriginalReturnType,
+>(
+    constructor: Constructor,
+    default_value?: DefaultValue,
+) => class OptionalClass extends Optional<
+    Constructor, 
+    OriginalReturnType, 
+    OriginalInputShape, 
+    DefaultValue, 
+    ReturnType
+>(
+    constructor
+) {
+    constructor(
+        input_value: unknown,
+        on_invalid: (error: GenericError) => void,
+        on_valid: (result: ReturnType) => void,
+    ) {
+        super(input_value, on_invalid, on_valid, default_value);
+    }
+}
 
 
 

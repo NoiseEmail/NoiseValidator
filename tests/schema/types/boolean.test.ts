@@ -55,4 +55,12 @@ describe('Type: Boolean', () => {
         expect(result.result.message).toBe('Value not provided');
     });
 
+
+    test('Boolean numeric', async () => {
+        const schema = Boolean;
+        const result = await execute(schema, 1);
+
+        expect(result.is_error).toBe(true);
+        expect(result.result.message).toBe('Invalid boolean');
+    });
 });
