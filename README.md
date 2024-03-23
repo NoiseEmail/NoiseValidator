@@ -96,7 +96,8 @@ Binder(follow_account, 'POST', {
 });
 
 ```
-[Schema Type Inference.webm](https://github.com/NoiseEmail/NoiseValidator/assets/83783716/ba6b9f09-10cc-45cc-b386-018cec6e2b2c)
+[Schema Type Inference](https://github.com/NoiseEmail/NoiseValidator/assets/83783716/ba6b9f09-10cc-45cc-b386-018cec6e2b2c)
+[Output Schema Inference](https://github.com/NoiseEmail/NoiseValidator/assets/83783716/b3cd7dea-35fd-4a10-8495-e5f4b1b7d28a)
 
 
 
