@@ -11,7 +11,7 @@ const ArrayType = <
 >(
     constructor: Constructor
 ) => class ArrayClass extends GenericType<
-    Array<ReturnType>, InputShape | undefined
+    Array<ReturnType>, InputShape
 > {
     constructor(
         input_value: unknown,

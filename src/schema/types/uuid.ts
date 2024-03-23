@@ -17,6 +17,13 @@ export default class Uuid extends GenericType<string, string> {
         this.log.debug('Handling UUID');        
 
         try {
+            // -- If the value is not provided, return undefined
+            if (
+                this.value === undefined ||
+                this.value === null ||
+                this.value === void 0
+            ) throw new Error('Value not provided');
+
 
             // -- Make sure that the input is a valid string 
             if (typeof this.value !== 'string') 
@@ -59,13 +66,18 @@ export default class Uuid extends GenericType<string, string> {
 
 
 
-    public static config = (configuration: {
+    public static config = <
+        ReturnType extends boolean,
+        InputShape extends boolean
+    >(configuration: {
         create_new_if_invalid?: boolean,
         version?: 1 | 4
-    }): Schema.GenericTypeConstructor<any> => class extends Uuid {
+    }): GenericType<ReturnType, InputShape>['constructor'] => class extends Uuid {
         protected create_new_if_invalid = configuration.create_new_if_invalid ?? false;
         protected version = configuration.version ?? 4;
     }
+
+    
     
     public static get name() {
         return 'UUID';

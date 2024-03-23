@@ -18,13 +18,20 @@ export default class Boolean extends GenericType<boolean, boolean> {
 
 
    
-    public static config = (strict: boolean): Schema.GenericTypeConstructor<any> => class extends Boolean {
-        protected strict: boolean = strict;
-    }
+
+
+    public static config = <
+        ReturnType extends boolean,
+        InputShape extends boolean
+    >(configuration: {
+        strict?: boolean
+    }): GenericType<ReturnType, InputShape>['constructor'] => class extends Boolean {
+        protected strict: boolean = configuration.strict || false;
+    } 
 
 
 
     public static get name() {
-        return 'GenericBoolean';
+        return 'Boolean';
     }
 }

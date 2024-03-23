@@ -25,6 +25,6 @@ export default class String extends GenericType<string, string> {
 
     
     public static get name() {
-        return 'GenericString';
+        return 'String';
     }
 }

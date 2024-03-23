@@ -11,7 +11,7 @@ const Optional = <
 >(
     constructor: Constructor
 ) => class OptionalClass extends GenericType<
-    ReturnType | undefined | void, InputShape | undefined | Partial<InputShape>
+    ReturnType | undefined | void, InputShape
 > {
     constructor(
         input_value: unknown,

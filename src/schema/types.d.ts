@@ -1,6 +1,6 @@
 import { GenericError } from '../error';
 import { LogFunctions, LogObject } from '../logger/types';
-import { Schema as SchemaClass } from "../schema";
+import { GenericType, Schema as SchemaClass } from "../schema";
 
 export namespace Schema {
 
@@ -41,13 +41,13 @@ export namespace Schema {
 
 
     export type GenericTypeConstructor<
-        ReturnType extends unknown = unknown
+        ReturnType extends unknown = unknown,
+        InputShape extends unknown = unknown
     > = new (
         input_value: unknown,
         on_invalid: (error: GenericError) => void,
         on_valid: (result: ReturnType) => void,
-        validated?: ReturnType
-    ) => GenericTypeLike<ReturnType>
+    ) => GenericType<ReturnType, InputShape>
 
 
 

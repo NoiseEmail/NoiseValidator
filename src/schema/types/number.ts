@@ -1,6 +1,11 @@
+import { Schema } from '../types.d';
+import { GenericError } from '../../error';
 import GenericType from '../generic';
 
-export default class Number extends GenericType<number, number> {
+export default class NumberType extends GenericType<number, number> {
+
+    protected mode: 'integer' | 'float' | 'both' = 'both';
+
 
     /**
      * The input could be a string or a number
@@ -8,23 +13,65 @@ export default class Number extends GenericType<number, number> {
      */
     protected handler = () => {
 
-        // -- If it's a string, we need to parse it
-        if (typeof this.value === 'string') {
-            const parsed = parseFloat(this.value);
-            if (isNaN(parsed)) return this.invalid('Invalid number');
+        try {
+            // -- If the value is not provided, return undefined
+            if (
+                this.value === undefined ||
+                this.value === null ||
+                this.value === void 0
+            ) throw new Error('Value not provided');
+
+
+            // -- Check if the value is equal to true or false
+            const value = this.value.toString().toLowerCase().trim();
+            if (value === 'true' || value === 'false')
+                throw new Error('Value is a boolean, not a number');
+
+
+            // -- Attempt to parse the value as a number
+            let parsed;
+            switch (this.mode) {
+                case 'integer':
+                    // -- Radix has to be 10, otherwise it will parse hex values
+                    //    if the value starts with 0, eg 010 will be parsed as 8
+                    parsed = parseInt(value, 10);
+                    break;
+
+                case 'both':
+                case 'float':
+                    parsed = parseFloat(value);
+                    break;
+            }
+
+            if (isNaN(parsed)) throw new Error('Invalid number');
+            
+            // -- Parsed has to be under the maximum value of a number
+            if (parsed > Number.MAX_SAFE_INTEGER) 
+                throw new Error('Number exceeds maximum value');
+
             return parsed;
         }
 
-        // -- If it's a number, we're good
-        else if (typeof this.value === 'number') return this.value;
-
-        // -- If it's not a number, it's invalid
-        else return this.invalid('Invalid number');
+        catch (unknown_error) {
+            return this.invalid(GenericError.from_unknown(
+                unknown_error, 
+                new GenericError('Unknown error occurred parsing number', 500)
+            ));
+        }
     }
 
 
+    public static config = <
+        ReturnType extends number,
+        InputShape extends number
+    >(configuration: {
+        mode: 'integer' | 'float' | 'both'
+    }): GenericType<ReturnType, InputShape>['constructor'] => class extends NumberType {
+        protected mode: 'integer' | 'float' | 'both' = configuration.mode || 'both';
+    } 
+
 
     public static get name() {
-        return 'GenericNumber';
+        return 'Number';
     }
 }
