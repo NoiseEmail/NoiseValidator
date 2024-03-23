@@ -9,7 +9,7 @@ NoiseValidator is a robust schema validation layer built in TypeScript. It serve
 
 ## Features
 
-- **Type Strict Validation**: NoiseValidator requires the definition of input and output schemas, ensuring all data is validated.
+- **Type Strict Validation**: NoiseValidator requires the definition of input and output schemas, ensuring all data is validated, yes, even the output, you wont be able to return anything that doesn't conform to the schema.
 - **Minimal Dependencies**: We aim to keep the project lean, reducing the potential attack surface and improving maintainability.
 - **Type Safety**: We avoid type unsafety such as inappropriate use of `any` or `@ts-ignore`. Our codebase maintains good type safety, with types dynamically inferred from your schema.
 - **Error Handling**: NoiseValidator provides generic errors and middleware to enhance processing (DRY) and error handling.
