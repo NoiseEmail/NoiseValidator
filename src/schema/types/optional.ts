@@ -21,23 +21,42 @@ const Optional = <
         super(input_value, on_invalid, on_valid);
     }
 
-    protected handler = async (): Promise<ReturnType | undefined | void> => {
-        if (this.value === undefined) return undefined;
+    protected handler = async (): Promise<any> => {
+        try {
 
-        return new Promise<ReturnType | undefined>((resolve, reject) => {
+            // -- If the value is not provided, return undefined
+            if (
+                this.value === undefined ||
+                this.value === null ||
+                this.value === void 0
+            ) return undefined;
+
+
+            // -- Attempt to execute the original constructor 
             const instance = new constructor(this.value,
-                (error) => {
-                    this.invalid(error);
-                    reject(error);
+                (unknown_error) => {
+                    const error = GenericError.from_unknown(
+                        unknown_error, 
+                        new GenericError('Error in Optional handler', 500)
+                    );
+
+                    error.hint = 'Error occurred while processing the optional value';
+                    throw error;
                 },
-                (value) => {
-                    this.valid(value);
-                    resolve(value);
-                }
+                (value) => this.valid(value)
             );
 
-            instance.execute().then(() => resolve(undefined));
-        });
+
+            // -- Execute the constructor and check if it is valid
+            await instance.execute();
+        }
+
+        catch (unknown_error) {
+            return this.invalid(GenericError.from_unknown(
+                unknown_error, 
+                new GenericError('Unknown error occurred in optional handler', 500)
+            ));
+        }
     }
 
     public static get name() {
