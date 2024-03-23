@@ -63,13 +63,10 @@ export default class Uuid extends GenericType<string, string> {
 
 
 
-    public static config = <
-        ReturnType extends boolean,
-        InputShape extends boolean
-    >(configuration: {
+    public static config = (configuration: {
         create_new_if_invalid?: boolean,
         version?: 1 | 4
-    }): GenericType<ReturnType, InputShape>['constructor'] => class extends Uuid {
+    }): typeof GenericType<string, string> => class extends Uuid {
         protected create_new_if_invalid = configuration.create_new_if_invalid ?? false;
         protected version = configuration.version ?? 4;
     }
