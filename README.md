@@ -1,6 +1,8 @@
 
 # NoiseValidator
 
+[![Known Vulnerabilities](https://snyk.io/test/github/NoiseEmail/NoiseValidator/badge.svg?targetFile=package.json)](https://snyk.io/test/github/NoiseEmail/NoiseValidator/badge.svg?targetFile=package.json)
+
 ## Overview
 
 NoiseValidator is a robust schema validation layer built in TypeScript. It serves as a wrapper for Fastify, providing type strict validation for your application.
