@@ -1,9 +1,5 @@
 import {
     Enum,
-    String,
-    Optional,
-    Array,
-    Boolean,
     execute
 } from 'noise_validator';
 
