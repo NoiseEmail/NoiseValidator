@@ -10,7 +10,7 @@ import {
     Number,
     Uuid,
     GenericError
-} from 'gs';
+} from 'noise_validator';
 
 describe('Generic type', () => {
 

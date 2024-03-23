@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { 
     GenericError
-} from 'gs';
+} from 'noise_validator';
 
 
 describe('GenericError', () => {
