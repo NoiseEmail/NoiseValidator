@@ -93,6 +93,7 @@ export default class GenericType <
      *    return `SomeWrapperClass<${input.name}>`;    
      * }
      */
+    // file deepcode ignore StaticAccessThis: 
     public static get name(): string { return this.name; }
 
 

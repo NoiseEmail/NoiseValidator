@@ -19,7 +19,6 @@ export default class SessionMiddleware extends GenericMiddleware<SessionMiddlewa
         // body.admin_id
         const test = await this.validate_input('headers', session_body_schema);
 
-        test.session_id;
 
         return;
     

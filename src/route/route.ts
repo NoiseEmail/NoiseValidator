@@ -77,7 +77,7 @@ export default class Route<
 
         // -- Get the binders for the method
         const binders = this._binder_map.get(method);
-        if (!binders || binders.length < 0) return this.send_exception(reply, new MethodNotAvailableError(method));
+        if (!binders || binders.length < 1) return this.send_exception(reply, new MethodNotAvailableError(method));
 
         // -- Loop through the binders
         const errors: Array<GenericError> = [];
