@@ -47,9 +47,9 @@ export default function Binder<
         Headers,
         Output
     >,
-    callback: (data: CallbackObject) => OutputType
-        // OutputType | GenericError |
-        // Promise<OutputType | GenericError>,
+    callback: (data: CallbackObject) =>
+        OutputType | GenericError |
+        Promise<OutputType | GenericError>,
 ) {
     
 

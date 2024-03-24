@@ -38,6 +38,7 @@ Binder(follow_account, 'POST', {
     
     return {
         followed_at: Date.now(),
+        
     }
 
 });
