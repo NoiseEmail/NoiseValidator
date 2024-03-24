@@ -25,7 +25,8 @@ const create_array = <
     }
 
 
-
+    
+    // TODO: Figure out why the return type dose not want to work
     protected handler = async (): Promise<any> => {
 
         try {

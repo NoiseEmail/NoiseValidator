@@ -90,8 +90,9 @@ const create_optional = <
         }
     });
 
+    
 
-
+    // TODO: Figure out why the return type dose not want to work
     protected handler = async (): Promise<any> => {
         try {
             // -- If the value is not provided, return undefined
