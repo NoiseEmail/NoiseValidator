@@ -4,26 +4,49 @@ import { Schema } from '../types.d';
 
 
 
-const Optional = <
+type ExtractReturnType<
+    DefaultValue,
+    OriginalReturnType,
+> = DefaultValue extends undefined ?
+    OriginalReturnType | undefined : OriginalReturnType;
 
-    Constructor extends Schema.GenericTypeConstructor,
-    OriginalReturnType extends Schema.ExtractParamaterReturnType<Constructor>,
-    OriginalInputShape extends Schema.ExtractParamaterInputShape<Constructor>,
+
+
+/**
+ * @description This is a wrapper for any generic type that makes it optional
+ * it will return undefined if the input value is undefined.
+ * 
+ * If the input value is not undefined, it will execute the constructor, if 
+ * that constructor returns a valid value, it will return that value.
+ * 
+ * If the value is not undefined, and the constructor returns an invalid value,
+ * it will return an error like any other generic type.
+ * 
+ * @param {GenericTypeConstructor} constructor - The constructor to wrap
+ * 
+ * @returns {OptionalClass} A class that wraps the constructor
+ */
+const create_optional = <
+    OriginalReturnType,
+    OriginalInputShape,
 
     DefaultValue extends OriginalReturnType | undefined,
-    ReturnType = DefaultValue extends undefined ? OriginalReturnType | undefined : OriginalReturnType,
 >(
-    constructor: Constructor
+    constructor: Schema.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>,
+    default_value: DefaultValue = undefined as DefaultValue
 ) => class OptionalClass extends GenericType<
-    ReturnType, 
+    ExtractReturnType<DefaultValue, OriginalReturnType>,
     OriginalInputShape
 > { 
-    private readonly _default_value: ReturnType | undefined;
+    private readonly _default_value: ExtractReturnType<
+        DefaultValue, 
+        OriginalReturnType
+    > | undefined = default_value;
 
     constructor(
         input_value: unknown,
         on_invalid: (error: GenericError) => void,
-        on_valid: (result: ReturnType) => void,
+        on_valid: (result: ExtractReturnType<DefaultValue, OriginalReturnType>) => void,
         default_value?: DefaultValue
     ) {
         super(input_value, on_invalid, on_valid);
@@ -34,7 +57,10 @@ const Optional = <
 
 
 
-    private validate_optional = (): Promise<ReturnType | GenericError> => new Promise((resolve) => {
+    private validate_optional = (): Promise<
+        ExtractReturnType<DefaultValue, OriginalReturnType> | 
+        GenericError
+    > => new Promise((resolve) => {
         try {
             const instance = new constructor(this._default_value,
                 (unknown_error) => {
@@ -114,52 +140,5 @@ const Optional = <
         return `Optional<${constructor.name}>`;
     }
 }
-
-
-
-/**
- * @description This is a wrapper for any generic type that makes it optional
- * it will return undefined if the input value is undefined.
- * 
- * If the input value is not undefined, it will execute the constructor, if 
- * that constructor returns a valid value, it will return that value.
- * 
- * If the value is not undefined, and the constructor returns an invalid value,
- * it will return an error like any other generic type.
- * 
- * @param {GenericTypeConstructor} constructor - The constructor to wrap
- * 
- * @returns {OptionalClass} A class that wraps the constructor
- */
-const create_optional = <
-
-    Constructor extends Schema.GenericTypeConstructor,
-    OriginalReturnType extends Schema.ExtractParamaterReturnType<Constructor>,
-    OriginalInputShape extends Schema.ExtractParamaterInputShape<Constructor>,
-
-    DefaultValue extends OriginalReturnType | undefined,
-    ReturnType = DefaultValue extends undefined ? OriginalReturnType | undefined : OriginalReturnType,
->(
-    constructor: Constructor,
-    default_value?: DefaultValue,
-) => class OptionalClass extends Optional<
-    Constructor, 
-    OriginalReturnType, 
-    OriginalInputShape, 
-    DefaultValue, 
-    ReturnType
->(
-    constructor
-) {
-    constructor(
-        input_value: unknown,
-        on_invalid: (error: GenericError) => void,
-        on_valid: (result: ReturnType) => void,
-    ) {
-        super(input_value, on_invalid, on_valid, default_value);
-    }
-}
-
-
 
 export default create_optional;
