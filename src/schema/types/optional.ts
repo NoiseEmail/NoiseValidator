@@ -32,7 +32,10 @@ const create_optional = <
 
     DefaultValue extends OriginalReturnType | undefined,
 >(
-    constructor: Schema.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>,
+    constructor: Schema.GenericTypeConstructor<
+        OriginalReturnType, 
+        OriginalInputShape
+    >,
     default_value: DefaultValue = undefined as DefaultValue
 ) => class OptionalClass extends GenericType<
     ExtractReturnType<DefaultValue, OriginalReturnType>,

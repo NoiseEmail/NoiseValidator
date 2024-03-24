@@ -4,22 +4,27 @@ import { Schema } from '../types';
 
 
 
-const ArrayType = <
-    Constructor extends Schema.GenericTypeConstructor<any>,
-    ReturnType = Schema.ExtractParamaterReturnType<Constructor>,
-    InputShape = Schema.ExtractParamaterInputShape<Constructor>
+const create_array = <
+    OriginalReturnType,
+    OriginalInputShape,
 >(
-    constructor: Constructor
-) => class ArrayClass extends GenericType<
-    Array<ReturnType>, InputShape
-> {
+    constructor: Schema.GenericTypeConstructor<
+        OriginalReturnType, 
+        OriginalInputShape
+    >,
+) => class OptionalClass extends GenericType<
+    Array<OriginalReturnType>,
+    OriginalInputShape
+> { 
     constructor(
         input_value: unknown,
         on_invalid: (error: GenericError) => void,
-        on_valid: (result: Array<ReturnType>) => void,
+        on_valid: (result: Array<OriginalReturnType>) => void,
     ) {
         super(input_value, on_invalid, on_valid);
     }
+
+
 
     protected handler = async (): Promise<any> => {
 
@@ -31,7 +36,7 @@ const ArrayType = <
 
             // -- Else, loop through the array and execute the constructor
             //    for each value in the array
-            const results: Array<ReturnType> = [];
+            const results: Array<OriginalReturnType> = [];
             for (const value of this.value) {
                 const instance = new constructor(value,
                     (unknown_error) => {
@@ -63,21 +68,12 @@ const ArrayType = <
         }
     }
 
+
+
     public static get name() {
         return `Array<${constructor.name}>`;
     }
 }
-
-
-
-const create_array: <T>(
-    constructor: Schema.GenericTypeConstructor<T>
-) => new (
-    input_value: unknown,
-    on_invalid: (error: GenericError) => void,
-    on_valid: (result: Array<T> | undefined) => void,
-) => GenericType<Array<T>> = ArrayType;
-
 
 
 export default create_array;

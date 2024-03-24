@@ -3,6 +3,8 @@ import {
     GenericMiddleware,
     Schema,
     Uuid,
+    Array,
+    Enum,
     Number,
     String,
     Optional,
@@ -14,6 +16,8 @@ import {
 
 const follow_body_schema = new Schema.Body({
     message: Optional(String),
+    test: Enum('a', 'b', 'c'),
+    test2: Optional(Array(Uuid), ['a']),
 });
 
 const follow_account_return = new Schema.Body({
@@ -34,11 +38,11 @@ Binder(follow_account, 'POST', {
 	}
 }, (request) => {
 
-    request.body.message;
+    request.body.test2;
     
     return {
         followed_at: Date.now(),
-        
+
     }
 
 });
