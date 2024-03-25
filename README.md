@@ -13,6 +13,8 @@ NoiseValidator is a robust schema validation layer built in TypeScript. It serve
 - **Minimal Dependencies**: We aim to keep the project lean, reducing the potential attack surface and improving maintainability.
 - **Type Safety**: We avoid type unsafety such as inappropriate use of `any` or `@ts-ignore`. Our codebase maintains good type safety, with types dynamically inferred from your schema.
 - **Error Handling**: NoiseValidator provides generic errors and middleware to enhance processing (DRY) and error handling.
+- **Type Inference**: Translates your schemas to types ![image](https://github.com/NoiseEmail/NoiseValidator/assets/83783716/84ce2c8f-238b-4f48-b9ec-3ca9b2bfd614)
+
 
 ## Getting Started
 
