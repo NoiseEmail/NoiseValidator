@@ -1,9 +1,7 @@
 import { GenericError } from '../../error';
 import GenericType from '../generic';
-import { Schema } from '../types.d';
 
-type StringArray<T extends string[]> = 
-    T extends [...infer U] ? (U extends string ? T : never) : never;
+
 
 const create_enum = <
     InputTypes extends string | number | boolean,
@@ -39,6 +37,7 @@ const create_enum = <
         return this.value as InputTypes;
     }
 }
+
 
 
 export default create_enum;
