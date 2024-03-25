@@ -1,51 +1,53 @@
-import {
-    Binder,
-    GenericMiddleware,
-    Schema,
-    Uuid,
-    Array,
-    Enum,
-    Number,
-    String,
-    Optional,
-    Router,
-    Route
-} from 'noise_validator';
+// import {
+//     Binder,
+//     GenericMiddleware,
+//     Schema,
+//     Uuid,
+//     Array,
+//     Enum,
+//     Number,
+//     String,
+//     Optional,
+//     Router,
+//     Route
+// } from 'noise_validator';
+
+import { DynamicURL } from "./route/types";
 
 
 
-const follow_body_schema = new Schema.Body({
-    message: Optional(String),
-    test: Enum('a', 'b', 'c'),
-    test2: Optional(Array(Uuid), ['a']),
-});
+// const follow_body_schema = new Schema.Body({
+//     message: Optional(String),
+//     test: Enum('a', 'b', 'c'),
+//     test2: Optional(Array(Uuid), ['a']),
+// });
 
-const follow_account_return = new Schema.Body({
-    followed_at: Number,
-    message: Optional(String),
-});
+// const follow_account_return = new Schema.Body({
+//     followed_at: Number,
+//     message: Optional(String),
+// });
 
 
 
-const follow_account = new Route('/account/:id/follow', {
-	friendly_name: 'Follows an account'
-});
+// const follow_account = new Route('/account/:id/follow', {
+// 	friendly_name: 'Follows an account'
+// });
 
-Binder(follow_account, 'POST', {
-	schemas: {
-		body: follow_body_schema,
-		output: follow_account_return
-	}
-}, (request) => {
+// Binder(follow_account, 'POST', {
+// 	schemas: {
+// 		body: follow_body_schema,
+// 		output: follow_account_return
+// 	}
+// }, (request) => {
 
-    request.body.test;
+//     request.body.test;
     
-    return {
-        followed_at: Date.now(),
+//     return {
+//         followed_at: Date.now(),
 
-    }
+//     }
 
-});
+// });
 
 
 // class Test1Middleware extends GenericMiddleware<{
@@ -101,3 +103,7 @@ Binder(follow_account, 'POST', {
 // let c: test['required'] = {
     
 // };
+
+
+
+

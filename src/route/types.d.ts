@@ -28,14 +28,24 @@ export namespace DynamicURL {
     export type Extract<str extends string, res extends Array<string> = []> =
         HasColonLeft<str> extends false ? res :
         str extends `${infer l}:${infer r}` ?
-        HasColonLeft<r> extends false ? [...res, RemoveRegex<r>] :
+        HasColonLeft<r> extends false ? [
+            ...res, 
+            StripTrailingSlash<RemoveRegex<r>>
+        ] :
         StartsWithColon<r> extends true ? Extract<RemoveStartingColons<r>, res> :
-        r extends `${infer l2}:${infer r2}` ? Extract<`:${r2}`, [...res, RemoveRegex<l2>]> :
+        r extends `${infer l2}:${infer r2}` ? Extract<`:${r2}`, [
+            ...res, 
+            StripTrailingSlash<RemoveRegex<l2>>
+        ]> :
         never : never;
 
     export type ArrayToObject<Arr extends Array<string>> = {
         [Key in Arr[number]]: string;
     }
+
+    export type StripTrailingSlash<str extends string> =
+        str extends `${infer left}/${infer _}` ? StripTrailingSlash<left> :
+        str;
 
     export type Extracted<str extends string> = ArrayToObject<Extract<str>>;
 }
