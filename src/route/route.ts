@@ -42,6 +42,11 @@ export default class Route<
         error: GenericError
     ): void => {
         Log.debug(error.message);
+
+        // -- Check if debug is enabled, if not strip the error data
+        if (!this._router.configuration.debug) error.data = {};
+
+        // -- Send the error
         reply.code(error.code).send({
             error: error.serialize()
         });
