@@ -12,15 +12,40 @@
 //     Route
 // } from 'noise_validator';
 
-import { DynamicURL } from "./route/types";
+// import { DynamicURL } from "./route/types";
 
 
 
-// const follow_body_schema = new Schema.Body({
-//     message: Optional(String),
-//     test: Enum('a', 'b', 'c'),
-//     test2: Optional(Array(Uuid), ['a']),
+// const example = new Schema.Body({
+//     optional_string: Optional(String),
+//     enum: Enum('a', 1, 'c'),
+//     optional_no_default: Optional(Array(Uuid)),
+//     optional_with_default: Optional(Array(Uuid), ['a']),
 // });
+
+
+// const validated = await example.validate({});
+// if (validated.type === 'data') {
+
+//     // -- 'a' | 1 | 'c'
+//     validated.data.enum;
+
+//     // -- Array<string>
+//     validated.data.optional_with_default;
+
+//     // -- Array<string> | undefined
+//     validated.data.optional_no_default;
+
+//     // -- string | undefined
+//     validated.data.optional_string;
+// }
+
+
+
+
+
+
+
 
 // const follow_account_return = new Schema.Body({
 //     followed_at: Number,
