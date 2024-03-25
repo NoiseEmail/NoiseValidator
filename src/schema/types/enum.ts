@@ -2,19 +2,21 @@ import { GenericError } from '../../error';
 import GenericType from '../generic';
 import { Schema } from '../types.d';
 
+type StringArray<T extends string[]> = 
+    T extends [...infer U] ? (U extends string ? T : never) : never;
 
 const create_enum = <
-    InputTypes extends Array<string | number | boolean>,
-    ReturnType = InputTypes[number]
+    InputTypes extends string | number | boolean,
+    InputArray extends Array<InputTypes>
 >(
-    ...input_types: InputTypes
+    ...input_types: InputArray
 ) => class OptionalClass extends GenericType<
-    ReturnType, unknown
+    InputArray[number], Array<unknown>
 > { 
-    private readonly _input_types: InputTypes = input_types;
+    private readonly _input_types: InputArray = input_types;
 
 
-    protected handler = (): ReturnType => {
+    protected handler = (): InputTypes => {
         // -- No value was provided
         if (
             this.value === undefined ||
@@ -30,11 +32,11 @@ const create_enum = <
         ) throw new GenericError('Invalid enum value type', 400);
 
         // -- Check if the value is in the input types
-        if (!this._input_types.includes(this.value))
+        if (!this._input_types.includes(this.value as InputTypes))
             throw new GenericError('Value not in enum', 400);
 
         // -- Return the value
-        return this.value as ReturnType;
+        return this.value as InputTypes;
     }
 }
 
