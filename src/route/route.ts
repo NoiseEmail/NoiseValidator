@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { BinderCallbackObject, BinderMap, BinderMapObject } from "../binder/types.d";
+import { BinderMap, BinderMapObject } from "../binder/types.d";
 import { RouteConfiguration } from "./types.d";
 import { Log, MethodNotAvailableError, NoRouteHandlerError, Router } from "..";
 import { FastifyInstance, FastifyReply, HTTPMethods } from "fastify";
@@ -8,7 +8,8 @@ import { GenericError } from "../error";
 export default class Route<
     UrlPath extends string
 > {
-    public readonly _path: UrlPath;
+    public readonly _raw_path: UrlPath;
+    public readonly _path: string;
     public readonly _id: string = randomUUID();
 
     private _friendly_name: string | undefined;
@@ -16,14 +17,45 @@ export default class Route<
     private _router: Router = Router.instance;
     private _added_to_router: boolean = false;
 
+    private _configuration: RouteConfiguration;
+
     public constructor(
         path: UrlPath,
         configuration?: RouteConfiguration
     ) {
-        this._path = path;
+        this._configuration = this._build_configuration(configuration || {});
+        this._raw_path = path;
+        this._path = this._build_path(path);
         this._friendly_name = configuration?.friendly_name || undefined;
     };
 
+
+
+    public static defualt_configuration: RouteConfiguration = {
+        friendly_name: 'Unnamed Route',
+        api_version: 'DEV'
+    };
+
+
+
+    /**
+     * @name _build_configuration
+     * @description Builds the configuration for the route
+     * using the default configuration as a base
+     * 
+     * @param {RouteConfiguration} configuration - The configuration to build
+     * 
+     * @returns {RouteConfiguration} - The built configuration
+     */
+    private _build_configuration = (
+        configuration: RouteConfiguration | {}
+    ): RouteConfiguration => {
+        return {
+            ...Route.defualt_configuration,
+            ...configuration
+        };
+    }
+    
 
 
     /**
@@ -50,6 +82,36 @@ export default class Route<
         reply.code(error.code).send({
             error: error.serialize()
         });
+    };
+
+
+
+    /**
+     * @name _build_path
+     * @description Builds the path for the route
+     * eg adds the version to the path dynamically
+     * so that routes can be sorted by version easily
+     * 
+     * @param {UrlPath} raw_path - The path to build
+     * 
+     * @returns {string} - The built path
+     */
+    private _build_path = (
+        raw_path: UrlPath
+    ): string => {
+        const version = this._configuration.api_version;
+        let path = version !== '' ? `/api/${version}/${raw_path}` : `/${raw_path}`;
+
+        // -- Remove any double slashes
+        path = path.replace(/\/\//g, '/');
+
+        // -- Remove any trailing slashes
+        path = path.replace(/\/$/, '');
+
+        // -- Make sure the path starts with a slash
+        path = path.startsWith('/') ? path : `/${path}`;
+
+        return path;
     };
 
 
@@ -195,7 +257,8 @@ export default class Route<
 
     
 
-    public get path(): UrlPath { return this._path; }
+    public get raw_path(): UrlPath { return this._raw_path; }
+    public get path(): string { return this._path; }
     public get id(): string { return this._id; }
     public get friendly_name(): string | undefined { return this._friendly_name; }
 }

@@ -1,7 +1,9 @@
 export type RouteConfiguration = {
-    friendly_name?: string;
+    friendly_name: string;
+    api_version: string;
 };
 
+export type OptionalRouteConfiguration = Partial<RouteConfiguration>;
 
 
 export namespace DynamicURL {
