@@ -168,7 +168,9 @@ export default class Route<
                 // -- FAILED Schema validation
                 if (validator_result instanceof Error) {
                     Log.debug(`Route: ${this._path} has FAILED schema validation`);
-                    errors.push(GenericError.from_unknown(validator_result));
+                    const error = GenericError.from_unknown(validator_result);
+                    errors.push(error);
+                    error_response = error;
                     continue;
                 }
 
@@ -197,6 +199,7 @@ export default class Route<
 
             catch (unknown_error) {
                 const error = GenericError.from_unknown(unknown_error);
+                error_response = error;
                 Log.debug(`Route: ${this._path} has FAILED to process`, error.id);
                 errors.push(error);                      
             }

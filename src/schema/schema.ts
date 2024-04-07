@@ -104,14 +104,15 @@ export default class Schema<
                 //    as if the data was optional, it would not throw an error
                 if (new_data === undefined && validator_result.is_error) {
                     const error = new SchemaMissingFieldError(new_path);
+                    error.data = { path: new_path, expected: value.name };
                     instance.push_error(error);
                     return error;
                 }
 
                 // -- If the result is an error, return it
                 else if (validator_result.is_error) {
-
-                    let thrown_error: GenericError = validator_result.result as GenericError;
+                    const thrown_error = GenericError.from_unknown(validator_result.result);
+                    thrown_error.hint = 'Error occurred while validating the schema';
                     thrown_error.data = { 
                         path: new_path,
                         expected: value.name
