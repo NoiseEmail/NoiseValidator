@@ -15,6 +15,30 @@ NoiseValidator is a robust schema validation layer built in TypeScript. It serve
 - **Error Handling**: NoiseValidator provides generic errors and middleware to enhance processing (DRY) and error handling.
 - **Type Inference**: Translates your schemas to types ![image](https://github.com/NoiseEmail/NoiseValidator/assets/83783716/84ce2c8f-238b-4f48-b9ec-3ca9b2bfd614)
 
+## Local Installation
+
+To get started, follow these steps:
+
+1. **Clone the Repository**:
+    ```bash
+    git clone https://github.com/NoiseEmail/NoiseValidator.git
+    ```
+
+2. **Add Dependencies**:
+    Add the following dependency to your `package.json` file:
+    ```json
+    "dependencies": {
+        "noise-validator": "file:./NoiseValidator"
+    }
+    ```
+
+3. **Install as Dependency**:
+    Install!
+    ```bash
+    npm install
+    ```
+    ```bash
+    bun install
 
 ## Getting Started
 
