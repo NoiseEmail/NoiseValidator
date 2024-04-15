@@ -15,6 +15,7 @@ import { mergician } from "mergician";
 import { Route } from "../route";
 import { GenericError } from "../error";
 import { Log } from "..";
+import { validate_middlewares } from "./validate";
 
 export default function Binder<
     Middleware extends Middleware.MiddlewareObject,
@@ -119,15 +120,18 @@ export default function Binder<
             // -- Validate the request inputs
             Log.debug(`Validating request for ${route.path} with method: ${method}`);
             const validated = await validate_binder_request(request, schemas, route.path);
-
-            // -- Check if the validation failed
-            Log.debug(`Request for ${route.path} with method: ${method} has been validated`);
             if (validated instanceof GenericError) return validated;
-            Log.debug(`Request for ${route.path} with method: ${method} has successfully been validated`);
+
+            // -- Validate the middleware
+            Log.debug(`Validating middleware for ${route.path} with method: ${method}`);
+            const middleware = await validate_middlewares(request, reply, configuration.middleware);
+            if (middleware instanceof GenericError) return middleware;
+
+
 
             // -- Return the validated data
             return {
-                middleware: configuration.middleware,
+                middleware: middleware,
                 body: validated.body,
                 query: validated.query,
                 headers: validated.headers,
@@ -167,3 +171,13 @@ const remove_headers = (fastify_reply: FastifyReply) => (keys: Array<string>) =>
     Log.debug(`Removing headers: ${keys}`);
     keys.forEach(key => fastify_reply.removeHeader(key));
 };
+
+
+
+export {
+    Binder,
+    add_header,
+    add_headers,
+    remove_header,
+    remove_headers
+}

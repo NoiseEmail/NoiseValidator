@@ -1,14 +1,16 @@
-import { FastifyRequest } from "fastify";
+import fastify, { FastifyReply, FastifyRequest } from "fastify";
 import { BinderValidatorResult, SchemasValidator } from "./types.d";
 import { GenericError } from "../error";
 import { FailedToValidateInputError } from "./errors";
 import { Schema } from "../schema/types.d";
 import { mergician } from "mergician";
-import { Log } from "..";
+import { GenericMiddleware, Log } from "..";
+import { add_header, add_headers, remove_header, remove_headers } from "./binder";
+import { Middleware } from "../middleware/types";
 
 
 
-export const validate_binder_request = async (
+const validate_binder_request = async (
     fastify_request: FastifyRequest,
     schemas: SchemasValidator,
     name: string
@@ -44,7 +46,7 @@ export const validate_binder_request = async (
 
 
 
-export const validate_output = async (
+const validate_output = async (
     data: any,
     schema: Array<Schema.SchemaLike<any>>
 ): Promise<any | GenericError> => {
@@ -118,3 +120,128 @@ const validate_inputs = async (
         return error;
     }
 };
+
+
+
+const execute_middleware = async (
+    fastify_request: FastifyRequest,
+    fastify_reply: FastifyReply,
+    middleware: Middleware.GenericMiddlewareConstructor<any> 
+) => {
+    try {
+        const request_object = {
+            headers: fastify_request.headers,
+            body: fastify_request.body,
+            query: fastify_request.query,
+            middleware: {},
+
+            set_header: add_header(fastify_reply),
+            set_headers: add_headers(fastify_reply),
+            remove_header: remove_header(fastify_reply),
+            remove_headers: remove_headers(fastify_reply),
+
+            fastify: { request: fastify_request, reply: fastify_reply }
+        };
+
+
+
+        // -- Variables to store the result
+        let final_result: unknown;
+        let callback_called = false;
+
+
+
+        const instance = new middleware(request_object, 
+            // -- On invalid
+            (error) => {
+                if (callback_called) return
+                    Log.warn(middleware.name + ' - Middleware invalid callback called multiple times');
+
+                callback_called = true;
+                final_result = error;
+
+                Log.debug(`Middleware failed to execute: ${middleware.name} - ${error.message}`);
+            },
+
+            // -- On valid
+            (data) => {
+                if (callback_called) return 
+                    Log.warn(middleware.name + ' - Middleware success callback called multiple times');
+
+                callback_called = true;
+                final_result = data;
+
+                Log.debug(`Middleware successfully executed: ${middleware.name}`);
+            }
+        ); 
+
+
+
+        // -- Execute the middleware
+        await instance.execute();
+        if (final_result instanceof Error) throw final_result;
+        if (!callback_called) throw new Error('Middleware did not call the callback');
+        return final_result;
+    }
+
+    catch (unknown_error) {
+        const error = GenericError.from_unknown(
+            unknown_error, 
+            new FailedToValidateInputError('validator, execute_middleware')
+        );
+
+        Log.debug(`execute_middleware: Failed to execute middleware: ${error.id}`);
+        return error;
+    }
+};
+
+
+
+const validate_middlewares = async (
+    fastify_request: FastifyRequest,
+    fastify_reply: FastifyReply,
+    middlewares?: { [key: string]: Middleware.GenericMiddlewareConstructor<any> }
+): Promise<{ [key: string]: unknown } | GenericError> => {
+    try {   
+
+        // -- If there are no middlewares, return an empty object
+        if (!middlewares) return {};
+        const return_data: { [key: string]: unknown } = {};
+
+
+        // -- Execute all the middlewares
+        const promises: Array<Promise<void>> = Object.keys(middlewares).map(async (key) => {
+            const middleware = middlewares[key];
+            const result = await execute_middleware(fastify_request, fastify_reply, middleware);
+            if (result instanceof Error) throw result;
+
+            return_data[key] = result;
+        });
+
+
+        // -- Wait for all the promises to resolve
+        await Promise.all(promises);
+        return return_data;
+    }
+
+    catch (unknown_error) {
+        const error = GenericError.from_unknown(
+            unknown_error, 
+            new FailedToValidateInputError('validator, validate_middlewares')
+        );
+
+        Log.debug(`validate_middlewares: Failed to validate middlewares: ${error.id}`);
+        return error;
+    }
+};
+
+
+
+export {
+    validate_binder_request,
+    validate_output,
+    validate_input,
+    validate_inputs,
+    execute_middleware,
+    validate_middlewares
+}
