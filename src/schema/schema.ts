@@ -64,91 +64,181 @@ export default class Schema<
 
 
     
-    private static _walk = async <ReturnableData>(
+    public static _execute_validator = async (
+        instance: Schema<any, any>,
+        value: SchemaTypes.GenericTypeConstructor,
+        new_data: unknown,
+        new_path: string[]
+    ): Promise<unknown | GenericError> => {
+
+        // -- If it's a constructor, execute it
+        const validator_result = await execute(value, new_data);
+        instance.set_log_stack(validator_result.instance.log_stack);
+
+
+        // -- If the result is an error and theres no new data, return a missing field error
+        //    as if the data was optional, it would not throw an error
+        if (
+            new_data === undefined && 
+            validator_result.is_error
+        ) {
+            const error = new SchemaMissingFieldError(new_path);
+            error.hint = 'Field is missing';
+            error.data = { 
+                path: new_path, 
+                expected: value.name
+            };
+
+            instance.push_error(error);
+            return error;
+        }
+
+
+        // -- If the result is an error, return it
+        else if (validator_result.is_error) {
+            const thrown_error = GenericError.from_unknown(validator_result.result);
+            thrown_error.hint = 'Error occurred while validating the schema';
+            thrown_error.data = { 
+                path: new_path,
+                expected: value.name
+            };
+            
+            instance.push_error(thrown_error);
+            return thrown_error;
+        }
+
+
+        // -- If the validator_result is not an error, add it to the result
+        else return validator_result.result;
+    };
+
+
+
+    public static _validate_value = async (
+        instance: Schema<any, any>,
+        validator: SchemaTypes.InputSchema | SchemaTypes.GenericTypeConstructor<any, any>,
+        new_data: unknown,
+        new_path: string[]
+    ): Promise<unknown | GenericError> => {
+
+        switch (typeof validator) {
+            // -- Function, execute it
+            case 'function': {
+                const walk_result = await Schema._execute_validator(
+                    instance, 
+                    validator as SchemaTypes.GenericTypeConstructor, 
+                    new_data, 
+                    new_path
+                );
+
+                if (walk_result instanceof Error) {
+                    const error = GenericError.from_unknown(walk_result);
+                    error.hint = 'Error occurred while validating the schema';
+                    error.data = { 
+                        path: new_path, 
+                        expected: validator.constructor.name 
+                    };
+                    instance.push_error(error);
+                    return error;
+                };
+
+                return walk_result;
+            }
+
+
+            
+            // -- Object, walk it
+            case 'object': {
+                const walk_result = await Schema._walk_object(
+                    instance, 
+                    validator,
+                    new_data,
+                    new_path
+                );
+                
+                if (walk_result instanceof Error) {
+                    const error = GenericError.from_unknown(walk_result);
+                    error.hint = 'Error occurred while validating the schema';
+                    error.data = { 
+                        path: new_path, 
+                        expected: validator.constructor.name 
+                    };
+                    instance.push_error(error);
+                    return error;
+                };
+                
+                return walk_result;
+            }
+        }
+    };
+    
+
+
+    public static _walk_object = async <ReturnableData>(
         instance: Schema<any, any>,
         schema: SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
-        data: object,
+        data: unknown,
         path: string[] = [],
-        result: { [key: string]: unknown } = {}
+        result: { [type: string]: unknown } = {}
     ): Promise<ReturnableData | GenericError> => {
-        for (const key in schema) {
 
-            // -- Check if the key is missing
-            const value = schema[key],
-                new_path = path.concat(key),
-                new_data = (data instanceof Object) ? data[key] : data;
+        for (const type in schema) {
+
+            const validator = schema[type];
+            const new_path = path.concat(type);
+            const new_data = 
+                (data instanceof Object) ?  // -- Is the data an object?
+                (data as { [type: string]: unknown })[type.toString()] : // -- Get the value at the key
+                data; // -- If not an object, just use the data
 
 
-            // -- If new data is a function, ista error
+
+            // -- Ensure that the passed in data is not a function
+            //    this should never happen, but just in case
             if (new_data instanceof Function) {
                 const error = new SchemaExecutionError(`The value at ${new_path.join('.')} is a function`);
                 instance.push_error(error);
                 return error;
             }
 
-                
+            // -- Check the value against the schema
+            const walk_result = await Schema._validate_value(
+                instance,
+                validator,
+                new_data,
+                new_path
+            );
 
-            // -- check if the value is a constructor: SchemaTypes.GenericTypeConstructor
-            if (typeof value === 'function') {
-                
-                // -- If it's a constructor, execute it
-                let validator_result = await execute(
-                    value as SchemaTypes.GenericTypeConstructor, 
-                    new_data
-                );
-
-                // -- Add the log stack to the schema
-                instance.set_log_stack(validator_result.instance.log_stack);
-
-                // -- If the result is an error and theres no new data, return a missing field error
-                //    as if the data was optional, it would not throw an error
-                if (new_data === undefined && validator_result.is_error) {
-                    const error = new SchemaMissingFieldError(new_path);
-                    error.data = { path: new_path, expected: value.name };
-                    instance.push_error(error);
-                    return error;
-                }
-
-                // -- If the result is an error, return it
-                else if (validator_result.is_error) {
-                    const thrown_error = GenericError.from_unknown(validator_result.result);
-                    thrown_error.hint = 'Error occurred while validating the schema';
-                    thrown_error.data = { 
-                        path: new_path,
-                        expected: value.name
-                    };
-                    instance.push_error(thrown_error);
-                    return thrown_error;
-                }
-
-                // -- If the validator_result is not an error, add it to the result
-                else result[key] = validator_result.result;
-            }
-            
-
-            
-            // -- If the value is an object, walk it
-            else if (typeof value === 'object') {
-                const walk_result = await Schema._walk(instance, value, new_data, new_path);
-
-                if (walk_result instanceof Error) {
-                    const error = GenericError.from_unknown(walk_result);
-                    error.data = {
-                        path: new_path,
-                        expected: value.constructor.name
-                    };
-
-                    instance.push_error(error);
-                    return error;
+            // -- If the result is an error, break the loop
+            if (walk_result instanceof Error) {
+                const error = GenericError.from_unknown(walk_result);
+                error.hint = 'Error occurred while validating the schema';
+                error.data = { 
+                    path: new_path, 
+                    expected: validator.constructor.name 
                 };
-                
-                result[key] = walk_result;
+                instance.push_error(error);
+                return error;
             }
-        }
 
+            // -- Else, add the result to the return object
+            result[type] = walk_result;
+        }
+    
         return result as ReturnableData;
     };
 
+
+    
+    public static _walk = async <ReturnableData>(
+        instance: Schema<any, any>,
+        schema: SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
+        data: object,
+        path: string[] = [],
+        result: { [key: string]: unknown } = {}
+    ): Promise<ReturnableData | GenericError> => 
+        Schema._walk_object(instance, schema, data, path, result);
+    
 
 
     /**
