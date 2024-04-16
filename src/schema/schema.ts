@@ -69,7 +69,7 @@ export default class Schema<
         value: SchemaTypes.GenericTypeConstructor,
         new_data: unknown,
         new_path: string[]
-    ): Promise<unknown | GenericError> => {
+    ): Promise<unknown> => {
 
         // -- If it's a constructor, execute it
         const validator_result = await execute(value, new_data);
@@ -90,7 +90,7 @@ export default class Schema<
             };
 
             instance.push_error(error);
-            return error;
+            throw error;
         }
 
 
@@ -104,7 +104,7 @@ export default class Schema<
             };
             
             instance.push_error(thrown_error);
-            return thrown_error;
+            throw thrown_error;
         }
 
 
