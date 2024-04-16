@@ -1,18 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { 
-    execute,
-    GenericType,
-    MissingHandlerError,
-    InvalidInputError,
-    Boolean,
-    String,
-    Number,
-    Uuid,
-    GenericError,
-    Schema,
-    SchemaExecutionError,
-    SchemaMissingFieldError,
-} from 'noise_validator';
+import { String, Number, Schema } from 'noise_validator';
 
 
 
@@ -38,28 +25,176 @@ describe('Schema Class', () => {
             expect(cookies._type).toBe('cookies');
         });
     });
-  
-    describe('Validation', () => {
-        test('Should validate input data against schema', async () => {
-            // Test validate method with different input data
-            // Assert validation result matches expected outcome
-        });
+
+    test('Should execute handler function and call valid callback on success', async () => {
+        const schema = new Schema.Body({ test: String });
+        const input = { test: 'test' };
+
+        const result = await schema.validate(input);
+        expect(result.type).toEqual('data');
+        expect(result.data).toEqual(input);
     });
-  
-    describe('Error Handling', () => {
-        test('Should handle missing fields error', async () => {
-            // Test missing field error handling
-            // Assert error is thrown with correct message and data
-        });
-    
-        // Repeat for other types of errors
+
+    test('Should execute handler function and call valid callback on success', async () => {
+        const schema = new Schema.Body({ test: { test: String } });
+        const input = { test: { test: 'test' } };
+
+        const result = await schema.validate(input);
+        expect(result.type).toEqual('data');
+        expect(result.data).toEqual(input);
     });
-  
-    describe('Log Stack', () => {
-        test('Should maintain log stack during validation', async () => {
-            // Test log stack behavior during validation
-            // Assert log stack is correctly maintained
+
+    // -- very very nested object with multiple branches
+    test('Super nested object with multiple branches, pass', async () => {
+        const schema = new Schema.Body({
+            b1: {
+                b2: {
+                    b3: {
+                        b4: {
+                            b5: String
+                        }
+                    },
+                    b6: {
+                        b7: {
+                            b8: {
+                                b9: String
+                            }
+                        }
+                    }
+                },
+                b6: {
+                    b7: {
+                        b8: {
+                            b9: String
+                        }
+                    }
+                }
+            }
         });
+
+        const input = {
+            b1: {
+                b2: {
+                    b3: {
+                        b4: {
+                            b5: 'test'
+                        }
+                    },
+                    b6: {
+                        b7: {
+                            b8: {
+                                b9: 'test'
+                            }
+                        }
+                    }
+                },
+                b6: {
+                    b7: {
+                        b8: {
+                            b9: 'test'
+                        }
+                    }
+                }
+            }
+        };
+
+        const result = await schema.validate(input);
+        expect(result.type).toEqual('data');
+        expect(result.data).toEqual(input);
+    });
+
+    test('Super nested object with multiple branches, fail', async () => {
+        const schema = new Schema.Body({
+            b1: {
+                b2: {
+                    b3: {
+                        b4: {
+                            b5: String
+                        }
+                    },
+                    b6: {
+                        b7: {
+                            b8: {
+                                b9: String
+                            }
+                        }
+                    }
+                },
+                b6: {
+                    b7: {
+                        b8: {
+                            b9: Number
+                        }
+                    }
+                }
+            }
+        });
+
+        const input = {
+            b1: {
+                b2: {
+                    b3: {
+                        b4: {
+                            b5: 'test'
+                        }
+                    },
+                    b6: {
+                        b7: {
+                            b8: {
+                                b9: 'test'
+                            }
+                        }
+                    }
+                },
+                b6: {
+                    b7: {
+                        b8: {
+                            b9: 'test'
+                        }
+                    }
+                }
+            }
+        };
+
+        const result = await schema.validate(input);
+        expect(result.type).toEqual('error');
+        expect(result.error.message).toEqual('Invalid number');
+    });
+
+    test('Should execute handler function and call invalid callback on failure', async () => {
+        const schema = new Schema.Body({ test: Number });
+        const input = { test: 'TEST' };
+
+        const result = await schema.validate(input);
+        expect(result.type).toEqual('error');
+        expect(result.error.message).toEqual('Invalid number');
+    });
+
+    test('Should execute handler function and call invalid callback on failure', async () => {
+        const schema = new Schema.Body({ test: { test: Number } });
+        const input = { test: { test: 'TEST' } };
+
+        const result = await schema.validate(input);
+        expect(result.type).toEqual('error');
+        expect(result.error.message).toEqual('Invalid number');
+    });
+
+    test('Should maintain log stack during execution', async () => {
+        const schema = new Schema.Body({ test: Number });
+        const input = { test: 'TEST' };
+
+        expect(schema.log_stack.length).toBe(0);
+        await schema.validate(input);
+        expect(schema.log_stack.length).toBeGreaterThan(0);
+    });
+
+    test('Should correctly handle null input value in constructor', async () => {
+        const schema = new Schema.Body({ test: Number });
+        const input = null;
+
+        const result = await schema.validate(input);
+        expect(result.type).toEqual('error');
+        expect(result.error.message).toEqual('Value not provided');
     });
 });
   
