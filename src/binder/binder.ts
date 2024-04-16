@@ -16,7 +16,7 @@ import { mergician } from "mergician";
 import { Route } from "../route";
 import { GenericError } from "../error";
 import { Log } from "..";
-import { validate_middlewares } from "./validate";
+import { validate_binder_output, validate_middlewares } from "./validate";
 
 export default function Binder<
     Middleware extends Middleware.MiddlewareObject,
@@ -64,19 +64,18 @@ export default function Binder<
     
 
     // -- Ensure that all the schemas are arrays, even if they are empty
-    const schemas = {
-        body: Array.isArray(configuration?.schemas?.body) ? configuration?.schemas?.body : 
-            configuration?.schemas?.body ? [configuration.schemas?.body] : [],
-
-        query: Array.isArray(configuration?.schemas?.query) ? configuration?.schemas?.query :
-            configuration?.schemas?.query ? [configuration.schemas?.query] : [],
-
-        headers: Array.isArray(configuration?.schemas?.headers) ? configuration?.schemas?.headers :
-            configuration?.schemas?.headers ? [configuration.schemas?.headers] : [],
-
-        output: Array.isArray(configuration?.schemas?.output) ? configuration?.schemas?.output :
-            configuration?.schemas?.output ? [configuration.schemas?.output] : []
-    } as SchemasValidator;
+    const schemas: SchemasValidator = {
+        input: {
+            body: make_array(configuration.schemas?.input?.body),
+            query: make_array(configuration.schemas?.input?.query),
+            headers: make_array(configuration.schemas?.input?.headers)
+        },
+        
+        output: {
+            body: make_array(configuration.schemas?.output?.body),
+            headers: make_array(configuration.schemas?.output?.headers)
+        }
+    };
 
 
 
@@ -91,24 +90,11 @@ export default function Binder<
 
 
                 // -- If there is an output schema, validate the output
-                if (schemas.output.length > 0) {
-                    const validated = await validate_output(result, schemas.output);
-                    if (validated instanceof Error) {
+                const output = await validate_binder_output(result, schemas, route.path);
 
-                        // -- Make sure the error is a GenericError
-                        const error = GenericError.from_unknown(
-                            validated, 
-                            new BinderFailedToExecuteError('Failed to validate output')
-                        );
-
-                        // -- Add a hint to the error
-                        error.hint = 'The output of the binder failed to validate against the output schema';
-                        throw validated;
-                    };
-                    data.fastify.reply.send(validated);
-                }
-
-                // -- No output schema, no returned data.
+                // -- Send the response
+                data.fastify.reply.headers(output.headers);
+                data.fastify.reply.send(output.body);
             }
 
             catch (unknown_error) { 
@@ -161,6 +147,14 @@ export default function Binder<
 
 
 
+const make_array = <T extends unknown>(value: T | Array<T> | undefined): Array<T> => {
+    if (typeof value === 'undefined') return [];
+    return Array.isArray(value) ? value : [value];
+}
+
+
+
 export {
-    Binder
+    Binder,
+    make_array
 }

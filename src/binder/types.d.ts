@@ -5,7 +5,7 @@ import { Schema } from "../schema/types.d";
 import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
 
 
-export type BinderValidatorResult = {
+export type BinderInputValidatorResult = {
     body: unknown,
     query: unknown,
     headers: unknown,
@@ -13,14 +13,26 @@ export type BinderValidatorResult = {
 };
 
 
+export type BinderOutputValidatorResult = {
+    body: object,
+    headers: object
+};
+
+
 export type BinderCallbackReturn = 
     unknown | Promise<unknown>;
 
 export type SchemasValidator = {
-    body: Array<Schema.SchemaLike<'body'>>,
-    query: Array<Schema.SchemaLike<'query'>>,
-    headers: Array<Schema.SchemaLike<'headers'>>,
-    output: Array<Schema.SchemaLike<Schema.SchemaType>>
+    input: {
+        body: Array<Schema.SchemaLike<'body'>>,
+        query: Array<Schema.SchemaLike<'query'>>,
+        headers: Array<Schema.SchemaLike<'headers'>>
+    },
+
+    output: {
+        body: Array<Schema.SchemaLike<'body'>>,
+        headers: Array<Schema.SchemaLike<'headers'>>
+    }
 };
 
 

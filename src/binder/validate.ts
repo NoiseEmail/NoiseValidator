@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { BinderValidatorResult, SchemasValidator } from "./types.d";
+import { BinderInputValidatorResult, BinderOutputValidatorResult, SchemasValidator } from "./types.d";
 import { GenericError } from "../error";
 import { FailedToValidateInputError } from "./errors";
 import { Schema } from "../schema/types.d";
@@ -13,11 +13,11 @@ const validate_binder_request = async (
     fastify_request: FastifyRequest,
     schemas: SchemasValidator,
     name: string
-): Promise<BinderValidatorResult> => {
+): Promise<BinderInputValidatorResult> => {
     try {
-        const body = validate_inputs(fastify_request.body, schemas.body);
-        const query = validate_inputs(fastify_request.query, schemas.query);
-        const headers = validate_inputs(fastify_request.headers, schemas.headers);
+        const body = validate_inputs(fastify_request.body, schemas.input.body);
+        const query = validate_inputs(fastify_request.query, schemas.input.query);
+        const headers = validate_inputs(fastify_request.headers, schemas.input.headers);
 
         // -- We are entrusting the url to be parsed by Fastify
         const url = fastify_request.params;
@@ -43,10 +43,38 @@ const validate_binder_request = async (
 
 
 
+const validate_binder_output = async (
+    data: { body?: unknown, headers?: unknown },
+    schemas: SchemasValidator,
+    name: string
+): Promise<BinderOutputValidatorResult> => {
+    try {
+        const body = validate_output(data.body, schemas.output.body);
+        const headers = validate_output(data.headers, schemas.output.headers);
+
+        return { 
+            body: (await body) || {},
+            headers: (await headers) || {}
+        };
+    }
+
+    catch (unknown_error) {
+        const error = GenericError.from_unknown(
+            unknown_error, 
+            new FailedToValidateInputError(name + ' - validate_binder_output')
+        );
+
+        Log.debug(`validate_binder_output: Binder failed to validate output: ${error.id}`);
+        throw error;
+    };
+}
+
+
+
 const validate_output = async (
     data: unknown,
     schema: Array<Schema.SchemaLike<Schema.SchemaType>>
-): Promise<unknown> => {
+): Promise<object> => {
     try { return await validate_inputs(data, schema); }
 
     catch (unknown_error) {
@@ -231,6 +259,7 @@ const validate_middlewares = async (
 
 
 export {
+    validate_binder_output,
     validate_binder_request,
     validate_output,
     validate_input,
