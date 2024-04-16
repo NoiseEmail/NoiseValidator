@@ -30,7 +30,7 @@ export default class Schema<
 
 
 
-    public static Body = class <
+    public static Body = class<
         InputSchema extends SchemaTypes.InputSchema,
         ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
     > extends Schema<InputSchema, ReturnableData> {
@@ -38,7 +38,7 @@ export default class Schema<
         public constructor(schema: InputSchema) { super(schema); };
     };
 
-    public static Query = class <
+    public static Query = class<
         InputSchema extends SchemaTypes.FlatSchema,
         ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
     > extends Schema<InputSchema, ReturnableData> {
@@ -46,7 +46,7 @@ export default class Schema<
         public constructor(schema: InputSchema) { super(schema); };
     };
 
-    public static Headers = class <
+    public static Headers = class<
         InputSchema extends SchemaTypes.FlatSchema,
         ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
     > extends Schema<InputSchema, ReturnableData> {
@@ -54,7 +54,7 @@ export default class Schema<
         public constructor(schema: InputSchema) { super(schema); };
     };
 
-    public static Cookies = class <
+    public static Cookies = class<
         InputSchema extends SchemaTypes.FlatSchema,
         ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
     > extends Schema<InputSchema, ReturnableData> {
