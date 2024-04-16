@@ -8,7 +8,7 @@ const create_enum = <
     InputArray extends Array<InputTypes>
 >(
     ...input_types: InputArray
-) => class OptionalClass extends GenericType<
+) => (class OptionalClass extends GenericType<
     InputArray[number], Array<unknown>
 > { 
     private readonly _input_types: InputArray = input_types;
@@ -36,7 +36,7 @@ const create_enum = <
         // -- Return the value
         return this.value as InputTypes;
     }
-}
+})
 
 
 

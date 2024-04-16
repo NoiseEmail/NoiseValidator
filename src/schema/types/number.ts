@@ -1,4 +1,3 @@
-import { Schema } from '../types.d';
 import { GenericError } from '../../error';
 import GenericType from '../generic';
 
@@ -63,9 +62,9 @@ export default class NumberType extends GenericType<number, number> {
 
     public static config = (configuration: {
         mode: 'integer' | 'float' | 'both'
-    }): typeof GenericType<number, number> => class extends NumberType {
+    }): typeof GenericType<number, number> => (class extends NumberType {
         protected mode: 'integer' | 'float' | 'both' = configuration.mode || 'both';
-    } 
+    }) 
 
 
     public static get name() {

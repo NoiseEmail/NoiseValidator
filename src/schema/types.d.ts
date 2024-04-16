@@ -1,6 +1,6 @@
 import { GenericError } from '../error';
 import { LogFunctions, LogObject } from '../logger/types';
-import { GenericType, Schema as SchemaClass } from "../schema";
+import { GenericType } from "../schema";
 
 export namespace Schema {
 

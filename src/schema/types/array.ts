@@ -12,7 +12,7 @@ const create_array = <
         OriginalReturnType, 
         OriginalInputShape
     >,
-) => class OptionalClass extends GenericType<
+) => (class OptionalClass extends GenericType<
     Array<OriginalReturnType>,
     OriginalInputShape
 > { 
@@ -74,7 +74,7 @@ const create_array = <
     public static get name() {
         return `Array<${constructor.name}>`;
     }
-}
+})
 
 
 export default create_array;

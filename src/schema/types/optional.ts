@@ -37,7 +37,7 @@ const create_optional = <
         OriginalInputShape
     >,
     default_value: DefaultValue = undefined as DefaultValue
-) => class OptionalClass extends GenericType<
+) => (class OptionalClass extends GenericType<
     ExtractReturnType<DefaultValue, OriginalReturnType>,
     OriginalInputShape
 > { 
@@ -143,6 +143,6 @@ const create_optional = <
     public static get name() {
         return `Optional<${constructor.name}>`;
     }
-}
+})
 
 export default create_optional;

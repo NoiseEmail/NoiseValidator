@@ -1,9 +1,8 @@
 import { GenericError } from '../error/generic';
-import { GenericError as GenericErrorTypes } from '../error';
-import log, { log_header } from '../logger/log';
+import { log_header } from '../logger/log';
 import { log_types } from '../logger/type_enum';
 import { LogFunctions, LogObject, LogType } from '../logger/types';
-import { MissingHandlerError, InvalidInputError, GenericTypeExecutionError } from './errors';
+import { MissingHandlerError, InvalidInputError } from './errors';
 import { Schema } from './types.d';
 import { Log } from '..';
 
@@ -195,7 +194,7 @@ export default class GenericType <
             this._on_invalid(error);
         }
     }
-};
+}
 
 
 

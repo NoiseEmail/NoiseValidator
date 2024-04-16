@@ -73,11 +73,11 @@ export default class String extends GenericType<string, string> {
         max_length?: number,
         min_length?: number,
         regex?: RegExp
-    }): typeof GenericType<string, string> => class extends String {
+    }): typeof GenericType<string, string> => (class extends String {
         protected max_length = configuration.max_length;
         protected min_length = configuration.min_length;
         protected regex = configuration.regex;
-    }
+    })
 
 
     
