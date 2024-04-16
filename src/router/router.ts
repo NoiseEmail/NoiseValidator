@@ -7,7 +7,7 @@ import { mergician } from 'mergician';
 
 export default class Router {
 
-    private static _instance: Router;
+    private static _instance: Router | null = null;
     private _routes: Map<String, Route<any>>;
     private _server: FastifyInstance;
     private _configuration: RouterConfiguration = DefualtRouterConfiguration;
@@ -22,7 +22,8 @@ export default class Router {
 
 
     public static get instance(): Router {
-        if (!Router._instance) this._instance = new Router();
+        if (Router._instance === null) 
+            Router._instance = new Router();
         return Router._instance;
     }
 

@@ -143,7 +143,13 @@ export default function Binder<
                 set_headers: add_headers(reply),
                 remove_header: remove_header(reply),
                 remove_headers: remove_headers(reply)
-            } as BinderCallbackObject<any, any, any, any, any>;
+            } as BinderCallbackObject<
+                Middleware,
+                Body,
+                Query,
+                Headers,
+                DynamicURL
+            >;
         },
 
         method
