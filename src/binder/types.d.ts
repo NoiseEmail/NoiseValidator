@@ -107,10 +107,21 @@ export type BinderConfiguration<
 
 
 export type BinderConfigurationSchema<
-    Body extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    Query extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
-    Output extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+    Body extends 
+        Schema.SchemaLike<'body'> | 
+        Array<Schema.SchemaLike<'body'>>,
+
+    Query extends 
+        Schema.SchemaLike<'query'> | 
+        Array<Schema.SchemaLike<'query'>>,
+
+    Headers extends 
+        Schema.SchemaLike<'headers'> | 
+        Array<Schema.SchemaLike<'headers'>>,
+
+    Output extends 
+        Schema.SchemaLike<'body'> | 
+        Array<Schema.SchemaLike<'body'>>,
 > = {
     body: Body,
     query: Query,
@@ -122,10 +133,22 @@ export type BinderConfigurationSchema<
 
 export type OptionalBinderConfiguration<
     Middleware extends Middleware.MiddlewareObject,
-    Body extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    Query extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
-    Output extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+    
+    Body extends 
+        Schema.SchemaLike<'body'> | 
+        Array<Schema.SchemaLike<'body'>>,
+
+    Query extends 
+        Schema.SchemaLike<'query'> | 
+        Array<Schema.SchemaLike<'query'>>,
+
+    Headers extends 
+        Schema.SchemaLike<'headers'> | 
+        Array<Schema.SchemaLike<'headers'>>,
+
+    Output extends 
+        Schema.SchemaLike<'body'> | 
+        Array<Schema.SchemaLike<'body'>>,
 > = {
     middleware?: Middleware,
     schemas?: Partial<BinderConfigurationSchema<Body, Query, Headers, Output>>
