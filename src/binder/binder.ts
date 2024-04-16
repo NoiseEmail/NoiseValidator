@@ -8,7 +8,8 @@ import {
     DeepMergeReturnTypes, 
     GetOutputType, 
     SplitObject, 
-    OptionalBinderConfiguration, 
+    OptionalBinderConfiguration,
+    ExtractOutputSchemaTypes, 
     SchemasValidator 
 } from "./types.d";
 import { mergician } from "mergician";
@@ -20,37 +21,45 @@ import { validate_middlewares } from "./validate";
 export default function Binder<
     Middleware extends Middleware.MiddlewareObject,
 
-    Body extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    Query extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    // -- Input schemas
+    BodyInputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+    QueryInputSchema extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
+    HeadersInputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    DynamicURLInputSchema extends string,
 
-    Output extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    ParsedOutput extends DeepMergeReturnTypes<CreateArray<Output>>,
-    OutputTypes extends SplitObject<GetOutputType<ParsedOutput, ParsedOutput>>,
-    OutputType extends OutputTypes['required'] & OutputTypes['optional'],
+    // -- Output schemas
+    BodyOutputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+    HeadersOutputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
 
-    DynamicURL extends string,
-    
-    CallbackObject = BinderCallbackObject<
+
+
+    OutputObject extends ExtractOutputSchemaTypes<
+        BodyOutputSchema,
+        HeadersOutputSchema
+    >,
+
+
+    CallbackObject extends BinderCallbackObject<
         Middleware,
-        Body,
-        Query,
-        Headers,
-        DynamicURL
-    >
+        BodyInputSchema,
+        QueryInputSchema,
+        HeadersInputSchema,
+        DynamicURLInputSchema
+    >,
 >(
-    route: Route<DynamicURL>,
+    route: Route<DynamicURLInputSchema>,
     method: HTTPMethods,
     configuration: OptionalBinderConfiguration<
         Middleware,
-        Body,
-        Query,
-        Headers,
-        Output
+        BodyInputSchema,
+        QueryInputSchema,
+        HeadersInputSchema,
+        
+        BodyOutputSchema,
+        HeadersOutputSchema
     >,
-    callback: (data: CallbackObject) =>
-        OutputType | GenericError |
-        Promise<OutputType | GenericError>,
+    callback: (data: CallbackObject) => 
+        OutputObject | Promise<OutputObject>
 ): void {
     
 
@@ -139,10 +148,10 @@ export default function Binder<
                 fastify: { request, reply },
             } as BinderCallbackObject<
                 Middleware,
-                Body,
-                Query,
-                Headers,
-                DynamicURL
+                BodyInputSchema,
+                QueryInputSchema,
+                HeadersInputSchema,
+                DynamicURLInputSchema
             >;
         },
 

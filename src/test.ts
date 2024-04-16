@@ -14,6 +14,70 @@
 
 // import { DynamicURL } from "./route/types";
 
+import { 
+    Schema,
+    Number,
+    String,
+    Boolean,
+
+    Binder,
+    Route,
+} from 'noise_validator';
+import { OptionalBinderConfiguration } from './binder/types';
+
+
+const test_schema = new Schema.Body({
+    a: String,
+    b: Number,
+    c: Boolean
+});
+
+const test_headers = new Schema.Headers({
+    a: String,
+    b: Number,
+    c: Boolean
+});
+
+
+
+const test_route = new Route('/test', {
+    friendly_name: 'Test Route',
+    api_version: '1'
+});
+
+Binder(test_route, 'GET', {
+    schemas: {
+        input: {
+            body: test_schema
+        },
+
+        output: {
+            body: [test_schema],
+            headers: test_headers
+        }
+    },
+}, (data) => {
+
+
+
+    return {
+        body: {
+            a: 'test',
+            b: 1,
+            c: a
+        },
+        
+        headers: {
+            a: 'test',
+            b: 1,
+            c: true
+        }
+    }
+});
+
+
+
+
 
 
 // const example = new Schema.Body({

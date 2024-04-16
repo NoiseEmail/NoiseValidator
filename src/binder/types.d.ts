@@ -76,82 +76,116 @@ export type BinderCallbackObject<
 
 
 export type BinderConfigurationSchema<
-    Body extends 
+    // -- Input schemas
+    BodyInputSchema extends 
         Schema.SchemaLike<'body'> | 
         Array<Schema.SchemaLike<'body'>>,
 
-    Query extends 
+    QueryInputSchema extends 
         Schema.SchemaLike<'query'> | 
         Array<Schema.SchemaLike<'query'>>,
 
-    Headers extends 
+    HeadersInputSchema extends 
         Schema.SchemaLike<'headers'> | 
         Array<Schema.SchemaLike<'headers'>>,
 
-    Output extends 
+    // -- Output schemas
+    BodyOutputSchema extends
         Schema.SchemaLike<'body'> | 
         Array<Schema.SchemaLike<'body'>>,
+
+    HeadersOutputSchema extends
+        Schema.SchemaLike<'headers'> | 
+        Array<Schema.SchemaLike<'headers'>>,
 > = {
-    body: Body,
-    query: Query,
-    headers: Headers,
-    output: Output
+    input: {
+        body?: BodyInputSchema,
+        query?: QueryInputSchema,
+        headers?: HeadersInputSchema
+    },
+
+    output: {
+        body?: BodyOutputSchema,
+        headers?: HeadersOutputSchema
+    }
 };
 
 
 
-export type BinderConfiguration<
-    Middleware extends Middleware.MiddlewareObject,
+type ExtractOutputSchemaHelperSplit<
+    DeepMergeReturnTypes extends object
+> = SplitObject<GetOutputType<DeepMergeReturnTypes, DeepMergeReturnTypes>>
 
-    Body extends 
+type ExtractOutputSchemaHelperMerge<
+    SplitObject extends { required: object, optional: object }
+> = SplitObject['required'] & SplitObject['optional'];
+
+export type ExtractOutputSchema<
+    RawSchema extends
+        Schema.SchemaLike<Schema.SchemaType> | 
+        Array<Schema.SchemaLike<Schema.SchemaType>>,
+> = ExtractOutputSchemaHelperMerge<
+        ExtractOutputSchemaHelperSplit<
+            DeepMergeReturnTypes<CreateArray<RawSchema>>>>
+
+
+
+export type ExtractOutputSchemaTypes<
+    OutputBodySchema extends
         Schema.SchemaLike<'body'> | 
         Array<Schema.SchemaLike<'body'>>,
 
-    Query extends 
-        Schema.SchemaLike<'query'> | 
-        Array<Schema.SchemaLike<'query'>>,
-
-    Headers extends 
+    OutputHeadersSchema extends
         Schema.SchemaLike<'headers'> | 
         Array<Schema.SchemaLike<'headers'>>,
 
-    Output extends 
-        Schema.SchemaLike<'body'> | 
-        Array<Schema.SchemaLike<'body'>>,
-> = {
-    middleware: Middleware,
-    schemas: BinderConfigurationSchema<Body, Query, Headers, Output>,
-};
+    MergedBodySchema = ExtractOutputSchema<OutputBodySchema>,
+    MergedHeadersSchema = ExtractOutputSchema<OutputHeadersSchema>
+> = 
+    (MergedBodySchema extends object ? { body: MergedBodySchema } : {}) &
+    (MergedHeadersSchema extends object ? { headers: MergedHeadersSchema } : {});
+
 
 
 
 export type OptionalBinderConfiguration<
+     // -- Middleware
     Middleware extends Middleware.MiddlewareObject,
-    
-    Body extends 
+
+    // -- Input schemas
+    BodyInputSchema extends 
         Schema.SchemaLike<'body'> | 
         Array<Schema.SchemaLike<'body'>>,
 
-    Query extends 
+    QueryInputSchema extends 
         Schema.SchemaLike<'query'> | 
         Array<Schema.SchemaLike<'query'>>,
 
-    Headers extends 
+    HeadersInputSchema extends 
         Schema.SchemaLike<'headers'> | 
         Array<Schema.SchemaLike<'headers'>>,
 
-    Output extends 
+    // -- Output schemas
+    BodyOutputSchema extends
         Schema.SchemaLike<'body'> | 
         Array<Schema.SchemaLike<'body'>>,
+
+    HeadersOutputSchema extends
+        Schema.SchemaLike<'headers'> | 
+        Array<Schema.SchemaLike<'headers'>>,
 > = {
     middleware?: Middleware,
     schemas?: Partial<BinderConfigurationSchema<
-        CreateArray<Body>,
-        CreateArray<Query>,
-        CreateArray<Headers>,
-        CreateArray<Output>
+        BodyInputSchema, 
+        QueryInputSchema, 
+        HeadersInputSchema, 
+        
+        BodyOutputSchema,
+        HeadersOutputSchema
     >>
 };
+
+
 
 
 export type IsArray<T> = T extends Array<unknown> ? true : false;
