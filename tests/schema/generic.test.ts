@@ -427,4 +427,51 @@ describe('Generic type', () => {
         expect(logs[3].type).toBe('WARN');
         expect(logs[4].type).toBe('THROW');
     });
+
+
+
+    // -- No implemented handler error
+    test('No implemented handler', async () => {
+        
+        class TestType extends GenericType<any> {}
+
+        const instance = new TestType('test', (e) => {
+            expect(e).toBeInstanceOf(MissingHandlerError);
+        }, () => {
+            expect(true).toBe(false);
+        });
+        await instance.execute();
+    });
+
+
+
+    // -- Get passed in value
+    test('Get passed in value', async () => {
+        
+        class TestType extends GenericType<any> {
+            protected handler = () => {
+                this.valid(this.value);
+            }
+        }
+
+        expect((await execute(TestType, 'test')).result).toBe('test');
+        expect((await execute(TestType, 1)).result).toBe(1);
+        expect((await execute(TestType, false)).result).toBe(false);
+        expect((await execute(TestType, null)).result).toBe(null);
+        expect((await execute(TestType, undefined)).result).toBe(undefined);
+        expect((await execute(TestType, new Error())).result).toBeInstanceOf(Error);
+    });
+
+
+
+    // -- Get name
+    test('Get name', async () => {
+        
+        class TestType extends GenericType<any> {
+            protected handler = () => this.valid(this.constructor.name);
+        }
+
+        expect((await execute(TestType, 'test')).result).toBe('TestType');
+        expect(TestType.name).toBe('TestType');
+    });
 });
