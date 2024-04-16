@@ -119,7 +119,7 @@ export default class Schema<
         validator: SchemaTypes.InputSchema | SchemaTypes.GenericTypeConstructor<unknown, unknown>,
         new_data: unknown,
         new_path: string[]
-    ): Promise<unknown | GenericError> => {
+    ): Promise<unknown> => {
 
         switch (typeof validator) {
             // -- Function, execute it
@@ -139,7 +139,7 @@ export default class Schema<
                         expected: validator.constructor.name 
                     };
                     instance.push_error(error);
-                    return error;
+                    throw error;
                 };
 
                 return walk_result;
@@ -164,7 +164,7 @@ export default class Schema<
                         expected: validator.constructor.name 
                     };
                     instance.push_error(error);
-                    return error;
+                    throw error;
                 };
                 
                 return walk_result;
@@ -180,7 +180,7 @@ export default class Schema<
         data: unknown,
         path: string[] = [],
         result: { [type: string]: unknown } = {}
-    ): Promise<ReturnableData | GenericError> => {
+    ): Promise<ReturnableData> => {
 
         for (const type in schema) {
 
@@ -198,31 +198,36 @@ export default class Schema<
             if (new_data instanceof Function) {
                 const error = new SchemaExecutionError(`The value at ${new_path.join('.')} is a function`);
                 instance.push_error(error);
-                return error;
+                throw error;
             }
 
-            // -- Check the value against the schema
-            const walk_result = await Schema._validate_value(
-                instance,
-                validator,
-                new_data,
-                new_path
-            );
 
-            // -- If the result is an error, break the loop
-            if (walk_result instanceof Error) {
-                const error = GenericError.from_unknown(walk_result);
+
+            try {
+                // -- Attempt to validate the value
+                result[type] = await Schema._validate_value(
+                    instance,
+                    validator,
+                    new_data,
+                    new_path
+                );
+            }
+
+
+
+            catch (unknown_error) {
+                const error = GenericError.from_unknown(
+                    unknown_error, 
+                    new SchemaExecutionError(`An error occurred trying to validate ${new_path.join('.')}`)
+                );
                 error.hint = 'Error occurred while validating the schema';
                 error.data = { 
                     path: new_path, 
                     expected: validator.constructor.name 
                 };
                 instance.push_error(error);
-                return error;
+                throw error;
             }
-
-            // -- Else, add the result to the return object
-            result[type] = walk_result;
         }
     
         return result as ReturnableData;
@@ -236,7 +241,7 @@ export default class Schema<
         data: object,
         path: string[] = [],
         result: { [key: string]: unknown } = {}
-    ): Promise<ReturnableData | GenericError> => 
+    ): Promise<ReturnableData> => 
         Schema._walk_object(instance, schema, data, path, result);
     
 
