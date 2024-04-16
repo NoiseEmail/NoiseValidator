@@ -209,7 +209,7 @@ export default class GenericType <
  * @returns {Promise<void>} A promise that resolves when the class constructor has been executed
  */
 export async function execute<
-    Constructor extends Schema.GenericTypeConstructor<any>,
+    Constructor extends Schema.GenericTypeConstructor<unknown>,
     ReturnType extends Schema.ExtractParamaterReturnType<Constructor>
 >(
     class_constructor: Constructor,
@@ -239,7 +239,7 @@ export async function execute<
                 valid_executed = true;
                 resolve({
                     instance,
-                    result: value,
+                    result: value as ReturnType,
                     is_error: false
                 });
             }

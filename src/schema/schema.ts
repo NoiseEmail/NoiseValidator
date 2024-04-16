@@ -65,7 +65,7 @@ export default class Schema<
 
     
     public static _execute_validator = async (
-        instance: Schema<any, any>,
+        instance: Schema<SchemaTypes.InputSchema | SchemaTypes.FlatSchema, unknown>,
         value: SchemaTypes.GenericTypeConstructor,
         new_data: unknown,
         new_path: string[]
@@ -109,14 +109,14 @@ export default class Schema<
 
 
         // -- If the validator_result is not an error, add it to the result
-        else return validator_result.result;
+        else return validator_result.result as unknown;
     };
 
 
 
     public static _validate_value = async (
-        instance: Schema<any, any>,
-        validator: SchemaTypes.InputSchema | SchemaTypes.GenericTypeConstructor<any, any>,
+        instance: Schema<SchemaTypes.InputSchema | SchemaTypes.FlatSchema, unknown>,
+        validator: SchemaTypes.InputSchema | SchemaTypes.GenericTypeConstructor<unknown, unknown>,
         new_data: unknown,
         new_path: string[]
     ): Promise<unknown | GenericError> => {
@@ -146,7 +146,7 @@ export default class Schema<
             }
 
 
-            
+
             // -- Object, walk it
             case 'object': {
                 const walk_result = await Schema._walk_object(
@@ -175,7 +175,7 @@ export default class Schema<
 
 
     public static _walk_object = async <ReturnableData>(
-        instance: Schema<any, any>,
+        instance: Schema<SchemaTypes.InputSchema | SchemaTypes.FlatSchema, unknown>,
         schema: SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
         data: unknown,
         path: string[] = [],
@@ -231,7 +231,7 @@ export default class Schema<
 
     
     public static _walk = async <ReturnableData>(
-        instance: Schema<any, any>,
+        instance: Schema<SchemaTypes.InputSchema | SchemaTypes.FlatSchema, unknown>,
         schema: SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
         data: object,
         path: string[] = [],
