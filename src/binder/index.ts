@@ -5,7 +5,7 @@ import {
     FailedToValidateInputError
 } from "./errors";
 
-import { validate_binder_request, validate_output } from "./validate";
+import { validate_binder_request } from "./validate";
 
 export {
     Binder,
@@ -13,5 +13,4 @@ export {
     BinderFailedToExecuteError,
     FailedToValidateInputError,
     validate_binder_request,
-    validate_output
 }

@@ -49,8 +49,8 @@ const validate_binder_output = async (
     name: string
 ): Promise<BinderOutputValidatorResult> => {
     try {
-        const body = validate_output(data.body, schemas.output.body);
-        const headers = validate_output(data.headers, schemas.output.headers);
+        const body = validate_inputs(data.body, schemas.output.body);
+        const headers = validate_inputs(data.headers, schemas.output.headers);
 
         return { 
             body: (await body) || {},
@@ -69,24 +69,6 @@ const validate_binder_output = async (
     };
 }
 
-
-
-const validate_output = async (
-    data: unknown,
-    schema: Array<Schema.SchemaLike<Schema.SchemaType>>
-): Promise<object> => {
-    try { return await validate_inputs(data, schema); }
-
-    catch (unknown_error) {
-        const error = GenericError.from_unknown(
-            unknown_error, 
-            new FailedToValidateInputError('validator, validate_output')
-        );
-
-        Log.debug(`validate_output: Failed to validate output: ${error.id}`);
-        throw error;
-    }
-};
 
 
 
@@ -261,7 +243,6 @@ const validate_middlewares = async (
 export {
     validate_binder_output,
     validate_binder_request,
-    validate_output,
     validate_input,
     validate_inputs,
     execute_middleware,
