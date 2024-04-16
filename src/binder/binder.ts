@@ -1,16 +1,16 @@
-import { FastifyReply, HTTPMethods } from "fastify";
-import { BinderFailedToExecuteError, DefaultBinderConfiguration, validate_binder_request, validate_output } from ".";
+import { HTTPMethods } from "fastify";
+import {
+    BinderFailedToExecuteError,
+    DefaultBinderConfiguration,
+    validate_binder_request,
+} from ".";
 import { Middleware } from "../middleware/types.d";
 import { Schema } from "../schema/types.d";
-import { 
-    BinderCallbackObject, 
-    CreateArray, 
-    DeepMergeReturnTypes, 
-    GetOutputType, 
-    SplitObject, 
+import {
+    BinderCallbackObject,
     OptionalBinderConfiguration,
-    ExtractOutputSchemaTypes, 
-    SchemasValidator 
+    ExtractOutputSchemaTypes,
+    SchemasValidator,
 } from "./types.d";
 import { mergician } from "mergician";
 import { Route } from "../route";
