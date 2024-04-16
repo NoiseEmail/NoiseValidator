@@ -63,9 +63,7 @@ const validate_input = async (
     schema: Schema.SchemaLike<Schema.SchemaType>
 ): Promise<unknown> => {
     try {
-        const result = await schema.validate(data);
-        if (result.type !== 'data') throw result.error;
-        else return result.data;
+        return await schema.validate(data);
     }
 
     catch (unknown_error) {

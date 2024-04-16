@@ -108,11 +108,7 @@ export default class GenericMiddleware<
 
 
         // -- Validate the input
-        const result = await schema.validate(data);
-        if (result.type === 'error') throw result.error;
-        
-        // -- Return the result
-        return result.data as ReturnType;
+        return await schema.validate(data) as ReturnType;
     };
 
 

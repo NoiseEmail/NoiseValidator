@@ -30,18 +30,31 @@ describe('Schema Class', () => {
         const schema = new Schema.Body({ test: String });
         const input = { test: 'test' };
 
-        const result = await schema.validate(input);
-        expect(result.type).toEqual('data');
-        expect(result.data).toEqual(input);
+        try {
+            const result = await schema.validate(input);
+            expect(result).toEqual(input);
+        }
+
+        catch (error) {
+            console.error(error);
+            expect(true).toBe(false);
+        }
+       
     });
 
     test('Should execute handler function and call valid callback on success', async () => {
         const schema = new Schema.Body({ test: { test: String } });
         const input = { test: { test: 'test' } };
 
-        const result = await schema.validate(input);
-        expect(result.type).toEqual('data');
-        expect(result.data).toEqual(input);
+        try {
+            const result = await schema.validate(input);
+            expect(result).toEqual(input);
+        }
+
+        catch (error) {
+            console.error(error);
+            expect(true).toBe(false);
+        }
     });
 
     // -- very very nested object with multiple branches
@@ -98,9 +111,15 @@ describe('Schema Class', () => {
             }
         };
 
-        const result = await schema.validate(input);
-        expect(result.type).toEqual('data');
-        expect(result.data).toEqual(input);
+        try {
+            const result = await schema.validate(input);
+            expect(result).toEqual(input);
+        }
+
+        catch (error) {
+            console.error(error);
+            expect(true).toBe(false);
+        }
     });
 
     test('Super nested object with multiple branches, fail', async () => {
@@ -156,27 +175,42 @@ describe('Schema Class', () => {
             }
         };
 
-        const result = await schema.validate(input);
-        expect(result.type).toEqual('error');
-        expect(result.error.message).toEqual('Invalid number');
+        try {
+            const result = await schema.validate(input);
+            expect(true).toBe(false);
+        }
+        
+        catch (error) {
+            expect(error.message).toEqual('Invalid number');
+        }
     });
 
     test('Should execute handler function and call invalid callback on failure', async () => {
         const schema = new Schema.Body({ test: Number });
         const input = { test: 'TEST' };
 
-        const result = await schema.validate(input);
-        expect(result.type).toEqual('error');
-        expect(result.error.message).toEqual('Invalid number');
+        try {
+            const result = await schema.validate(input);
+            expect(true).toBe(false);
+        }
+        
+        catch (error) {
+            expect(error.message).toEqual('Invalid number');
+        }
     });
 
     test('Should execute handler function and call invalid callback on failure', async () => {
         const schema = new Schema.Body({ test: { test: Number } });
         const input = { test: { test: 'TEST' } };
 
-        const result = await schema.validate(input);
-        expect(result.type).toEqual('error');
-        expect(result.error.message).toEqual('Invalid number');
+        try {
+            const result = await schema.validate(input);
+            expect(true).toBe(false);
+        }
+        
+        catch (error) {
+            expect(error.message).toEqual('Invalid number');
+        }
     });
 
     test('Should maintain log stack during execution', async () => {
@@ -184,7 +218,8 @@ describe('Schema Class', () => {
         const input = { test: 'TEST' };
 
         expect(schema.log_stack.length).toBe(0);
-        await schema.validate(input);
+        try { await schema.validate(input); }
+        catch (error) { }
         expect(schema.log_stack.length).toBeGreaterThan(0);
     });
 
@@ -192,9 +227,14 @@ describe('Schema Class', () => {
         const schema = new Schema.Body({ test: Number });
         const input = null;
 
-        const result = await schema.validate(input);
-        expect(result.type).toEqual('error');
-        expect(result.error.message).toEqual('Value not provided');
+        try {
+            const result = await schema.validate(input);
+            expect(true).toBe(false);
+        }
+        
+        catch (error) {
+            expect(error.message).toEqual('Value not provided');
+        }
     });
 });
   

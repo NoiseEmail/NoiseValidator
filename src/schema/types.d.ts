@@ -63,13 +63,6 @@ export namespace Schema {
 
     export type SchemaType = 'body' | 'query' | 'headers' | 'cookies';
     
-    export type SchemaValidateReturnable<ReturnableData> = Promise<{
-        type: 'error';
-        error: GenericError;
-    } | {
-        type: 'data';
-        data: ReturnableData;
-    }>
 
     export class SchemaLike<
         InputType extends SchemaType,
@@ -80,7 +73,7 @@ export namespace Schema {
         public readonly _id: string;
         public readonly _schema: InputSchema | FlatSchema;
         private constructor(schema: InputSchema);
-        public validate: (data: unknown) => SchemaValidateReturnable<ReturnableData>;
+        public validate: (data: unknown) => Promise<ReturnableData>;
     }        
 
 

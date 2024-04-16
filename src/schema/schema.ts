@@ -242,7 +242,7 @@ export default class Schema<
         path: string[] = [],
         result: { [key: string]: unknown } = {}
     ): Promise<ReturnableData> => 
-        Schema._walk_object(instance, schema, data, path, result);
+        await Schema._walk_object(instance, schema, data, path, result);
     
 
 
@@ -256,21 +256,15 @@ export default class Schema<
      */
     public validate = async (
         data: unknown
-    ): SchemaTypes.SchemaValidateReturnable<ReturnableData> => new Promise(async (resolve) => {
+    ): Promise<ReturnableData> => {
 
         try {
             // -- Try to walk the schema
             const result = await Schema._walk<ReturnableData>(this, this._schema, data);
-
-            // -- Error
-            if (result instanceof Error) {
-                const error = GenericError.from_unknown(result);
-                error.data = { schema: this._id };
-                return resolve({ type: 'error', error });
-            }
+            if (result instanceof Error) throw result;
 
             // -- Success
-            else return resolve({ type: 'data', data: result });
+            else return result;
         }
 
         catch (unknown_error) {
@@ -285,9 +279,9 @@ export default class Schema<
             error.data = { schema: this._id };
             this.errors.forEach((error) => error.add_error(error));
             this.push_error(error);
-            return resolve({ type: 'error', error });
+            throw error;
         }
-    });
+    };
 
 
 
