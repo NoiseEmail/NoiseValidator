@@ -22,6 +22,9 @@
 			"node"
 		]
 	},
+	"exclude": [
+		"tests/**/*"
+	],
 	"include": [
 		"src/**/*"
 	],
