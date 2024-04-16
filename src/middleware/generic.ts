@@ -5,7 +5,6 @@ import { MiddlewareGenericError, MissingMiddlewareHandlerError } from "./errors"
 import { log_header } from "../logger/log";
 import { log_types } from "../logger/type_enum";
 import { Schema } from "../schema/types.d";
-import { execute, Schema as SchemaClass } from "../schema";
 import { Log } from "..";
 
 
@@ -239,4 +238,4 @@ export default class GenericMiddleware <
         }
     }
     
-};
+}

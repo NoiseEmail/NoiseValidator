@@ -1,5 +1,4 @@
 import { randomUUID } from 'crypto';
-import log from '../logger/log';
 import { SerializedGenericError } from './types';
 
 export class GenericError extends Error {

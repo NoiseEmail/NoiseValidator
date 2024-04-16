@@ -1,4 +1,4 @@
-import { Schema, Optional, String, Uuid } from '../../schema';
+import { Schema, Optional, Uuid } from '../../schema';
 import { GenericMiddleware } from '../index';
 
 

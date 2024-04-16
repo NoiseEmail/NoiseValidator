@@ -1,10 +1,10 @@
-import fastify, { FastifyReply, FastifyRequest } from "fastify";
+import { FastifyReply, FastifyRequest } from "fastify";
 import { BinderValidatorResult, SchemasValidator } from "./types.d";
 import { GenericError } from "../error";
 import { FailedToValidateInputError } from "./errors";
 import { Schema } from "../schema/types.d";
 import { mergician } from "mergician";
-import { GenericMiddleware, Log } from "..";
+import { Log } from "..";
 import { add_header, add_headers, remove_header, remove_headers } from "./binder";
 import { Middleware } from "../middleware/types";
 
