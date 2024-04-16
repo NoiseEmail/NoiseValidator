@@ -5,7 +5,6 @@ import { FailedToValidateInputError } from "./errors";
 import { Schema } from "../schema/types.d";
 import { mergician } from "mergician";
 import { Log } from "..";
-import { add_header, add_headers, remove_header, remove_headers } from "./binder";
 import { Middleware } from "../middleware/types";
 
 
@@ -16,14 +15,19 @@ const validate_binder_request = async (
     name: string
 ): Promise<BinderValidatorResult> => {
     try {
-        const body = await validate_inputs(fastify_request.body, schemas.body);
-        const query = await validate_inputs(fastify_request.query, schemas.query);
-        const headers = await validate_inputs(fastify_request.headers, schemas.headers);
-
+        const body = validate_inputs(fastify_request.body, schemas.body);
+        const query = validate_inputs(fastify_request.query, schemas.query);
+        const headers = validate_inputs(fastify_request.headers, schemas.headers);
 
         // -- We are entrusting the url to be parsed by Fastify
         const url = fastify_request.params;
-        return { body, query, headers, url }
+
+        return { 
+            body: await body, 
+            query: await query, 
+            headers: await headers, 
+            url
+        }
     }
 
     catch (unknown_error) {
@@ -126,10 +130,8 @@ const execute_middleware = async (
             query: fastify_request.query,
             middleware: {},
 
-            set_header: add_header(fastify_reply),
-            set_headers: add_headers(fastify_reply),
-            remove_header: remove_header(fastify_reply),
-            remove_headers: remove_headers(fastify_reply),
+            set_header: (key: string, value: string) => fastify_reply.header(key, value),
+            remove_header: (key: string) => fastify_reply.removeHeader(key),
 
             fastify: { request: fastify_request, reply: fastify_reply }
         };

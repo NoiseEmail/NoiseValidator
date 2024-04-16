@@ -74,9 +74,7 @@ export namespace Middleware {
         middleware: MiddlewareData;
 
         set_header: (key: string, value: string) => void;
-        set_headers: ([key, value]: [string, string]) => void;
         remove_header: (key: string) => void;
-        remove_headers: (keys: Array<string>) => void;
 
         fastify: {
             request: FastifyRequest;

@@ -136,13 +136,7 @@ export default function Binder<
                 query: validated.query,
                 headers: validated.headers,
                 url: validated.url,
-
                 fastify: { request, reply },
-
-                set_header: add_header(reply),
-                set_headers: add_headers(reply),
-                remove_header: remove_header(reply),
-                remove_headers: remove_headers(reply)
             } as BinderCallbackObject<
                 Middleware,
                 Body,
@@ -158,32 +152,6 @@ export default function Binder<
 
 
 
-const add_header = (fastify_reply: FastifyReply) => (key: string, value: string) => {
-    Log.debug(`Adding header: ${key} with value: ${value}`);
-    fastify_reply.header(key, value);
-};
-
-const add_headers = (fastify_reply: FastifyReply) => ([key, value]: [string, string]) => {
-    Log.debug(`Adding headers: ${key} with value: ${value}`);
-    fastify_reply.header(key, value);
-};
-
-const remove_header = (fastify_reply: FastifyReply) => (key: string) => {
-    Log.debug(`Removing header: ${key}`);
-    fastify_reply.removeHeader(key);
-};
-
-const remove_headers = (fastify_reply: FastifyReply) => (keys: Array<string>) => {
-    Log.debug(`Removing headers: ${keys}`);
-    keys.forEach(key => fastify_reply.removeHeader(key));
-};
-
-
-
 export {
-    Binder,
-    add_header,
-    add_headers,
-    remove_header,
-    remove_headers
+    Binder
 }

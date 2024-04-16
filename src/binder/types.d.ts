@@ -71,37 +71,6 @@ export type BinderCallbackObject<
         request: FastifyRequest,
         reply: FastifyReply
     }
-
-    set_header: (key: string, value: string) => void;
-    set_headers: ([key, value]: [string, string]) => void;
-    
-    remove_header: (key: string) => void;
-    remove_headers: (keys: Array<string>) => void;
-};
-
-
-
-export type BinderConfiguration<
-    Middleware extends Middleware.MiddlewareObject,
-
-    Body extends 
-        Schema.SchemaLike<'body'> | 
-        Array<Schema.SchemaLike<'body'>>,
-
-    Query extends 
-        Schema.SchemaLike<'query'> | 
-        Array<Schema.SchemaLike<'query'>>,
-
-    Headers extends 
-        Schema.SchemaLike<'headers'> | 
-        Array<Schema.SchemaLike<'headers'>>,
-
-    Output extends 
-        Schema.SchemaLike<'body'> | 
-        Array<Schema.SchemaLike<'body'>>,
-> = {
-    middleware: Middleware,
-    schemas: BinderConfigurationSchema<Body, Query, Headers, Output>,
 };
 
 
@@ -131,6 +100,31 @@ export type BinderConfigurationSchema<
 
 
 
+export type BinderConfiguration<
+    Middleware extends Middleware.MiddlewareObject,
+
+    Body extends 
+        Schema.SchemaLike<'body'> | 
+        Array<Schema.SchemaLike<'body'>>,
+
+    Query extends 
+        Schema.SchemaLike<'query'> | 
+        Array<Schema.SchemaLike<'query'>>,
+
+    Headers extends 
+        Schema.SchemaLike<'headers'> | 
+        Array<Schema.SchemaLike<'headers'>>,
+
+    Output extends 
+        Schema.SchemaLike<'body'> | 
+        Array<Schema.SchemaLike<'body'>>,
+> = {
+    middleware: Middleware,
+    schemas: BinderConfigurationSchema<Body, Query, Headers, Output>,
+};
+
+
+
 export type OptionalBinderConfiguration<
     Middleware extends Middleware.MiddlewareObject,
     
@@ -151,7 +145,12 @@ export type OptionalBinderConfiguration<
         Array<Schema.SchemaLike<'body'>>,
 > = {
     middleware?: Middleware,
-    schemas?: Partial<BinderConfigurationSchema<Body, Query, Headers, Output>>
+    schemas?: Partial<BinderConfigurationSchema<
+        CreateArray<Body>,
+        CreateArray<Query>,
+        CreateArray<Headers>,
+        CreateArray<Output>
+    >>
 };
 
 
