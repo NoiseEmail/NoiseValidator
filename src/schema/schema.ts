@@ -238,7 +238,7 @@ export default class Schema<
     public static _walk = async <ReturnableData>(
         instance: Schema<SchemaTypes.InputSchema | SchemaTypes.FlatSchema, unknown>,
         schema: SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
-        data: object,
+        data: unknown,
         path: string[] = [],
         result: { [key: string]: unknown } = {}
     ): Promise<ReturnableData> => 
@@ -255,7 +255,7 @@ export default class Schema<
      * @returns 
      */
     public validate = async (
-        data: object
+        data: unknown
     ): SchemaTypes.SchemaValidateReturnable<ReturnableData> => new Promise(async (resolve) => {
 
         try {
