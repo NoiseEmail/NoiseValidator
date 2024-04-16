@@ -51,7 +51,7 @@ export default function Binder<
     callback: (data: CallbackObject) =>
         OutputType | GenericError |
         Promise<OutputType | GenericError>,
-) {
+): void {
     
 
     // -- Ensure that all the schemas are arrays, even if they are empty

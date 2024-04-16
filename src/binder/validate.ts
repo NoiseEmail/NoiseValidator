@@ -16,16 +16,9 @@ const validate_binder_request = async (
     name: string
 ): Promise<BinderValidatorResult> => {
     try {
-
-
         const body = await validate_inputs(fastify_request.body, schemas.body);
-        if (body instanceof GenericError) throw body;
-
         const query = await validate_inputs(fastify_request.query, schemas.query);
-        if (body instanceof GenericError) throw query;
-
         const headers = await validate_inputs(fastify_request.headers, schemas.headers);
-        if (body instanceof GenericError) throw headers;
 
 
         // -- We are entrusting the url to be parsed by Fastify
@@ -50,11 +43,7 @@ const validate_output = async (
     data: unknown,
     schema: Array<Schema.SchemaLike<Schema.SchemaType>>
 ): Promise<unknown> => {
-    try {
-        const result = await validate_inputs(data, schema);
-        if (result instanceof GenericError) throw result;
-        return result;
-    }
+    try { return await validate_inputs(data, schema); }
 
     catch (unknown_error) {
         const error = GenericError.from_unknown(
@@ -98,7 +87,11 @@ const validate_inputs = async (
 ): Promise<object> => {
     try {
         // -- Attempt to validate the data against all the schemas
-        const result = await Promise.all(schemas.map(async (schema) => {
+        const result = await Promise.all(schemas.map(async (
+            schema: 
+                Schema.SchemaLike<Schema.SchemaType, 
+                Schema.ParsedSchema<Schema.InputSchema>>
+        ) => {
             const validated = await validate_input(data, schema);
             if (validated instanceof GenericError) throw validated;
             return validated;
@@ -107,7 +100,7 @@ const validate_inputs = async (
 
         // -- Cant merge a single or no objects
         if (result.length <= 1) return result[0] ?? {};
-        else return mergician({}, ...result as Array<object>);
+        else return mergician({}, ...result as Array<object>) as object;
     }
 
     catch (unknown_error) {
@@ -153,7 +146,7 @@ const execute_middleware = async (
 
         const instance = new middleware(request_object, 
             // -- On invalid
-            (error) => {
+            (error: GenericError) => {
                 if (callback_called) return
                     Log.warn(middleware.name + ' - Middleware invalid callback called multiple times');
 
@@ -164,7 +157,7 @@ const execute_middleware = async (
             },
 
             // -- On valid
-            (data) => {
+            (data: unknown) => {
                 if (callback_called) return 
                     Log.warn(middleware.name + ' - Middleware success callback called multiple times');
 
