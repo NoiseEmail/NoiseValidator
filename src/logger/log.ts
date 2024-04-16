@@ -40,23 +40,24 @@ export const log_header = (type: LogType): string => {
 export const log = (type: LogType, ...args: Array<unknown>): void => {
     // -- Only log if we are in debug mode or an ERROR has occured
     // if (!LOG && type !== log_types.ERROR) return;
-    const header = log_header(type),
-        bold_style = 'font-weight: bold;';
+    const header = log_header(type);
+    const concat = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
 
     switch (type) {
         case log_types.INFO:
         case log_types.WARN:
         case log_types.ERROR:
-            console.log(`${header}`, ...args);
+            console.log(header, concat);
             break;
 
     case log_types.DEBUG:
         if (!_debug_mode) return;
-        console.log(`${header}`, ...args);
+        console.log(header, concat);
         break;
 
     case log_types.THROW:
-        throw new Error(`${header} ${args}`);
+        throw new Error(`${header} ${concat}`);
     }
 };
 

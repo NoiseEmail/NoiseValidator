@@ -120,12 +120,12 @@ export default function Binder<
             // -- Validate the request inputs
             Log.debug(`Validating request for ${route.path} with method: ${method}`);
             const validated = await validate_binder_request(request, schemas, route.path);
-            if (validated instanceof GenericError) return validated;
+            if (validated instanceof GenericError) throw validated;
 
             // -- Validate the middleware
             Log.debug(`Validating middleware for ${route.path} with method: ${method}`);
             const middleware = await validate_middlewares(request, reply, configuration.middleware);
-            if (middleware instanceof GenericError) return middleware;
+            if (middleware instanceof GenericError) throw middleware;
 
 
 

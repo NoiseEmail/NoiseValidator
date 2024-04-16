@@ -14,7 +14,7 @@ const validate_binder_request = async (
     fastify_request: FastifyRequest,
     schemas: SchemasValidator,
     name: string
-): Promise<BinderValidatorResult | GenericError> => {
+): Promise<BinderValidatorResult> => {
     try {
 
 
@@ -40,16 +40,16 @@ const validate_binder_request = async (
         );
 
         Log.debug(`validate_binder_request: Binder failed to validate request: ${error.id}`);
-        return error;
+        throw error;
     }
 };
 
 
 
 const validate_output = async (
-    data: any,
-    schema: Array<Schema.SchemaLike<any>>
-): Promise<any | GenericError> => {
+    data: unknown,
+    schema: Array<Schema.SchemaLike<Schema.SchemaType>>
+): Promise<unknown> => {
     try {
         const result = await validate_inputs(data, schema);
         if (result instanceof GenericError) throw result;
@@ -63,16 +63,16 @@ const validate_output = async (
         );
 
         Log.debug(`validate_output: Failed to validate output: ${error.id}`);
-        return error;
+        throw error;
     }
 };
 
 
 
 const validate_input = async (
-    data: any,
-    schema: Schema.SchemaLike<any>
-): Promise<any | GenericError> => {
+    data: unknown,
+    schema: Schema.SchemaLike<Schema.SchemaType>
+): Promise<unknown> => {
     try {
         const result = await schema.validate(data);
         if (result.type !== 'data') throw result.error;
@@ -86,16 +86,16 @@ const validate_input = async (
         );
 
         Log.debug(`validate_input: Failed to validate input: ${error.id}`);
-        return error;
+        throw error;
     }
 };
 
 
 
 const validate_inputs = async (
-    data: any,
-    schemas: Array<Schema.SchemaLike<any>>
-): Promise<any | GenericError> => {
+    data: unknown,
+    schemas: Array<Schema.SchemaLike<Schema.SchemaType>>
+): Promise<object> => {
     try {
         // -- Attempt to validate the data against all the schemas
         const result = await Promise.all(schemas.map(async (schema) => {
@@ -106,8 +106,8 @@ const validate_inputs = async (
 
 
         // -- Cant merge a single or no objects
-        if (result.length <= 1) return result[0];
-        else return mergician({}, ...result);
+        if (result.length <= 1) return result[0] ?? {};
+        else return mergician({}, ...result as Array<object>);
     }
 
     catch (unknown_error) {
@@ -117,7 +117,7 @@ const validate_inputs = async (
         );
 
         Log.debug(`validate_inputs: Failed to validate inputs: ${error.id}`);
-        return error;
+        throw error;
     }
 };
 
@@ -126,8 +126,8 @@ const validate_inputs = async (
 const execute_middleware = async (
     fastify_request: FastifyRequest,
     fastify_reply: FastifyReply,
-    middleware: Middleware.GenericMiddlewareConstructor<any> 
-) => {
+    middleware: Middleware.GenericMiddlewareConstructor<unknown> 
+): Promise<unknown> => {
     try {
         const request_object = {
             headers: fastify_request.headers,
@@ -191,7 +191,7 @@ const execute_middleware = async (
         );
 
         Log.debug(`execute_middleware: Failed to execute middleware: ${error.id}`);
-        return error;
+        throw error;
     }
 };
 
@@ -200,8 +200,8 @@ const execute_middleware = async (
 const validate_middlewares = async (
     fastify_request: FastifyRequest,
     fastify_reply: FastifyReply,
-    middlewares?: { [key: string]: Middleware.GenericMiddlewareConstructor<any> }
-): Promise<{ [key: string]: unknown } | GenericError> => {
+    middlewares?: { [key: string]: Middleware.GenericMiddlewareConstructor<unknown> }
+): Promise<{ [key: string]: unknown }> => {
     try {   
 
         // -- If there are no middlewares, return an empty object
@@ -231,7 +231,7 @@ const validate_middlewares = async (
         );
 
         Log.debug(`validate_middlewares: Failed to validate middlewares: ${error.id}`);
-        return error;
+        throw error;
     }
 };
 

@@ -81,7 +81,7 @@ export namespace Schema {
         public readonly _schema: InputSchema | FlatSchema;
         private constructor(schema: InputSchema);
         public validate: (
-            data: object
+            data: unknown
         ) => SchemaValidateReturnable<ReturnableData>;
     }        
 

@@ -1,12 +1,22 @@
+import { Middleware } from "../middleware/types";
 import { BinderConfiguration } from "./types.d";
+import { Schema } from "../schema/types.d";
+
+
 
 export default {
     method: 'GET',
     middleware: {},
     schemas: {
-        body: {},
-        query: {},
-        headers: {},
-        output: void 0
+        body: [],
+        query: [],
+        headers: [],
+        output: []
     }
-} as BinderConfiguration<any, any, any, any, any>;
+} as BinderConfiguration<
+    Middleware.MiddlewareObject,
+    Array<Schema.SchemaLike<'body'>>,
+    Array<Schema.SchemaLike<'query'>>,
+    Array<Schema.SchemaLike<'headers'>>,
+    Array<Schema.SchemaLike<'body'>>
+>;

@@ -6,42 +6,59 @@ import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
 
 
 export type BinderValidatorResult = {
-    body: any,
-    query: any,
-    headers: any,
-    url: any
+    body: unknown,
+    query: unknown,
+    headers: unknown,
+    url: unknown
 };
 
 
 export type BinderCallbackReturn = 
-    any | 
-    GenericError | 
-    Promise<
-        GenericError |
-        any
-    >;
+    unknown | Promise<unknown>;
 
 export type SchemasValidator = {
     body: Array<Schema.SchemaLike<'body'>>,
     query: Array<Schema.SchemaLike<'query'>>,
     headers: Array<Schema.SchemaLike<'headers'>>,
-    output: Array<Schema.SchemaLike<any>>
+    output: Array<Schema.SchemaLike<Schema.SchemaType>>
 };
 
 
 export type BinderMapObject = {
-    callback: (data: BinderCallbackObject<any, any, any, any, any>) => BinderCallbackReturn,
+    callback: (data: BinderCallbackObject<
+        Middleware.MiddlewareObject, 
+        Schema.SchemaLike<Schema.SchemaType>,
+        Schema.SchemaLike<Schema.SchemaType>,
+        Schema.SchemaLike<Schema.SchemaType>,
+        string
+    >) => BinderCallbackReturn,
+
     validate: (request: FastifyRequest, reply: FastifyReply) => 
-        Promise<BinderCallbackObject<any, any, any, any, any> | GenericError>,
+        Promise<BinderCallbackObject<
+            Middleware.MiddlewareObject, 
+            Schema.SchemaLike<Schema.SchemaType>,
+            Schema.SchemaLike<Schema.SchemaType>,
+            Schema.SchemaLike<Schema.SchemaType>,
+            string
+        > | GenericError>,
     method: HTTPMethods
 };
 
 
 export type BinderCallbackObject<
     Middleware extends Middleware.MiddlewareObject,
-    Body extends Schema.SchemaLike<any> | Array<Schema.SchemaLike<any>>,
-    Query extends Schema.SchemaLike<any> | Array<Schema.SchemaLike<any>>,
-    Headers extends Schema.SchemaLike<any> | Array<Schema.SchemaLike<any>>,
+    Body extends 
+        Schema.SchemaLike<Schema.SchemaType> | 
+        Array<Schema.SchemaLike<Schema.SchemaType>>,
+
+    Query extends 
+        Schema.SchemaLike<Schema.SchemaType> | 
+        Array<Schema.SchemaLike<Schema.SchemaType>>,
+
+    Headers extends 
+        Schema.SchemaLike<Schema.SchemaType> | 
+        Array<Schema.SchemaLike<Schema.SchemaType>>,
+
     DynamicURLString extends string
 > = {
     middleware: Middleware.ParsedMiddlewareObject<Middleware>,
@@ -66,10 +83,22 @@ export type BinderCallbackObject<
 
 export type BinderConfiguration<
     Middleware extends Middleware.MiddlewareObject,
-    Body extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    Query extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    Headers extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
-    Output extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+
+    Body extends 
+        Schema.SchemaLike<'body'> | 
+        Array<Schema.SchemaLike<'body'>>,
+
+    Query extends 
+        Schema.SchemaLike<'query'> | 
+        Array<Schema.SchemaLike<'query'>>,
+
+    Headers extends 
+        Schema.SchemaLike<'headers'> | 
+        Array<Schema.SchemaLike<'headers'>>,
+
+    Output extends 
+        Schema.SchemaLike<'body'> | 
+        Array<Schema.SchemaLike<'body'>>,
 > = {
     middleware: Middleware,
     schemas: BinderConfigurationSchema<Body, Query, Headers, Output>,
@@ -103,8 +132,8 @@ export type OptionalBinderConfiguration<
 };
 
 
-export type IsArray<T> = T extends Array<any> ? true : false;
-export type CreateArray<T> = T extends Array<any> ? T : [T];
+export type IsArray<T> = T extends Array<unknown> ? true : false;
+export type CreateArray<T> = T extends Array<unknown> ? T : [T];
 
 
 type DeepMerge<T> = T extends object
@@ -118,11 +147,11 @@ type DeepMerge<T> = T extends object
     : never;
 
 type DeepMergeReturnTypes<
-    Schemas extends Array<Schema.SchemaLike<any>>
+    Schemas extends Array<Schema.SchemaLike<Schema.SchemaType>>
 > = DeepMerge<
     {
         [K in keyof Schemas[number]]: Schemas[number][K] extends infer U
-        ? U extends Schema.SchemaLike<any>
+        ? U extends Schema.SchemaLike<Schema.SchemaType>
             ? U extends { _return_type: infer R }
                 ? R
                     : never

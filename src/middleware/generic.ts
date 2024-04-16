@@ -8,7 +8,7 @@ import { Schema } from "../schema/types.d";
 import { Log } from "..";
 
 
-export default class GenericMiddleware <
+export default class GenericMiddleware<
     ReturnType extends unknown | Promise<unknown> = unknown,
     RequestObject extends Middleware.AnyMiddlewareRequestObject = Middleware.AnyMiddlewareRequestObject
 > extends Middleware.GenericMiddlewareLike<ReturnType, RequestObject> {

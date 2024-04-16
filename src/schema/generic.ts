@@ -7,7 +7,7 @@ import { Schema } from './types.d';
 import { Log } from '..';
 
 
-export default class GenericType <
+export default class GenericType<
     ReturnType extends unknown | Promise<unknown> = unknown,
     InputShape extends unknown = unknown
 > extends Schema.GenericTypeLike<ReturnType> {   
