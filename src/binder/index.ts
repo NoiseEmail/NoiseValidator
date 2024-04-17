@@ -6,6 +6,8 @@ import {
 } from "./errors";
 
 import { validate_binder_request } from "./validate";
+import { cookie, serialize_cookie, create_set_cookie_header } from "./cookie";
+import * as BinderTypes from "./types.d";
 
 export {
     Binder,
@@ -13,4 +15,8 @@ export {
     BinderFailedToExecuteError,
     FailedToValidateInputError,
     validate_binder_request,
+    cookie,
+    serialize_cookie,
+    create_set_cookie_header,
+    BinderTypes
 }

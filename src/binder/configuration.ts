@@ -11,11 +11,12 @@ export default {
         input: {
             body: [],
             query: [],
-            headers: []
+            headers: [],
+            cookies: [],
         },
         output: {
             body: [],
-            headers: []
+            headers: [],
         }
     }
 } as OptionalBinderConfiguration<
@@ -23,6 +24,8 @@ export default {
     Array<Schema.SchemaLike<'body'>>,
     Array<Schema.SchemaLike<'query'>>,
     Array<Schema.SchemaLike<'headers'>>,
+    Array<Schema.SchemaLike<'cookies'>>,
+
 
     Array<Schema.SchemaLike<'body'>>,
     Array<Schema.SchemaLike<'headers'>>

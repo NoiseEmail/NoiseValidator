@@ -11,12 +11,14 @@ import {
     OptionalBinderConfiguration,
     ExtractOutputSchemaTypes,
     SchemasValidator,
+    CookieShape,
 } from "./types.d";
 import { mergician } from "mergician";
 import { Route } from "../route";
 import { GenericError } from "../error";
 import { Log } from "..";
 import { validate_binder_output, validate_middlewares } from "./validate";
+import { create_set_cookie_header } from "./cookie";
 
 export default function Binder<
     Middleware extends Middleware.MiddlewareObject,
@@ -25,12 +27,12 @@ export default function Binder<
     BodyInputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
     QueryInputSchema extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
     HeadersInputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    CookieInputSchema extends Schema.SchemaLike<'cookies'> | Array<Schema.SchemaLike<'cookies'>>,
     DynamicURLInputSchema extends string,
 
     // -- Output schemas
     BodyOutputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
     HeadersOutputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
-
 
 
     OutputObject extends ExtractOutputSchemaTypes<
@@ -44,6 +46,7 @@ export default function Binder<
         BodyInputSchema,
         QueryInputSchema,
         HeadersInputSchema,
+        CookieInputSchema,
         DynamicURLInputSchema
     >,
 >(
@@ -54,6 +57,7 @@ export default function Binder<
         BodyInputSchema,
         QueryInputSchema,
         HeadersInputSchema,
+        CookieInputSchema,
         
         BodyOutputSchema,
         HeadersOutputSchema
@@ -68,7 +72,8 @@ export default function Binder<
         input: {
             body: make_array(configuration.schemas?.input?.body),
             query: make_array(configuration.schemas?.input?.query),
-            headers: make_array(configuration.schemas?.input?.headers)
+            headers: make_array(configuration.schemas?.input?.headers),
+            cookies: make_array(configuration.schemas?.input?.cookies)
         },
         
         output: {
@@ -94,6 +99,8 @@ export default function Binder<
 
                 // -- Send the response
                 data.fastify.reply.headers(output.headers);
+                if (data.cookie_objects.size > 0) data.fastify.reply.header(
+                    'Set-Cookie', create_set_cookie_header(data.cookie_objects));
                 data.fastify.reply.send(output.body);
             }
 
@@ -123,20 +130,33 @@ export default function Binder<
             if (middleware instanceof GenericError) throw middleware;
 
 
+            const remove_cookie = (name: string) => middleware.cookies.delete(name);
+            const set_cookie = (name: string, cookie: CookieShape) => middleware.cookies.set(name, cookie);
+
 
             // -- Return the validated data
             return {
-                middleware: middleware,
+                middleware: middleware.middleware,
+                cookie_objects: middleware.cookies,
                 body: validated.body,
                 query: validated.query,
                 headers: validated.headers,
+                cookies: validated.cookies,
                 url: validated.url,
                 fastify: { request, reply },
+
+                set_cookie: (name: string, cookie: CookieShape) => 
+                    { set_cookie(name, cookie); },
+
+                remove_cookie: (name: string) =>
+                    { remove_cookie(name); }
+                
             } as BinderCallbackObject<
                 Middleware,
                 BodyInputSchema,
                 QueryInputSchema,
                 HeadersInputSchema,
+                CookieInputSchema,
                 DynamicURLInputSchema
             >;
         },

@@ -1,6 +1,8 @@
 import { GenericError } from '../error';
 import { LogFunctions, LogObject } from '../logger/types';
 
+
+
 export namespace Schema {
 
     export class GenericTypeLike<
@@ -47,9 +49,7 @@ export namespace Schema {
         on_invalid: (error: GenericError) => void,
         on_valid: (result: ReturnType) => void,
         validated?: ReturnType
-    ) => GenericTypeLike<ReturnType, InputShape>
-
-
+    ) => GenericTypeLike<ReturnType, InputShape>;
 
     export type InputSchema = {
         [key: string]: GenericTypeConstructor<any> | InputSchema;
@@ -58,6 +58,8 @@ export namespace Schema {
     export type FlatSchema = {
         [key: string]: GenericTypeConstructor<any> ;
     };
+
+
 
 
 

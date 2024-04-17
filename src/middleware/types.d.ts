@@ -1,6 +1,7 @@
 import { GenericError } from '../error';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Schema } from '../schema/types';
+import { CookieShape } from '../binder/types';
 
 
 
@@ -75,6 +76,9 @@ export namespace Middleware {
 
         set_header: (key: string, value: string) => void;
         remove_header: (key: string) => void;
+
+        set_cookie: (name: string, cookie: CookieShape) => void;
+        remove_cookie: (name: string) => void;
 
         fastify: {
             request: FastifyRequest;

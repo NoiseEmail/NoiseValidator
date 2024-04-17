@@ -27,14 +27,17 @@ import * as Log from './logger';
 import { 
     GenericError
 } from './error';
-
+  
 import {
     Binder,
     DefaultBinderConfiguration,
     BinderFailedToExecuteError,
     FailedToValidateInputError,
     validate_binder_request,
-    validate_output
+    cookie,
+    serialize_cookie,
+    create_set_cookie_header,
+    BinderTypes
 } from './binder';
 
 import {
@@ -82,11 +85,16 @@ export {
     BinderFailedToExecuteError,
     FailedToValidateInputError,
     validate_binder_request,
-    validate_output,
+    BinderTypes,
 
     // -- Router / Route
     Router,
     Route,
     MethodNotAvailableError,
-    NoRouteHandlerError
+    NoRouteHandlerError,
+
+    // -- Cookie
+    cookie,
+    serialize_cookie,
+    create_set_cookie_header
 }

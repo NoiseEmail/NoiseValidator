@@ -1,12 +1,17 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { BinderInputValidatorResult, BinderOutputValidatorResult, SchemasValidator } from "./types.d";
+import {
+    BinderInputValidatorResult,
+    BinderOutputValidatorResult,
+    CookieShape,
+    SchemasValidator,
+} from "./types.d";
 import { GenericError } from "../error";
 import { FailedToValidateInputError } from "./errors";
 import { Schema } from "../schema/types.d";
 import { mergician } from "mergician";
 import { Log } from "..";
 import { Middleware } from "../middleware/types";
-
+import Cookie from 'cookie';
 
 
 const validate_binder_request = async (
@@ -19,6 +24,12 @@ const validate_binder_request = async (
         const query = validate_inputs(fastify_request.query, schemas.input.query);
         const headers = validate_inputs(fastify_request.headers, schemas.input.headers);
 
+        // -- Parse the cookies
+        const cookie_string = fastify_request.headers?.cookie ?? '';
+        const cookie_object = Cookie.parse(cookie_string);
+        const cookies = validate_inputs(cookie_object, schemas.input.cookies);
+
+
         // -- We are entrusting the url to be parsed by Fastify
         const url = fastify_request.params;
 
@@ -26,6 +37,7 @@ const validate_binder_request = async (
             body: await body, 
             query: await query, 
             headers: await headers, 
+            cookies: await cookies,
             url
         }
     }
@@ -44,7 +56,10 @@ const validate_binder_request = async (
 
 
 const validate_binder_output = async (
-    data: { body?: unknown, headers?: unknown },
+    data: { 
+        body?: unknown, 
+        headers?: unknown,
+    },
     schemas: SchemasValidator,
     name: string
 ): Promise<BinderOutputValidatorResult> => {
@@ -132,8 +147,13 @@ const execute_middleware = async (
     fastify_request: FastifyRequest,
     fastify_reply: FastifyReply,
     middleware: Middleware.GenericMiddlewareConstructor<unknown> 
-): Promise<unknown> => {
+): Promise<{
+    data: unknown,
+    cookies: Map<string, CookieShape>
+}> => {
     try {
+        const cookie_map: Map<string, CookieShape> = new Map();
+
         const request_object = {
             headers: fastify_request.headers,
             body: fastify_request.body,
@@ -142,6 +162,9 @@ const execute_middleware = async (
 
             set_header: (key: string, value: string) => fastify_reply.header(key, value),
             remove_header: (key: string) => fastify_reply.removeHeader(key),
+
+            set_cookie: (name: string, cookie: CookieShape) => cookie_map.set(name, cookie),
+            remove_cookie: (name: string) => cookie_map.delete(name),
 
             fastify: { request: fastify_request, reply: fastify_reply }
         };
@@ -184,7 +207,10 @@ const execute_middleware = async (
         await instance.execute();
         if (final_result instanceof Error) throw final_result;
         if (!callback_called) throw new Error('Middleware did not call the callback');
-        return final_result;
+        return {
+            data: final_result,
+            cookies: cookie_map
+        };
     }
 
     catch (unknown_error) {
@@ -204,27 +230,38 @@ const validate_middlewares = async (
     fastify_request: FastifyRequest,
     fastify_reply: FastifyReply,
     middlewares?: { [key: string]: Middleware.GenericMiddlewareConstructor<unknown> }
-): Promise<{ [key: string]: unknown }> => {
+): Promise<{ 
+    middleware: { [key: string]: unknown },
+    cookies: Map<string, CookieShape>
+}> => {
     try {   
 
         // -- If there are no middlewares, return an empty object
-        if (!middlewares) return {};
-        const return_data: { [key: string]: unknown } = {};
+        if (!middlewares) return { middleware: {}, cookies: new Map<string, CookieShape>() };
+        const middleware_data: { [key: string]: unknown } = {};
+        const middleware_cookies: Map<string, CookieShape> = new Map<string, CookieShape>();
+
 
 
         // -- Execute all the middlewares
         const promises: Array<Promise<void>> = Object.keys(middlewares).map(async (key) => {
+            
             const middleware = middlewares[key];
             const result = await execute_middleware(fastify_request, fastify_reply, middleware);
             if (result instanceof Error) throw result;
 
-            return_data[key] = result;
+            middleware_data[key] = result.data;
+            result.cookies.forEach((value, key) => middleware_cookies.set(key, value));
         });
+
 
 
         // -- Wait for all the promises to resolve
         await Promise.all(promises);
-        return return_data;
+        return {
+            middleware: middleware_data,
+            cookies: middleware_cookies
+        };
     }
 
     catch (unknown_error) {
