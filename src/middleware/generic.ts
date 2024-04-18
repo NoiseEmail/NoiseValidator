@@ -6,6 +6,8 @@ import { log_header } from "../logger/log";
 import { log_types } from "../logger/type_enum";
 import { Schema } from "../schema/types.d";
 import { Log } from "..";
+import Cookie from 'cookie';
+
 
 
 export default class GenericMiddleware<
@@ -102,10 +104,12 @@ export default class GenericMiddleware<
             case 'body': data = this._request_object.fastify.request.body; break;
             case 'query': data = this._request_object.fastify.request.query; break;
             case 'headers': data = this._request_object.fastify.request.headers; break;
-            // -- TODO: Add cookies, Fastify doesn't have a cookies object
-            case 'cookies': data = {}; break;
+            case 'cookies': 
+                let raw_cookie = data = this._request_object.fastify.request.headers.cookie;
+                if (!raw_cookie) raw_cookie = '';
+                data = Cookie.parse(raw_cookie);
+                break;
         };
-
 
         // -- Validate the input
         return await schema.validate(data) as ReturnType;
