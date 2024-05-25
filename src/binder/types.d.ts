@@ -5,6 +5,14 @@ import { Schema } from "../schema/types.d";
 import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
 
 
+
+/**
+ * The result of `validate_binder_request` function.
+ * It just contains the unknown validated date.
+ * 
+ * Everything is unknow as we don't know what the
+ * user passed in.
+ */
 export type BinderInputValidatorResult = {
     body: unknown,
     query: unknown,
@@ -14,16 +22,26 @@ export type BinderInputValidatorResult = {
 };
 
 
+
+/**
+ * The result of `validate_binder_output` function.
+ * This is what the server will send back to the client.
+ * It is also validated, but adleast we know that
+ * we are sending back an object.
+ */
 export type BinderOutputValidatorResult = {
     body: object,
     headers: object,
 };
 
 
-export type BinderCallbackReturn = 
-    unknown | Promise<unknown>;
 
-export type SchemasValidator = {
+/**
+ * This is the shape of the object that stores all the 
+ * schemas, so that we can just pass this into any func
+ * with the data we want to validate.
+ */
+export type Schemas = {
     input: {
         body: Array<Schema.SchemaLike<'body'>>,
         query: Array<Schema.SchemaLike<'query'>>,
@@ -38,6 +56,7 @@ export type SchemasValidator = {
 };
 
 
+
 export type BinderMapObject = {
     callback: (data: BinderCallbackObject<
         Middleware.MiddlewareObject, 
@@ -46,7 +65,7 @@ export type BinderMapObject = {
         Schema.SchemaLike<Schema.SchemaType>,
         Schema.SchemaLike<Schema.SchemaType>,
         string
-    >) => BinderCallbackReturn,
+    >) => unknown | Promise<unknown>,
 
     validate: (request: FastifyRequest, reply: FastifyReply) => 
         Promise<BinderCallbackObject<
@@ -63,17 +82,17 @@ export type BinderMapObject = {
 
 export type BinderCallbackObject<
     Middleware extends Middleware.MiddlewareObject,
-    Body extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
+    Body extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
     Query extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
     Headers extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
-    Cookies extends Schema.SchemaLike<Schema.SchemaType> |  Array<Schema.SchemaLike<Schema.SchemaType>>,
+    Cookies extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
     DynamicURLString extends string
 > = {
     middleware: Middleware.ParsedMiddlewareObject<Middleware>,
-    body: ObjectModifier.DeepMergeReturnTypes<ObjectModifier.CreateArray<Body>>,
-    query: ObjectModifier.DeepMergeReturnTypes<ObjectModifier.CreateArray<Query>>,
-    headers: ObjectModifier.DeepMergeReturnTypes<ObjectModifier.CreateArray<Headers>>,
-    cookies: ObjectModifier.DeepMergeReturnTypes<ObjectModifier.CreateArray<Cookies>>,
+    body: ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<Body>>,
+    query: ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<Query>>,
+    headers: ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<Headers>>,
+    cookies: ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<Cookies>>,
     url: DynamicURL.Extracted<DynamicURLString>,
 
     cookie_objects: Map<string, Cookie.Shape>,
@@ -90,14 +109,14 @@ export type BinderCallbackObject<
 
 export type BinderConfigurationSchema<
     // -- Input schemas
-    BodyInputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    QueryInputSchema extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    HeadersInputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
-    CookieInputSchema extends Schema.SchemaLike<'cookies'> | Array<Schema.SchemaLike<'cookies'>>,
+    BodyInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    QueryInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
+    HeadersInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+    CookieInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
 
     // -- Output schemas
-    BodyOutputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    HeadersOutputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    BodyOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
 > = {
     input: {
         body?: BodyInputSchema,
@@ -121,14 +140,14 @@ type ExtractOutputSchemaHelperMerge<SplitObject extends { required: object, opti
 > = SplitObject['required'] & SplitObject['optional'];
 
 export type ExtractOutputSchema<
-    RawSchema extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
-> = ExtractOutputSchemaHelperMerge<ExtractOutputSchemaHelperSplit<ObjectModifier.DeepMergeReturnTypes<ObjectModifier.CreateArray<RawSchema>>>>
+    RawSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>
+> = ExtractOutputSchemaHelperMerge<ExtractOutputSchemaHelperSplit<ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<RawSchema>>>>
 
 
 
 export type ExtractOutputSchemaTypes<
-    OutputBodySchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    OutputHeadersSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    OutputBodySchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    OutputHeadersSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
     MergedBodySchema = ExtractOutputSchema<OutputBodySchema>,
     MergedHeadersSchema = ExtractOutputSchema<OutputHeadersSchema>,
 > = 
@@ -143,14 +162,14 @@ export type OptionalBinderConfiguration<
     Middleware extends Middleware.MiddlewareObject,
 
     // -- Input schemas
-    BodyInputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    QueryInputSchema extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    HeadersInputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
-    CookieInputSchema extends Schema.SchemaLike<'cookies'> | Array<Schema.SchemaLike<'cookies'>>,
+    BodyInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    QueryInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
+    HeadersInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+    CookieInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
 
     // -- Output schemas
-    BodyOutputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    HeadersOutputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    BodyOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>
 > = {
     middleware?: Middleware,
     schemas?: Partial<BinderConfigurationSchema<
@@ -170,9 +189,7 @@ export type BinderMap = Map<HTTPMethods, Array<BinderMapObject>>;
 
 
 
-export namespace ObjectModifier {
-
-
+export namespace ArrayModifier {
     /**
      * If the input is an array, return true, otherwise return false
      */
@@ -185,6 +202,18 @@ export namespace ObjectModifier {
      * with the input as the only element.
      */
     export type CreateArray<T> = T extends Array<unknown> ? T : [T];
+
+
+
+    /**
+     * Allows for A or array of A
+     */
+    export type ArrayOrSingle<T> = T | Array<T>;
+}
+
+
+
+export namespace ObjectModifier {
 
 
     

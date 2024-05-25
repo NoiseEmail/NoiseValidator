@@ -13,11 +13,15 @@ const test_route = new nv.Route('/test');
 
 const test_sechema = new nv.Schema.Body({
     name: nv.String
-})
+});
+
+const other_schema = new nv.Schema.Body({
+    age: nv.Number
+});
 
 nv.Binder(test_route, 'POST', {
     schemas: {
-        input: { body: test_sechema }
+        input: { body: [test_sechema, other_schema] }
     }
 }, async (req) => {
     console.log('Hello world!', req.body);

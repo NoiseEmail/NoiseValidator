@@ -10,7 +10,7 @@ import {
     BinderCallbackObject,
     OptionalBinderConfiguration,
     ExtractOutputSchemaTypes,
-    SchemasValidator,
+    Schemas,
     Cookie,
 } from './types.d';
 import { mergician } from 'mergician';
@@ -71,7 +71,7 @@ export default function Binder<
     
 
     // -- Ensure that all the schemas are arrays, even if they are empty
-    const schemas: SchemasValidator = {
+    const schemas: Schemas = {
         input: {
             body: make_array(configuration.schemas?.input?.body),
             query: make_array(configuration.schemas?.input?.query),

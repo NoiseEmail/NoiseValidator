@@ -3,7 +3,7 @@ import {
     BinderInputValidatorResult,
     BinderOutputValidatorResult,
     Cookie,
-    SchemasValidator,
+    Schemas,
 } from "./types";
 import { GenericError } from "../error";
 import { FailedToValidateInputError } from "./errors";
@@ -17,7 +17,7 @@ import CookieParser from 'cookie';
 
 const validate_binder_request = async (
     fastify_request: FastifyRequest,
-    schemas: SchemasValidator,
+    schemas: Schemas,
     name: string
 ): Promise<BinderInputValidatorResult> => {
     try {
@@ -58,7 +58,7 @@ const validate_binder_output = async (
         body?: unknown, 
         headers?: unknown,
     },
-    schemas: SchemasValidator,
+    schemas: Schemas,
     name: string
 ): Promise<BinderOutputValidatorResult> => {
     try {

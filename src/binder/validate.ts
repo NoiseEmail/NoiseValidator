@@ -10,7 +10,7 @@ import {
     BinderCallbackObject,
     OptionalBinderConfiguration,
     ExtractOutputSchemaTypes,
-    SchemasValidator,
+    Schemas,
     Cookie,
     BinderConfigurationSchema,
 } from "./types.d";
@@ -29,7 +29,7 @@ const validate = async <
 >(
     route: InputRoute,
     method: HTTPMethods,
-    schemas: SchemasValidator,
+    schemas: Schemas,
     request: FastifyRequest,
     reply: FastifyReply,
     configuration: BinderConfigurationSchema
