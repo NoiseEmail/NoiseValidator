@@ -1,30 +1,14 @@
-import { HTTPMethods, FastifyRequest, FastifyReply } from "fastify";
-import {
-    BinderFailedToExecuteError,
-    DefaultBinderConfiguration,
-    validate_binder_request,
-} from ".";
-import { Middleware } from "../middleware/types.d";
-import { Schema } from "../schema/types.d";
-import {
-    BinderCallbackObject,
-    OptionalBinderConfiguration,
-    ExtractOutputSchemaTypes,
-    Schemas,
-    Cookie,
-    BinderConfigurationSchema,
-} from "./types.d";
-import { mergician } from "mergician";
-import { Route } from "../route";
-import { GenericError } from "../error";
-import { Log } from "..";
-import { validate_binder_output, validate_middlewares } from "./validators";
-import { create_set_cookie_header } from "./cookie";
+import { HTTPMethods, FastifyRequest, FastifyReply } from 'fastify';
+import { validate_binder_request } from '.';
+import { Schemas, Cookie, BinderNamespace } from './types.d';
+import { Route } from '../route';
+import { GenericError } from '../error';
+import { Log } from '..';
+import { validate_middlewares } from './validators';
 
 
 
 const validate = async <
-    BinderCallbackObject, 
     InputRoute extends Route<any>
 >(
     route: InputRoute,
@@ -32,7 +16,7 @@ const validate = async <
     schemas: Schemas,
     request: FastifyRequest,
     reply: FastifyReply,
-    configuration: BinderConfigurationSchema
+    configuration: BinderNamespace.GenericConfiguration
 ) => {
 
     // -- Validate the request inputs
@@ -60,14 +44,10 @@ const validate = async <
         cookies: validated.cookies,
         url: validated.url,
         fastify: { request, reply },
-
-        set_cookie: (name: string, cookie: Cookie.Shape) => 
-            { set_cookie(name, cookie); },
-
-        remove_cookie: (name: string) =>
-            { remove_cookie(name); }
+        set_cookie: (name: string, cookie: Cookie.Shape) => { set_cookie(name, cookie); },
+        remove_cookie: (name: string) =>{ remove_cookie(name); }
         
-    } as BinderCallbackObject;
+    };
 };
 
 

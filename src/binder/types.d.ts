@@ -57,79 +57,6 @@ export type Schemas = {
 
 
 
-export type BinderMapObject = {
-    callback: (data: BinderCallbackObject<
-        Middleware.MiddlewareObject, 
-        Schema.SchemaLike<Schema.SchemaType>,
-        Schema.SchemaLike<Schema.SchemaType>,
-        Schema.SchemaLike<Schema.SchemaType>,
-        Schema.SchemaLike<Schema.SchemaType>,
-        string
-    >) => unknown | Promise<unknown>,
-
-    validate: (request: FastifyRequest, reply: FastifyReply) => 
-        Promise<BinderCallbackObject<
-            Middleware.MiddlewareObject, 
-            Schema.SchemaLike<Schema.SchemaType>,
-            Schema.SchemaLike<Schema.SchemaType>,
-            Schema.SchemaLike<Schema.SchemaType>,
-            Schema.SchemaLike<Schema.SchemaType>,
-            string
-        > | GenericError>,
-    method: HTTPMethods
-};
-
-
-export type BinderCallbackObject<
-    Middleware extends Middleware.MiddlewareObject,
-    Body extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
-    Query extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
-    Headers extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
-    Cookies extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
-    DynamicURLString extends string
-> = {
-    middleware: Middleware.ParsedMiddlewareObject<Middleware>,
-    body: ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<Body>>,
-    query: ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<Query>>,
-    headers: ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<Headers>>,
-    cookies: ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<Cookies>>,
-    url: DynamicURL.Extracted<DynamicURLString>,
-
-    cookie_objects: Map<string, Cookie.Shape>,
-    set_cookie: (name: string, cookie: Cookie.Shape) => void,
-    remove_cookie: (name: string) => void,
-
-    fastify: {
-        request: FastifyRequest,
-        reply: FastifyReply
-    }
-};
-
-
-
-export type BinderConfigurationSchema<
-    // -- Input schemas
-    BodyInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
-    QueryInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
-    HeadersInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
-    CookieInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
-
-    // -- Output schemas
-    BodyOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
-    HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
-> = {
-    input: {
-        body?: BodyInputSchema,
-        query?: QueryInputSchema,
-        headers?: HeadersInputSchema,
-        cookies?: CookieInputSchema
-    },
-
-    output: {
-        body?: BodyOutputSchema,
-        headers?: HeadersOutputSchema,
-    }
-};
 
 
 
@@ -157,35 +84,101 @@ export type ExtractOutputSchemaTypes<
 
 
 
-export type OptionalBinderConfiguration<
-    // -- Middleware
-    Middleware extends Middleware.MiddlewareObject,
-
-    // -- Input schemas
-    BodyInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
-    QueryInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
-    HeadersInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
-    CookieInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
-
-    // -- Output schemas
-    BodyOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
-    HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>
-> = {
-    middleware?: Middleware,
-    schemas?: Partial<BinderConfigurationSchema<
-        BodyInputSchema, 
-        QueryInputSchema, 
-        HeadersInputSchema, 
-        CookieInputSchema,
-        
-        BodyOutputSchema,
-        HeadersOutputSchema
-    >>
-};
 
 
 
-export type BinderMap = Map<HTTPMethods, Array<BinderMapObject>>;
+export namespace BinderNamespace {
+
+    export type Configuration<
+        Middleware extends Middleware.MiddlewareObject,
+        BodyInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+        QueryInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
+        HeadersInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+        CookieInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
+        BodyOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+        HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>
+    > = {
+        middleware: Middleware,
+        schemas: {
+            input: { body: BodyInputSchema, query: QueryInputSchema, headers: HeadersInputSchema, cookies: CookieInputSchema },
+            output: { body: BodyOutputSchema, headers: HeadersOutputSchema }
+        }
+    };
+
+
+
+    export type OptionalConfiguration<
+        Middleware extends Middleware.MiddlewareObject,
+        BodyInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+        QueryInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
+        HeadersInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+        CookieInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
+        BodyOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+        HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>
+    > = {
+        middleware?: Middleware,
+        schemas?: {
+            input?: { body?: BodyInputSchema, query?: QueryInputSchema, headers?: HeadersInputSchema, cookies?: CookieInputSchema },
+            output?: { body?: BodyOutputSchema, headers?: HeadersOutputSchema }
+        }
+    };
+
+
+
+    export type GenericConfiguration = {
+        middleware: Middleware.MiddlewareObject,
+        schemas: {
+            input: { body: Schema.SchemaLike<'body'>, query: Schema.SchemaLike<'query'>, headers: Schema.SchemaLike<'headers'>, cookies: Schema.SchemaLike<'cookies'> },
+            output: { body: Schema.SchemaLike<'body'>, headers: Schema.SchemaLike<'headers'> }
+        }
+    };
+
+
+
+    export type CallbackObject<
+        Middleware  extends Middleware.MiddlewareObject,
+        Body        extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
+        Query       extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
+        Headers     extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
+        Cookies     extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
+        DynamicURLString extends string
+    > = {
+        middleware: Middleware.ParsedMiddlewareObject<Middleware>,
+        body:       ObjectModifier.DeepMergeReturnTypes<Body>,
+        query:      ObjectModifier.DeepMergeReturnTypes<Query>,
+        headers:    ObjectModifier.DeepMergeReturnTypes<Headers>,
+        cookies:    ObjectModifier.DeepMergeReturnTypes<Cookies>,
+        url:        DynamicURL.Extracted<DynamicURLString>,
+
+        cookie_objects: Map<string, Cookie.Shape>,
+        set_cookie:     (name: string, cookie: Cookie.Shape) => void,
+        remove_cookie:  (name: string) => void,
+        fastify:        { request: FastifyRequest, reply: FastifyReply }
+    };
+
+
+
+    export type GenericCallbackObject = CallbackObject<
+        Middleware.MiddlewareObject,
+        Schema.SchemaLike<'body'>,
+        Schema.SchemaLike<'query'>,
+        Schema.SchemaLike<'headers'>,
+        Schema.SchemaLike<'cookies'>,
+        string
+    >;
+
+
+
+    export type MapObject = {
+        callback: (data: GenericCallbackObject) => unknown | Promise<unknown>,
+        validate: (request: FastifyRequest, reply: FastifyReply) => Promise<GenericCallbackObject>,
+        method: HTTPMethods
+    };
+
+
+
+    export type Binders = Map<HTTPMethods, Array<MapObject>>;
+}
 
 
 
@@ -243,10 +236,10 @@ export namespace ObjectModifier {
      * OUT: { a: string, b: number }
      */
     export type DeepMergeReturnTypes<
-        Schemas extends Array<Schema.SchemaLike<Schema.SchemaType>>
+        Schemas extends Array<Schema.SchemaLike<Schema.SchemaType>> | Schema.SchemaLike<Schema.SchemaType>,
     > = DeepMerge<
         {
-            [K in keyof Schemas[number]]: Schemas[number][K] extends infer U
+            [K in keyof ArrayModifier.CreateArray<Schemas>[number]]: ArrayModifier.CreateArray<Schemas>[number][K] extends infer U
             ? U extends Schema.SchemaLike<Schema.SchemaType>
                 ? U extends { _return_type: infer R }
                     ? R

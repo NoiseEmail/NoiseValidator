@@ -1,72 +1,31 @@
 import { HTTPMethods } from 'fastify';
-import {
-    BinderFailedToExecuteError,
-    DefaultBinderConfiguration,
-    validate_binder_request,
-} from '.';
+import { DefaultBinderConfiguration } from '.';
 import { Middleware } from '../middleware/types.d';
 import { Schema } from '../schema/types.d';
-import {
-    BinderCallbackObject,
-    OptionalBinderConfiguration,
-    ExtractOutputSchemaTypes,
-    Schemas,
-    Cookie,
-} from './types.d';
+import { ExtractOutputSchemaTypes, Schemas, BinderNamespace, ArrayModifier } from './types.d';
 import { mergician } from 'mergician';
 import { Route } from '../route';
-import { GenericError } from '../error';
-import { Log } from '..';
-import { validate_binder_output, validate_middlewares } from './validators';
-import { create_set_cookie_header } from './cookie';
-
 import validate from './validate';
+import callback from './callback';
+
 
 
 export default function Binder<
     Middleware extends Middleware.MiddlewareObject,
-
-    // -- Input schemas
-    BodyInputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    QueryInputSchema extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
-    HeadersInputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
-    CookieInputSchema extends Schema.SchemaLike<'cookies'> | Array<Schema.SchemaLike<'cookies'>>,
+    BodyInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    QueryInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
+    HeadersInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+    CookieInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
+    BodyOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
     DynamicURLInputSchema extends string,
-
-    // -- Output schemas
-    BodyOutputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
-    HeadersOutputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
-
-
-    OutputObject extends ExtractOutputSchemaTypes<
-        BodyOutputSchema,
-        HeadersOutputSchema
-    >,
-
-
-    CallbackObject extends BinderCallbackObject<
-        Middleware,
-        BodyInputSchema,
-        QueryInputSchema,
-        HeadersInputSchema,
-        CookieInputSchema,
-        DynamicURLInputSchema
-    >,
+    BinderCallbackReturn extends ExtractOutputSchemaTypes<BodyOutputSchema, HeadersOutputSchema>,
+    CallbackObject extends BinderNamespace.CallbackObject<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, DynamicURLInputSchema>,
 >(
     route: Route<DynamicURLInputSchema>,
     method: HTTPMethods,
-    configuration: OptionalBinderConfiguration<
-        Middleware,
-        BodyInputSchema,
-        QueryInputSchema,
-        HeadersInputSchema,
-        CookieInputSchema,
-        
-        BodyOutputSchema,
-        HeadersOutputSchema
-    >,
-    callback: (data: CallbackObject) => 
-        OutputObject | Promise<OutputObject>
+    configuration: BinderNamespace.OptionalConfiguration<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, BodyOutputSchema, HeadersOutputSchema>,
+    binder_callback: (data: CallbackObject) => BinderCallbackReturn | Promise<BinderCallbackReturn>
 ): void {
     
 
@@ -90,40 +49,11 @@ export default function Binder<
     // -- Merge the default configuration with the user configuration
     configuration = mergician(DefaultBinderConfiguration, configuration);
     route.add_binder({
-        callback: async (data) => {
-            try {
-                // -- Check if the callback returned an error
-                const result = await callback(data as CallbackObject);
-                if (result instanceof GenericError) throw result;
-
-
-                // -- If there is an output schema, validate the output
-                const output = await validate_binder_output(result, schemas, route.path);
-
-                // -- Send the response
-                data.fastify.reply.headers(output.headers);
-                if (data.cookie_objects.size > 0) data.fastify.reply.header(
-                    'Set-Cookie', create_set_cookie_header(data.cookie_objects));
-                data.fastify.reply.send(output.body);
-            }
-
-            catch (unknown_error) { 
-                const error = GenericError.from_unknown(
-                    unknown_error, 
-                    new BinderFailedToExecuteError('Unknown error occurred in binder callback')
-                );
-
-                Log.debug(`Binder failed to execute: ${error.id}`);
-                return error;
-            }
-        },
-
-
-
+        callback: async (data) => callback(binder_callback, data, route, schemas),
         validate: async (request, reply) => validate(route, method, schemas, request, reply, configuration),
         method
     });
-};
+}
 
 
 

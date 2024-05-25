@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { BinderMap, BinderMapObject } from "../binder/types.d";
+import { BinderNamespace } from "../binder/types.d";
 import { RouteConfiguration } from "./types.d";
 import { Log, MethodNotAvailableError, NoRouteHandlerError, Router } from "..";
 import { FastifyInstance, FastifyReply, HTTPMethods } from "fastify";
@@ -13,7 +13,7 @@ export default class Route<
     public readonly _id: string = randomUUID();
 
     private _friendly_name: string | undefined;
-    private _binder_map: BinderMap = new Map();
+    private _binder_map: BinderNamespace.Binders = new Map();
     private _router: Router = Router.instance;
     private _added_to_router: boolean = false;
 
@@ -246,12 +246,12 @@ export default class Route<
      * @name add_binder
      * Adds a binder to the route
      * 
-     * @param {BinderMapObject} binder - The binder to add
+     * @param {BinderNamespace.MapObject} binder - The binder to add
      * 
      * @returns {void} - Nothing
      */
     public add_binder = (
-        binder: BinderMapObject
+        binder: BinderNamespace.MapObject
     ): void => {
         const method = binder.method;
         if (!this._binder_map.has(method)) this._binder_map.set(method, []);
