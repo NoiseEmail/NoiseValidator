@@ -37,28 +37,30 @@ export default class Router {
      *
      * @returns {void} - Nothing
      */
-    public start(
+    public async start(
         configuration: OptionalRouterConfiguration = {}
-    ): void {
+    ): Promise<void> {
+
+        // -- Don't start the server if it's already started
         if (this._started) {
             Log.warn('Server already started!');
-            return;
+            return Promise.resolve();
         }
         
+        // -- Start the server
         Log.info('Starting server...');
         this._started = true;
         _debug_mode(configuration.debug || false);
         this._configuration = mergician(DefualtRouterConfiguration, configuration) as RouterConfiguration;
-        this._server.listen({
+        
+        return new Promise<void>((resolve, reject) => this._server.listen({
             port: configuration.port || 3000,
             host: configuration.host || '0.0.0.0'
         }, (err, address) => {
-            if (err) {
-                Log.error(err);
-                process.exit(1);
-            }
+            if (err) process.exit(1);
             Log.info(`Server listening at ${address}`);
-        });
+            resolve();
+        }));
     };
 
 
@@ -77,7 +79,7 @@ export default class Router {
 
         Log.warn('Stopping server...')
         return this._server.close();
-    }
+    };
 
 
 
@@ -101,9 +103,13 @@ export default class Router {
         Log.debug(`Adding route: ${route.friendly_name} (${route.path})`);
         this._routes.set(route.path, route);
         route.listen(this._server);
-    }
+    };
 
 
 
     public get configuration(): RouterConfiguration { return this._configuration; }
+    public get port(): number { return this._configuration.port || 3000; }
+    public get host(): string { return this._configuration.host || 'localhost'; }
+    public get started(): boolean { return this._started; }
+    public get address(): string { return `http://${this.host}:${this.port}`; }
 }

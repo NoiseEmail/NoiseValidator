@@ -20,18 +20,18 @@ const validate_binder_request = async (
     name: string
 ): Promise<BinderInputValidatorResult> => {
     try {
-        const body = validate_inputs(fastify_request.body, schemas.input.body);
-        const query = validate_inputs(fastify_request.query, schemas.input.query);
-        const headers = validate_inputs(fastify_request.headers, schemas.input.headers);
+        const body = validate_inputs(fastify_request?.body, schemas?.input?.body);
+        const query = validate_inputs(fastify_request?.query, schemas?.input?.query);
+        const headers = validate_inputs(fastify_request?.headers, schemas?.input?.headers);
 
         // -- Parse the cookies
-        const cookie_string = fastify_request.headers?.cookie ?? '';
+        const cookie_string = fastify_request?.headers?.cookie ?? '';
         const cookie_object = Cookie.parse(cookie_string);
-        const cookies = validate_inputs(cookie_object, schemas.input.cookies);
+        const cookies = validate_inputs(cookie_object, schemas?.input?.cookies);
 
 
         // -- We are entrusting the url to be parsed by Fastify
-        const url = fastify_request.params;
+        const url = fastify_request?.params;
 
         return { 
             body: await body, 
@@ -64,8 +64,8 @@ const validate_binder_output = async (
     name: string
 ): Promise<BinderOutputValidatorResult> => {
     try {
-        const body = validate_inputs(data.body, schemas.output.body);
-        const headers = validate_inputs(data.headers, schemas.output.headers);
+        const body = validate_inputs(data?.body, schemas?.output?.body);
+        const headers = validate_inputs(data?.headers, schemas?.output?.headers);
 
         return { 
             body: (await body) || {},
@@ -155,9 +155,9 @@ const execute_middleware = async (
         const cookie_map: Map<string, CookieShape> = new Map();
 
         const request_object = {
-            headers: fastify_request.headers,
-            body: fastify_request.body,
-            query: fastify_request.query,
+            headers: fastify_request?.headers,
+            body: fastify_request?.body,
+            query: fastify_request?.query,
             middleware: {},
 
             set_header: (key: string, value: string) => fastify_reply.header(key, value),
