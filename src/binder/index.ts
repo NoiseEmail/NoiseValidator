@@ -5,7 +5,7 @@ import {
     FailedToValidateInputError
 } from "./errors";
 
-import { validate_binder_request } from "./validate";
+import { validate_binder_request } from "./validators";
 import { cookie, serialize_cookie, create_set_cookie_header } from "./cookie";
 import * as BinderTypes from "./types.d";
 

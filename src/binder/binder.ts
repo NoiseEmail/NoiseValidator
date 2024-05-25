@@ -1,24 +1,27 @@
-import { HTTPMethods } from "fastify";
+import { HTTPMethods } from 'fastify';
 import {
     BinderFailedToExecuteError,
     DefaultBinderConfiguration,
     validate_binder_request,
-} from ".";
-import { Middleware } from "../middleware/types.d";
-import { Schema } from "../schema/types.d";
+} from '.';
+import { Middleware } from '../middleware/types.d';
+import { Schema } from '../schema/types.d';
 import {
     BinderCallbackObject,
     OptionalBinderConfiguration,
     ExtractOutputSchemaTypes,
     SchemasValidator,
-    CookieShape,
-} from "./types.d";
-import { mergician } from "mergician";
-import { Route } from "../route";
-import { GenericError } from "../error";
-import { Log } from "..";
-import { validate_binder_output, validate_middlewares } from "./validate";
-import { create_set_cookie_header } from "./cookie";
+    Cookie,
+} from './types.d';
+import { mergician } from 'mergician';
+import { Route } from '../route';
+import { GenericError } from '../error';
+import { Log } from '..';
+import { validate_binder_output, validate_middlewares } from './validators';
+import { create_set_cookie_header } from './cookie';
+
+import validate from './validate';
+
 
 export default function Binder<
     Middleware extends Middleware.MiddlewareObject,
@@ -117,50 +120,7 @@ export default function Binder<
 
 
 
-        validate: async (request, reply) => {   
-
-            // -- Validate the request inputs
-            Log.debug(`Validating request for ${route.path} with method: ${method}`);
-            const validated = await validate_binder_request(request, schemas, route.path);
-            if (validated instanceof GenericError) throw validated;
-
-            // -- Validate the middleware
-            Log.debug(`Validating middleware for ${route.path} with method: ${method}`);
-            const middleware = await validate_middlewares(request, reply, configuration.middleware);
-            if (middleware instanceof GenericError) throw middleware;
-
-
-            const remove_cookie = (name: string) => middleware.cookies.delete(name);
-            const set_cookie = (name: string, cookie: CookieShape) => middleware.cookies.set(name, cookie);
-
-
-            // -- Return the validated data
-            return {
-                middleware: middleware.middleware,
-                cookie_objects: middleware.cookies,
-                body: validated.body,
-                query: validated.query,
-                headers: validated.headers,
-                cookies: validated.cookies,
-                url: validated.url,
-                fastify: { request, reply },
-
-                set_cookie: (name: string, cookie: CookieShape) => 
-                    { set_cookie(name, cookie); },
-
-                remove_cookie: (name: string) =>
-                    { remove_cookie(name); }
-                
-            } as BinderCallbackObject<
-                Middleware,
-                BodyInputSchema,
-                QueryInputSchema,
-                HeadersInputSchema,
-                CookieInputSchema,
-                DynamicURLInputSchema
-            >;
-        },
-
+        validate: async (request, reply) => validate(route, method, schemas, request, reply, configuration),
         method
     });
 };

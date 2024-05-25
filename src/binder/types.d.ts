@@ -63,22 +63,10 @@ export type BinderMapObject = {
 
 export type BinderCallbackObject<
     Middleware extends Middleware.MiddlewareObject,
-    Body extends 
-        Schema.SchemaLike<Schema.SchemaType> | 
-        Array<Schema.SchemaLike<Schema.SchemaType>>,
-
-    Query extends 
-        Schema.SchemaLike<Schema.SchemaType> | 
-        Array<Schema.SchemaLike<Schema.SchemaType>>,
-
-    Headers extends 
-        Schema.SchemaLike<Schema.SchemaType> | 
-        Array<Schema.SchemaLike<Schema.SchemaType>>,
-
-    Cookies extends
-        Schema.SchemaLike<Schema.SchemaType> | 
-        Array<Schema.SchemaLike<Schema.SchemaType>>,
-
+    Body extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
+    Query extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
+    Headers extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
+    Cookies extends Schema.SchemaLike<Schema.SchemaType> |  Array<Schema.SchemaLike<Schema.SchemaType>>,
     DynamicURLString extends string
 > = {
     middleware: Middleware.ParsedMiddlewareObject<Middleware>,
@@ -88,8 +76,8 @@ export type BinderCallbackObject<
     cookies: DeepMergeReturnTypes<CreateArray<Cookies>>,
     url: DynamicURL.Extracted<DynamicURLString>,
 
-    cookie_objects: Map<string, CookieShape>,
-    set_cookie: (name: string, cookie: CookieShape) => void,
+    cookie_objects: Map<string, Cookie.Shape>,
+    set_cookie: (name: string, cookie: Cookie.Shape) => void,
     remove_cookie: (name: string) => void,
 
     fastify: {
@@ -102,32 +90,14 @@ export type BinderCallbackObject<
 
 export type BinderConfigurationSchema<
     // -- Input schemas
-    BodyInputSchema extends 
-        Schema.SchemaLike<'body'> | 
-        Array<Schema.SchemaLike<'body'>>,
-
-    QueryInputSchema extends 
-        Schema.SchemaLike<'query'> | 
-        Array<Schema.SchemaLike<'query'>>,
-
-    HeadersInputSchema extends 
-        Schema.SchemaLike<'headers'> | 
-        Array<Schema.SchemaLike<'headers'>>,
-
-    CookieInputSchema extends
-        Schema.SchemaLike<'cookies'> | 
-        Array<Schema.SchemaLike<'cookies'>>,
-
+    BodyInputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+    QueryInputSchema extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
+    HeadersInputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    CookieInputSchema extends Schema.SchemaLike<'cookies'> | Array<Schema.SchemaLike<'cookies'>>,
 
     // -- Output schemas
-    BodyOutputSchema extends
-        Schema.SchemaLike<'body'> | 
-        Array<Schema.SchemaLike<'body'>>,
-
-    HeadersOutputSchema extends
-        Schema.SchemaLike<'headers'> | 
-        Array<Schema.SchemaLike<'headers'>>,
-
+    BodyOutputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+    HeadersOutputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
 > = {
     input: {
         body?: BodyInputSchema,
@@ -144,33 +114,21 @@ export type BinderConfigurationSchema<
 
 
 
-type ExtractOutputSchemaHelperSplit<
-    DeepMergeReturnTypes extends object
+type ExtractOutputSchemaHelperSplit<DeepMergeReturnTypes extends object
 > = SplitObject<GetOutputType<DeepMergeReturnTypes, DeepMergeReturnTypes>>
 
-type ExtractOutputSchemaHelperMerge<
-    SplitObject extends { required: object, optional: object }
+type ExtractOutputSchemaHelperMerge<SplitObject extends { required: object, optional: object }
 > = SplitObject['required'] & SplitObject['optional'];
 
 export type ExtractOutputSchema<
-    RawSchema extends
-        Schema.SchemaLike<Schema.SchemaType> | 
-        Array<Schema.SchemaLike<Schema.SchemaType>>,
-> = ExtractOutputSchemaHelperMerge<
-        ExtractOutputSchemaHelperSplit<
-            DeepMergeReturnTypes<CreateArray<RawSchema>>>>
+    RawSchema extends Schema.SchemaLike<Schema.SchemaType> | Array<Schema.SchemaLike<Schema.SchemaType>>,
+> = ExtractOutputSchemaHelperMerge<ExtractOutputSchemaHelperSplit<DeepMergeReturnTypes<CreateArray<RawSchema>>>>
 
 
 
 export type ExtractOutputSchemaTypes<
-    OutputBodySchema extends
-        Schema.SchemaLike<'body'> | 
-        Array<Schema.SchemaLike<'body'>>,
-
-    OutputHeadersSchema extends
-        Schema.SchemaLike<'headers'> | 
-        Array<Schema.SchemaLike<'headers'>>,
-
+    OutputBodySchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+    OutputHeadersSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
     MergedBodySchema = ExtractOutputSchema<OutputBodySchema>,
     MergedHeadersSchema = ExtractOutputSchema<OutputHeadersSchema>,
 > = 
@@ -181,35 +139,18 @@ export type ExtractOutputSchemaTypes<
 
 
 export type OptionalBinderConfiguration<
-     // -- Middleware
+    // -- Middleware
     Middleware extends Middleware.MiddlewareObject,
 
     // -- Input schemas
-    BodyInputSchema extends 
-        Schema.SchemaLike<'body'> | 
-        Array<Schema.SchemaLike<'body'>>,
-
-    QueryInputSchema extends 
-        Schema.SchemaLike<'query'> | 
-        Array<Schema.SchemaLike<'query'>>,
-
-    HeadersInputSchema extends 
-        Schema.SchemaLike<'headers'> | 
-        Array<Schema.SchemaLike<'headers'>>,
-
-    CookieInputSchema extends
-        Schema.SchemaLike<'cookies'> | 
-        Array<Schema.SchemaLike<'cookies'>>,
+    BodyInputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+    QueryInputSchema extends Schema.SchemaLike<'query'> | Array<Schema.SchemaLike<'query'>>,
+    HeadersInputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
+    CookieInputSchema extends Schema.SchemaLike<'cookies'> | Array<Schema.SchemaLike<'cookies'>>,
 
     // -- Output schemas
-    BodyOutputSchema extends
-        Schema.SchemaLike<'body'> | 
-        Array<Schema.SchemaLike<'body'>>,
-
-    HeadersOutputSchema extends
-        Schema.SchemaLike<'headers'> | 
-        Array<Schema.SchemaLike<'headers'>>,
-
+    BodyOutputSchema extends Schema.SchemaLike<'body'> | Array<Schema.SchemaLike<'body'>>,
+    HeadersOutputSchema extends Schema.SchemaLike<'headers'> | Array<Schema.SchemaLike<'headers'>>,
 > = {
     middleware?: Middleware,
     schemas?: Partial<BinderConfigurationSchema<
@@ -367,22 +308,24 @@ export type SplitObject<Input> = {
 
 
 
-export type CookieSameSite = 'strict' | 'lax' | 'none';
+export namespace Cookie {
+    export type SameSite = 'strict' | 'lax' | 'none';
 
 
-export type CookieOptions = {
-    domain: string,
-    expires: Date,
-    http_only: boolean,
-    max_age: number,
-    partitioned: boolean,
-    path: string,
-    secure: boolean,
-    same_site: CookieSameSite
+    export type Options = {
+        domain: string,
+        expires: Date,
+        http_only: boolean,
+        max_age: number,
+        partitioned: boolean,
+        path: string,
+        secure: boolean,
+        same_site: SameSite
+    }
+
+
+    export type Shape = {
+        value: string,
+        options: Partial<Options>
+    };
 }
-
-
-export type CookieShape = {
-    value: string,
-    options: Partial<CookieOptions>
-};
