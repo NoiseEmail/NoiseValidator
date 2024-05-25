@@ -43,13 +43,10 @@ const validate_binder_request = async (
     }
 
     catch (unknown_error) {
-        const error = GenericError.from_unknown(
+        throw GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError(name + ' - validate_binder_request')
         );
-
-        Log.debug(`validate_binder_request: Binder failed to validate request: ${error.id}`);
-        throw error;
     }
 };
 
@@ -74,13 +71,10 @@ const validate_binder_output = async (
     }
 
     catch (unknown_error) {
-        const error = GenericError.from_unknown(
+        throw GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError(name + ' - validate_binder_output')
         );
-
-        Log.debug(`validate_binder_output: Binder failed to validate output: ${error.id}`);
-        throw error;
     };
 }
 
@@ -96,13 +90,10 @@ const validate_input = async (
     }
 
     catch (unknown_error) {
-        const error = GenericError.from_unknown(
+        throw GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError('validator, validate_input')
         );
-
-        Log.debug(`validate_input: Failed to validate input: ${error.id}`);
-        throw error;
     }
 };
 
@@ -131,13 +122,10 @@ const validate_inputs = async (
     }
 
     catch (unknown_error) {
-        const error = GenericError.from_unknown(
+        throw GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError('validator, validate_inputs')
         );
-
-        Log.debug(`validate_inputs: Failed to validate inputs: ${error.id}`);
-        throw error;
     }
 };
 
@@ -214,13 +202,10 @@ const execute_middleware = async (
     }
 
     catch (unknown_error) {
-        const error = GenericError.from_unknown(
+        throw GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError('validator, execute_middleware')
         );
-
-        Log.debug(`execute_middleware: Failed to execute middleware: ${error.id}`);
-        throw error;
     }
 };
 
@@ -265,13 +250,10 @@ const validate_middlewares = async (
     }
 
     catch (unknown_error) {
-        const error = GenericError.from_unknown(
+        throw GenericError.from_unknown(
             unknown_error, 
             new FailedToValidateInputError('validator, validate_middlewares')
         );
-
-        Log.debug(`validate_middlewares: Failed to validate middlewares: ${error.id}`);
-        throw error;
     }
 };
 
