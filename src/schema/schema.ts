@@ -1,10 +1,10 @@
 import { randomUUID } from 'crypto';
 import { SchemaNamespace } from './types.d';
-import { GenericError } from '../error';
+import { GenericError } from '@error';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
 import { execute } from './generic';
-import { LogObject } from '../logger/types';
-import { Log } from '..';
+import Log from '@logger';
+import { LogObject } from '@/logger/types';
 
 
 

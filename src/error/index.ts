@@ -1,4 +1,4 @@
-import { GenericError } from "./generic";
+import { GenericError } from './generic';
 
 export {
     GenericError,

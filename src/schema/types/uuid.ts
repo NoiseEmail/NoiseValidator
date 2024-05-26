@@ -6,7 +6,7 @@ import {
     validate, 
     version 
 } from 'uuid';
-import { GenericError } from '../../error';
+import { GenericError } from '@error';
 
 export default class Uuid extends GenericType<string, string> {
     protected create_new_if_invalid = false;

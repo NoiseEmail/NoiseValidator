@@ -1,4 +1,4 @@
-import { ServerConfiguration } from "./types";
+import { ServerConfiguration } from './types';
 
 export default {
     port: 8080,

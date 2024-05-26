@@ -1,4 +1,4 @@
-import { GenericError } from '../../error';
+import { GenericError } from '@error';
 import GenericType from '../generic';
 
 export default class NumberType extends GenericType<number, number> {

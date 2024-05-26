@@ -37,7 +37,7 @@ const other_schema = new nv.Schema({
 nv.Binder(test_route, 'POST', {
     schemas: {
         input: { 
-            // query: other_schema
+            query: other_schema
         },
         output: {
         }
@@ -45,7 +45,7 @@ nv.Binder(test_route, 'POST', {
 }, async (req) => {
     console.log('Hello world!');
 
-
+    req.query.age;
 });
 
 await rerver.start();

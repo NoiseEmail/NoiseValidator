@@ -1,4 +1,4 @@
-import { Cookie } from "./types";
+import { Cookie } from './types';
 import CookieParser from 'cookie';
 
 

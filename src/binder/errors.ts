@@ -1,4 +1,4 @@
-import { GenericError } from '../error/generic';
+import { GenericError } from '@error';
 
 class BinderFailedToExecuteError extends GenericError {
     public constructor(

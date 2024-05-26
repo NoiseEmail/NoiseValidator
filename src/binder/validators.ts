@@ -1,17 +1,17 @@
-import { FastifyReply, FastifyRequest } from "fastify";
+import { FastifyReply, FastifyRequest } from 'fastify';
 import {
     ArrayModifier,
     BinderInputValidatorResult,
     BinderOutputValidatorResult,
     Cookie,
     Schemas,
-} from "./types";
-import { GenericError } from "../error";
-import { FailedToValidateInputError } from "./errors";
-import { SchemaNamespace } from "../schema/types";
-import { mergician } from "mergician";
-import { Log } from "..";
-import { Middleware } from "../middleware/types";
+} from './types';
+import { GenericError } from '@error';
+import { FailedToValidateInputError } from './errors';
+import { SchemaNamespace } from '@schema/types';
+import { mergician } from 'mergician';
+import Log from '@logger';
+import { MiddlewareNamespace } from '@middleware/types';
 import CookieParser from 'cookie';
 
 
@@ -151,7 +151,7 @@ const validate_inputs = async (
 const execute_middleware = async (
     fastify_request: FastifyRequest,
     fastify_reply: FastifyReply,
-    middleware: Middleware.GenericMiddlewareConstructor<unknown> 
+    middleware: MiddlewareNamespace.GenericMiddlewareConstructor<unknown> 
 ): Promise<{
     data: unknown,
     cookies: Map<string, Cookie.Shape>
@@ -231,7 +231,7 @@ const execute_middleware = async (
 const validate_middlewares = async (
     fastify_request: FastifyRequest,
     fastify_reply: FastifyReply,
-    middlewares?: { [key: string]: Middleware.GenericMiddlewareConstructor<unknown> }
+    middlewares?: { [key: string]: MiddlewareNamespace.GenericMiddlewareConstructor<unknown> }
 ): Promise<{ 
     middleware: { [key: string]: unknown },
     cookies: Map<string, Cookie.Shape>

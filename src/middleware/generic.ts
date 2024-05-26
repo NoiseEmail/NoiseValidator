@@ -1,19 +1,18 @@
-import { LogFunctions, LogObject, LogType } from "../logger/types.d";
-import { Middleware } from "./types.d";
-import { GenericError } from '../error';
-import { MiddlewareGenericError, MissingMiddlewareHandlerError } from "./errors";
-import { log_header } from "../logger/log";
-import { log_types } from "../logger/type_enum";
-import { SchemaNamespace } from "../schema/types.d";
-import { Log } from "..";
+import { LogFunctions, LogObject, LogType } from '@logger/types';
+import { MiddlewareNamespace } from './types.d';
+import { GenericError } from '@error';
+import { MiddlewareGenericError, MissingMiddlewareHandlerError } from './errors';
+import { log_header, log_types } from '@logger';
+import { SchemaNamespace } from '@schema/types';
+import Log from '@logger';
 import Cookie from 'cookie';
 
 
 
 export default class GenericMiddleware<
     ReturnType extends unknown | Promise<unknown> = unknown,
-    RequestObject extends Middleware.AnyMiddlewareRequestObject = Middleware.AnyMiddlewareRequestObject
-> extends Middleware.GenericMiddlewareLike<ReturnType, RequestObject> {
+    RequestObject extends MiddlewareNamespace.AnyMiddlewareRequestObject = MiddlewareNamespace.AnyMiddlewareRequestObject
+> extends MiddlewareNamespace.GenericMiddlewareLike<ReturnType, RequestObject> {
 
     public readonly _return_type: ReturnType = {} as ReturnType;
     protected _validated: ReturnType | undefined;
@@ -88,7 +87,7 @@ export default class GenericMiddleware<
     protected validate_input = async <
         SchemaType extends 'body' | 'query' | 'headers' | 'cookies',
         SchemaInput extends SchemaNamespace.SchemaLike<any>,
-        ReturnType extends SchemaInput["_return_type"]
+        ReturnType extends SchemaInput['_return_type']
     >(
         input_type: SchemaType,
         schema: SchemaInput

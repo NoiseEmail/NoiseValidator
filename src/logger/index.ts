@@ -12,3 +12,15 @@ export {
     warn,
     is_debug,
 }
+
+export default {
+    debug,
+    error,
+    info,
+    log,
+    log_header,
+    log_types,
+    throw_err,
+    warn,
+    is_debug,
+}

@@ -1,5 +1,5 @@
-import { Route } from '../route';
-import Log, { _debug_mode } from '../logger/log';
+import { Route } from '@route';
+import Log from '@logger';
 import Fastify, {FastifyInstance} from 'fastify';
 import { OptionalServerConfiguration, ServerConfiguration } from './types';
 import { DefualtServerConfiguration } from '.';

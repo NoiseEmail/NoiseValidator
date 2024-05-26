@@ -1,9 +1,9 @@
-import { randomUUID } from "crypto";
-import { BinderNamespace } from "../binder/types.d";
-import { OptionalRouteConfiguration, RouteConfiguration } from "./types.d";
-import { Log, MethodNotAvailableError, NoRouteHandlerError, Server } from "..";
-import { FastifyInstance, FastifyReply, HTTPMethods } from "fastify";
-import { GenericError } from "../error";
+import { randomUUID } from 'crypto';
+import { BinderNamespace } from '@binder/types';
+import { OptionalRouteConfiguration, RouteConfiguration } from './types.d';
+import { Log, MethodNotAvailableError, NoRouteHandlerError, Server } from '..';
+import { FastifyInstance, FastifyReply, HTTPMethods } from 'fastify';
+import { GenericError } from '@error';
 
 export default class Route<
     UrlPath extends string

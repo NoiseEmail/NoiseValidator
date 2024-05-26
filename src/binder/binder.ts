@@ -1,10 +1,10 @@
 import { HTTPMethods } from 'fastify';
 import { DefaultBinderConfiguration } from '.';
-import { Middleware } from '../middleware/types.d';
-import { SchemaNamespace } from '../schema/types.d';
+import { MiddlewareNamespace } from '@middleware/types';
+import { SchemaNamespace } from '@schema/types';
 import { SchemaOutput, BinderNamespace, Schemas, ArrayModifier } from './types.d';
 import { mergician } from 'mergician';
-import { Route } from '../route';
+import { Route,} from '@route';
 
 import validate from './validate';
 import callback from './callback';
@@ -13,7 +13,7 @@ import callback from './callback';
 
 export default function Binder<
     // -- Input types
-    Middleware              extends Middleware.MiddlewareObject,
+    Middleware              extends MiddlewareNamespace.MiddlewareObject,
     DynamicURLInputSchema   extends string,
     BodyInputSchema         extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
     QueryInputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,

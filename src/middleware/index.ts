@@ -1,4 +1,4 @@
-import GenericMiddleware from "./generic";
+import GenericMiddleware from './generic';
 import {
     MiddlewareGenericError,
     MissingMiddlewareHandlerError

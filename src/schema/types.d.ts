@@ -1,5 +1,5 @@
-import { GenericError } from '../error';
-import { LogFunctions, LogObject } from '../logger/types';
+import { GenericError } from '@error';
+import { LogFunctions, LogObject } from '@logger/types';
 
 
 

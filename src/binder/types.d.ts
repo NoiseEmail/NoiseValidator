@@ -1,7 +1,7 @@
-import { Middleware } from "../middleware/types.d";
-import { DynamicURL } from "../route/types.d";
-import { SchemaNamespace } from "../schema/types.d";
-import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
+import { MiddlewareNamespace } from '@middleware/types';
+import { DynamicURL } from '@route/types';
+import { SchemaNamespace } from '@schema/types';
+import { FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
 
 
 
@@ -121,7 +121,7 @@ export namespace SchemaOutput {
 export namespace BinderNamespace {
 
     export type Configuration<
-        Middleware          extends Middleware.MiddlewareObject,
+        Middleware          extends MiddlewareNamespace.MiddlewareObject,
         BodyInputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
         QueryInputSchema    extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
         HeadersInputSchema  extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
@@ -139,7 +139,7 @@ export namespace BinderNamespace {
 
 
     export type OptionalConfiguration<
-        Middleware          extends Middleware.MiddlewareObject,
+        Middleware          extends MiddlewareNamespace.MiddlewareObject,
         BodyInputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
         QueryInputSchema    extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
         HeadersInputSchema  extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
@@ -157,7 +157,7 @@ export namespace BinderNamespace {
 
 
     export type GenericOptionalConfiguration = {
-        middleware?: Middleware.MiddlewareObject,
+        middleware?: MiddlewareNamespace.MiddlewareObject,
         schemas?: {
             input?: { 
                 body?: ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>, 
@@ -176,14 +176,14 @@ export namespace BinderNamespace {
 
 
     export type CallbackObject<
-        Middleware  extends Middleware.MiddlewareObject,
+        Middleware  extends MiddlewareNamespace.MiddlewareObject,
         Body        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
         Query       extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
         Headers     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
         Cookies     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
         DynamicURLString extends string
     > = {
-        middleware: Middleware.ParsedMiddlewareObject<Middleware>,
+        middleware: MiddlewareNamespace.ParsedMiddlewareObject<Middleware>,
         body:       ObjectModifier.MergeSchemas<Body>,
         query:      ObjectModifier.MergeSchemas<Query>,
         headers:    ObjectModifier.MergeSchemas<Headers>,
@@ -199,7 +199,7 @@ export namespace BinderNamespace {
 
 
     export type GenericCallbackObject = CallbackObject<
-        Middleware.MiddlewareObject,
+    MiddlewareNamespace.MiddlewareObject,
         ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
         ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
         ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,

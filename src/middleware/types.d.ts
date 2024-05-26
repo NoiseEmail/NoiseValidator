@@ -1,11 +1,11 @@
-import { GenericError } from '../error';
+import { GenericError } from '@error';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { SchemaNamespace } from '../schema/types';
-import { Cookie } from '../binder/types';
+import { SchemaNamespace } from '@schema/types';
+import { Cookie } from '@binder/types';
 
 
 
-export namespace Middleware {
+export namespace MiddlewareNamespace {
 
 
     export class GenericMiddlewareLike<

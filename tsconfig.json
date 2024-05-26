@@ -20,7 +20,24 @@
 			"bun-types",
 			"jest",
 			"node"
-		]
+		],
+		"paths": {
+			"@/*": 			["./src/*"],
+			"@schema": 		["./src/schema/index.ts"],
+			"@schema/types": ["./src/schema/types.d.ts"],
+			"@route": 		["./src/route/index.ts"],
+			"@route/types": 	["./src/route/types.d.ts"],
+			"@server": 		["./src/server/index.ts"],
+			"@server/types": ["./src/server/types.d.ts"],
+			"@middleware": 	["./src/middleware/index.ts"],
+			"@middleware/types": ["./src/middleware/types.d.ts"],
+			"@logger": 		["./src/logger/index.ts"],
+			"@logger/types": ["./src/logger/types.d.ts"],
+			"@error": 		["./src/error/index.ts"],
+			"@error/types": 	["./src/error/types.d.ts"],
+			"@binder": 		["./src/binder/index.ts"],
+			"@binder/types": ["./src/binder/types.d.ts"],
+		}
 	},
 	"exclude": [
 		"tests/**/*"

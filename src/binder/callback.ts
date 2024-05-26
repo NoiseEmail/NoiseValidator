@@ -1,6 +1,6 @@
 import { BinderFailedToExecuteError } from '.';
-import { GenericError } from '../error';
-import { Route } from '..';
+import { GenericError } from '@error';
+import { Route } from '@route';
 import { validate_binder_output } from './validators';
 import { create_set_cookie_header } from './cookie';
 import { Schemas, BinderNamespace } from './types';

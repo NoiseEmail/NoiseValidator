@@ -1,6 +1,6 @@
-import { Middleware } from "../middleware/types";
-import { BinderNamespace } from "./types.d";
-import { SchemaNamespace } from "../schema/types.d";
+import { MiddlewareNamespace } from '@middleware/types';
+import { BinderNamespace } from './types.d';
+import { SchemaNamespace } from '@schema/types';
 
 
 
@@ -19,7 +19,7 @@ export default {
         }
     }
 } as BinderNamespace.Configuration<
-    Middleware.MiddlewareObject,
+    MiddlewareNamespace.MiddlewareObject,
     Array<SchemaNamespace.NestedSchemaLike>,
     Array<SchemaNamespace.FlatSchmeaLike>,
     Array<SchemaNamespace.FlatSchmeaLike>,
