@@ -8,13 +8,13 @@ import { ExtractOutputSchemaTypes, Schemas, BinderNamespace, SchemaOutput } from
 
 
 const callback = async (  
-    callback: (data: BinderNamespace.GenericCallbackObject) => void,
+    callback: (data: any) => any,
     data: BinderNamespace.GenericCallbackObject,
     route: Route<any>,
     schemas: Schemas,
 ) => {
     try {
-        const result = await callback(data as CallbackObject);
+        const result = await callback(data);
         const output = await validate_binder_output(result, schemas, route.path);
 
         // -- Set the headers

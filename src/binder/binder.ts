@@ -28,7 +28,7 @@ export default function Binder<
     route: Route<DynamicURLInputSchema>,
     method: HTTPMethods,
     configuration: BinderNamespace.OptionalConfiguration<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, BodyOutputSchema, HeadersOutputSchema>,
-    binder_callback: (data: CallbackObject) => void
+    binder_callback: (data: CallbackObject) => BinderCallbackReturn | Promise<BinderCallbackReturn>
 ): void {
     
 
