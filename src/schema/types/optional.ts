@@ -2,8 +2,6 @@ import { GenericError } from '@error';
 import GenericType from '../generic';
 import { SchemaNamespace } from '../types.d';
 
-
-
 type ExtractReturnType<
     DefaultValue,
     OriginalReturnType,

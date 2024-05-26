@@ -1,55 +1,51 @@
+import * as Log from './logger';
+
 import {
+    Array,
+    Boolean,
+    Enum,
     GenericType,
-    Schema,
-    MissingHandlerError,
     GenericTypeExecutionError,
+    InvalidInputError,
+    MissingHandlerError,
+    Number,
+    Optional,
+    Schema,
     SchemaExecutionError,
     SchemaMissingFieldError,
-    InvalidInputError,
-    Boolean,
+    SchemaTypes,
     String,
-    Number,
     Uuid,
-    Array,
-    execute,
-    Enum,
-    Optional,
-    SchemaTypes
+    execute
 } from './schema';
-
+import {
+    Binder,
+    BinderFailedToExecuteError,
+    BinderTypes,
+    DefaultBinderConfiguration,
+    FailedToValidateInputError,
+    cookie,
+    create_set_cookie_header,
+    serialize_cookie,
+    validate_binder_request
+} from './binder';
 import {
     GenericMiddleware,
     MiddlewareGenericError,
     MissingMiddlewareHandlerError
 } from './middleware';
+import {
+    MethodNotAvailableError,
+    NoRouteHandlerError,
+    Route
+} from './route';
 
-import * as Log from './logger';
-
-import { 
+import {
     GenericError
 } from './error';
-  
-import {
-    Binder,
-    DefaultBinderConfiguration,
-    BinderFailedToExecuteError,
-    FailedToValidateInputError,
-    validate_binder_request,
-    cookie,
-    serialize_cookie,
-    create_set_cookie_header,
-    BinderTypes
-} from './binder';
-
 import {
     Server
 } from './server';
-
-import {
-    Route,
-    MethodNotAvailableError,
-    NoRouteHandlerError
-} from './route';
 
 export {
     // -- Schema

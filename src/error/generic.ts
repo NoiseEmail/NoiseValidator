@@ -1,5 +1,5 @@
-import { randomUUID } from 'crypto';
 import { SerializedGenericError } from './types';
+import { randomUUID } from 'crypto';
 
 export class GenericError extends Error {
     private _other_errors: Map<string, GenericError> = new Map();

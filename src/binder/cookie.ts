@@ -1,8 +1,6 @@
 import { Cookie } from './types';
 import CookieParser from 'cookie';
 
-
-
 const default_cookie_options: Partial<Cookie.Options> = {
     domain: undefined,
     expires: undefined,

@@ -1,22 +1,16 @@
-import { 
-    MissingHandlerError, 
-    InvalidInputError, 
-    GenericTypeExecutionError, 
-    SchemaExecutionError, 
-    SchemaMissingFieldError 
-} from './errors';
-import GenericType, { execute } from './generic';
-import Schema from './schema';
+import * as SchemaTypes from './types.d';
 
+import GenericType, { execute } from './generic';
+import { GenericTypeExecutionError, InvalidInputError, MissingHandlerError, SchemaExecutionError, SchemaMissingFieldError } from './errors';
+
+import Array from './types/array';
 import Boolean from './types/boolean';
-import String from './types/string';
+import Enum from './types/enum';
 import Number from './types/number';
 import Optional from './types/optional';
+import Schema from './schema';
+import String from './types/string';
 import Uuid from './types/uuid';
-import Array from './types/array';
-import Enum from './types/enum';
-
-import * as SchemaTypes from './types.d';
 
 export {
     GenericType,

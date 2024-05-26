@@ -1,7 +1,6 @@
 import { LogType } from './types.d';
 import { log_types } from './type_enum';
 
-
 // -- Globa space less gooo, this is only used by the rerver
 //    and is set as you start the server, it will get replaced
 //    with some better config stuff, but fornow thissldo

@@ -1,10 +1,9 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { validate_binder_request } from '.';
-import { Schemas, Cookie, BinderNamespace } from './types.d';
+import { BinderNamespace, Cookie, Schemas } from './types.d';
+import { FastifyReply, FastifyRequest } from 'fastify';
+
 import { Route } from '@route';
+import { validate_binder_request } from '.';
 import { validate_middlewares } from './validators';
-
-
 
 const validate = async <
     InputRoute extends Route<any>

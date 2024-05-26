@@ -1,9 +1,9 @@
-import { GenericError } from '@error';
+import { InvalidInputError, MissingHandlerError } from './errors';
 import Log, { log_header, log_types } from '@logger';
-import { MissingHandlerError, InvalidInputError } from './errors';
-import { SchemaNamespace } from './types.d';
 import { LogFunctions, LogObject, LogType } from '@/logger/types';
 
+import { GenericError } from '@error';
+import { SchemaNamespace } from './types.d';
 
 export default class GenericType<
     ReturnType extends unknown | Promise<unknown> = unknown,

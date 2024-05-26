@@ -1,8 +1,6 @@
 import { GenericError } from '@error';
 import GenericType from '../generic';
 
-
-
 const create_enum = <
     InputTypes extends string | number | boolean,
     InputArray extends Array<InputTypes>

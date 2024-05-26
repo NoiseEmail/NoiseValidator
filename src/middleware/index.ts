@@ -1,9 +1,6 @@
-import GenericMiddleware from './generic';
-import {
-    MiddlewareGenericError,
-    MissingMiddlewareHandlerError
-} from './errors';
+import { MiddlewareGenericError, MissingMiddlewareHandlerError } from './errors';
 
+import GenericMiddleware from './generic';
 
 export {
     GenericMiddleware,

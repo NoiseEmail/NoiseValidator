@@ -1,5 +1,5 @@
-import Server from './server';
 import DefualtServerConfiguration from './configuration';
+import Server from './server';
 
 export {
     Server,

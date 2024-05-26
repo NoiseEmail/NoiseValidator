@@ -1,8 +1,6 @@
+import { MethodNotAvailableError, NoRouteHandlerError } from './errors';
+
 import Route from './route';
-import {
-    MethodNotAvailableError,
-    NoRouteHandlerError
-} from './errors';
 
 export {
     Route,
