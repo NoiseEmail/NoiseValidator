@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { BinderNamespace } from "../binder/types.d";
 import { OptionalRouteConfiguration, RouteConfiguration } from "./types.d";
-import { Log, MethodNotAvailableError, NoRouteHandlerError, Router } from "..";
+import { Log, MethodNotAvailableError, NoRouteHandlerError, Server } from "..";
 import { FastifyInstance, FastifyReply, HTTPMethods } from "fastify";
 import { GenericError } from "../error";
 
@@ -14,19 +14,21 @@ export default class Route<
 
     private _friendly_name: string | undefined;
     private _binder_map: BinderNamespace.Binders = new Map();
-    private _router: Router = Router.instance;
-    private _added_to_router: boolean = false;
+    private _rerver: Server;
 
     private _configuration: RouteConfiguration;
 
     public constructor(
+        rerver: Server,
         path: UrlPath,
         configuration?: OptionalRouteConfiguration
     ) {
+        this._rerver = rerver;
         this._configuration = this._build_configuration(configuration || {});
         this._raw_path = path;
         this._path = this._build_path(path);
         this._friendly_name = configuration?.friendly_name || undefined;
+        this._rerver.add_route(this);
     };
 
 
@@ -76,7 +78,7 @@ export default class Route<
         Log.debug(error.message);
 
         // -- Check if debug is enabled, if not strip the error data
-        if (!this._router.configuration.debug) error.data = {};
+        if (!this._rerver.configuration.debug) error.data = {};
 
         // -- Send the error
         reply.code(error.code).send({
@@ -113,20 +115,6 @@ export default class Route<
 
         return path;
     };
-
-
-
-    /**
-     * @name add_to_router
-     * @description Adds the route to the router
-     * 
-     * @returns {void} - Nothing
-     */
-    public add_to_router = (): void => {
-        if (this._added_to_router) return Log.warn(`Route: ${this._path} has already been added to the router`);
-        this._router.add_route(this);
-        this._added_to_router = true;
-    }
 
 
 
@@ -210,7 +198,7 @@ export default class Route<
         if (error_response) error = error_response;
 
         // -- Append the error data if debug is enabled
-        if (this._router.configuration.debug) errors.forEach(e => error.add_error(e));
+        if (this._rerver.configuration.debug) errors.forEach(e => error.add_error(e));
         this.send_exception(reply, error);
     };
 
@@ -237,7 +225,7 @@ export default class Route<
             handler: async (request, reply) => this._process(method, request, reply)
         }));
 
-        Log.info(`Route: ${path} has been added to the router`);
+        Log.info(`Route: ${path} has been added to the rerver`);
     };
 
 

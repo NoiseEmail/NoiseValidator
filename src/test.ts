@@ -3,12 +3,15 @@ import * as nv from 'noise_validator';
 
 // -- Change the way this is done
 //    make it so that there is an importable default configuration
-const router = nv.Router.instance;
+const rerver = new nv.Server({
+    port: 3000,
+    host: 'localhost'
+});
 
 
 
 // -- Add optional configuration options
-const test_route = new nv.Route('/test', { api_version: '1' });
+const test_route = new nv.Route(rerver, '/test', { api_version: '1' });
 
 
 const test_sechema = new nv.Schema.Body({
@@ -49,17 +52,16 @@ nv.Binder(test_route, 'POST', {
     }
 });
 
-test_route.add_to_router();
-await router.start({ port: 3000 });
-
+await rerver.start();
+console.log('Server started...', rerver.address);
 
 // let test: nv.BinderTypes.SchemaOutput.Types<typeof other_schema, typeof test_sechema> = {
 
 // }
 
-// -- Test the router
-console.log('Testing the router...');
-const response = await fetch(router.address + '/1/test', {
+// -- Test the rerver
+console.log('Testing the rerver...');
+const response = await fetch(rerver.address + '/1/test', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',

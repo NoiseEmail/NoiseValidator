@@ -42,8 +42,8 @@ import {
 } from './binder';
 
 import {
-    Router
-} from './router';
+    Server
+} from './server';
 
 import {
     Route,
@@ -89,8 +89,8 @@ export {
     validate_binder_request,
     BinderTypes,
 
-    // -- Router / Route
-    Router,
+    // -- Server / Route
+    Server,
     Route,
     MethodNotAvailableError,
     NoRouteHandlerError,

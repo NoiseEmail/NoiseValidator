@@ -87,8 +87,8 @@ import {
 	validate_binder_request,
 	validate_output,
 
-	// -- Router / Route
-	Router,
+	// -- Server / Route
+	Server,
 	Route,
 	MethodNotAvailableError,
 	NoRouteHandlerError

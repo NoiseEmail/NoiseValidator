@@ -1,31 +1,36 @@
 import { Route } from '../route';
 import Log, { _debug_mode } from '../logger/log';
 import Fastify, {FastifyInstance} from 'fastify';
-import { OptionalRouterConfiguration, RouterConfiguration } from './types';
-import { DefualtRouterConfiguration } from '.';
-import { mergician } from 'mergician';
+import { OptionalServerConfiguration, ServerConfiguration } from './types';
+import { DefualtServerConfiguration } from '.';
 
-export default class Router {
 
-    private static _instance: Router | null = null;
+
+export default class Server {
+
     private _routes: Map<String, Route<any>>;
     private _server: FastifyInstance;
-    private _configuration: RouterConfiguration = DefualtRouterConfiguration;
+    private _configuration: ServerConfiguration;
     private _started: boolean = false;
 
-    private constructor() {
-        Log.info('Creating router...');
+    public constructor(
+        configuration: OptionalServerConfiguration = {}
+    ) {
+        Log.info('Creating rerver...');
         this._routes = new Map();
         this._server = Fastify({ logger: false });
+        this._configuration = Server.build_configuration(configuration);
     }
 
 
 
-    public static get instance(): Router {
-        if (Router._instance === null) 
-            Router._instance = new Router();
-        return Router._instance;
-    }
+
+    public static build_configuration = (configuration: ServerConfiguration | {}): ServerConfiguration => {
+        return {
+            ...DefualtServerConfiguration,
+            ...configuration
+        };
+    };
 
 
 
@@ -33,12 +38,9 @@ export default class Router {
      * @name start
      * Starts the server (Or unpauses it)
      *
-     * @param {OptionalRouterConfiguration} configuration - The configuration for the server
-     *
      * @returns {void} - Nothing
      */
     public async start(
-        configuration: OptionalRouterConfiguration = {}
     ): Promise<void> {
 
         // -- Don't start the server if it's already started
@@ -47,15 +49,14 @@ export default class Router {
             return Promise.resolve();
         }
         
+        
         // -- Start the server
         Log.info('Starting server...');
         this._started = true;
-        _debug_mode(configuration.debug || false);
-        this._configuration = mergician(DefualtRouterConfiguration, configuration) as RouterConfiguration;
         
-        return new Promise<void>((resolve, reject) => this._server.listen({
-            port: configuration.port || 3000,
-            host: configuration.host || '0.0.0.0'
+        return new Promise<void>((resolve) => this._server.listen({
+            port: this.configuration.port,
+            host: this.configuration.host
         }, (err, address) => {
             if (err) process.exit(1);
             Log.info(`Server listening at ${address}`);
@@ -107,9 +108,9 @@ export default class Router {
 
 
 
-    public get configuration(): RouterConfiguration { return this._configuration; }
-    public get port(): number { return this._configuration.port || 3000; }
-    public get host(): string { return this._configuration.host || 'localhost'; }
+    public get configuration(): ServerConfiguration { return this._configuration; }
+    public get port(): number { return this._configuration.port; }
+    public get host(): string { return this._configuration.host; }
     public get started(): boolean { return this._started; }
-    public get address(): string { return `http://${this.host}:${this.port}`; }
+    public get address(): string { return `${this.host}:${this.port}`; }
 }
