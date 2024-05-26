@@ -20,47 +20,13 @@ export default class Schema<
     private _log_stacks: Array<LogObject>;
     private _errors: Array<GenericError>;
 
-    private constructor(
+    public constructor(
         schema: InputSchema
     ) {
         this._schema = schema;
         this._log_stacks = [];
         this._errors = [];
     };
-
-
-
-    public static Body = class<
-        InputSchema extends SchemaNamespace.InputSchema,
-        ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
-    > extends Schema<InputSchema, ReturnableData> {
-        public readonly _type: 'body' = 'body';
-        public constructor(schema: InputSchema) { super(schema); };
-    };
-
-    public static Query = class<
-        InputSchema extends SchemaNamespace.FlatSchema,
-        ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
-    > extends Schema<InputSchema, ReturnableData> {
-        public readonly _type: 'query' = 'query';
-        public constructor(schema: InputSchema) { super(schema); };
-    };
-
-    public static Headers = class<
-        InputSchema extends SchemaNamespace.FlatSchema,
-        ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
-    > extends Schema<InputSchema, ReturnableData> {
-        public readonly _type: 'headers' = 'headers';
-        public constructor(schema: InputSchema) { super(schema); };
-    };
-
-    public static Cookies = class<
-        InputSchema extends SchemaNamespace.FlatSchema,
-        ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
-    > extends Schema<InputSchema, ReturnableData> {
-        public readonly _type: 'cookies' = 'cookies';
-        public constructor(schema: InputSchema) { super(schema); };
-    }
 
 
     

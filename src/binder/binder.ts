@@ -15,14 +15,14 @@ export default function Binder<
     // -- Input types
     Middleware              extends Middleware.MiddlewareObject,
     DynamicURLInputSchema   extends string,
-    BodyInputSchema         extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'body'>>,
-    QueryInputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'query'>>,
-    HeadersInputSchema      extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'headers'>>,
-    CookieInputSchema       extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'cookies'>>,
+    BodyInputSchema         extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+    QueryInputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+    HeadersInputSchema      extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+    CookieInputSchema       extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
 
     // -- Output types
-    BodyOutputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'body'>>,
-    HeadersOutputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'headers'>>,
+    BodyOutputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+    HeadersOutputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
 
     // -- Callback types
     BinderCallbackReturn extends SchemaOutput.Types<BodyOutputSchema, HeadersOutputSchema>,

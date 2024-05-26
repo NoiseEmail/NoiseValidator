@@ -60,17 +60,22 @@ export namespace SchemaNamespace {
     };
 
 
+    
+    /**
+     * Simple type that checks if an object contains other
+     * objects, eg { key: { key: 'value' } }
+     */
+    export type ObjectIsNested<T> = {
+        [K in keyof T]: T[K] extends object ? true : false;
+    } extends { [key: string]: true } ? true : false;
 
 
 
-    export type SchemaType = 'body' | 'query' | 'headers' | 'cookies';
     
 
     export class SchemaLike<
-        InputType extends SchemaType,
         ReturnableData = ParsedSchema<InputSchema>
     > {
-        public readonly _type: InputType;
         public readonly _return_type: ReturnableData;
         public readonly _id: string;
         public readonly _schema: InputSchema | FlatSchema;
@@ -156,6 +161,6 @@ export namespace SchemaNamespace {
     /**
      * Gets any schemas return type
      */
-    export type ReturnType<T extends SchemaLike<SchemaType>> = 
+    export type ReturnType<T extends SchemaLike> = 
         T extends { _return_type: infer R } ? R : never;
 }

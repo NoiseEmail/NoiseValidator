@@ -25,10 +25,10 @@ export namespace Middleware {
         protected _on_valid: (result: ReturnType) => ReturnType;
 
         protected validate_input<
-            SchemaType extends SchemaNamespace.SchemaType,
-            SchemaInput extends SchemaNamespace.SchemaLike<any>,
+            SchemaType extends 'body' | 'query' | 'headers' | 'cookies',
+            SchemaInput extends SchemaNamespace.SchemaLike,
             ReturnType extends SchemaNamespace.ParsedSchema<SchemaInput["_schema"]>
-        >(
+        >(  
             input_type: SchemaType,
             schema: SchemaInput
         ): Promise<ReturnType>

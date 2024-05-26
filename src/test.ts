@@ -14,7 +14,7 @@ const rerver = new nv.Server({
 const test_route = new nv.Route(rerver, '/test', { api_version: '1' });
 
 
-const test_sechema = new nv.Schema.Body({
+const test_sechema = new nv.Schema({
     name: nv.String,
     test: {
         name: nv.Number,
@@ -24,7 +24,7 @@ const test_sechema = new nv.Schema.Body({
 
 });
 
-const other_schema = new nv.Schema.Body({
+const other_schema = new nv.Schema({
     age: nv.Optional(nv.Number),
     // test: {
     //     name: nv.String

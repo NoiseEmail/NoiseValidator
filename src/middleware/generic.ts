@@ -86,7 +86,7 @@ export default class GenericMiddleware<
      * @returns {Promise<ReturnType>} A promise that resolves when the input has been validated
      */
     protected validate_input = async <
-        SchemaType extends SchemaNamespace.SchemaType,
+        SchemaType extends 'body' | 'query' | 'headers' | 'cookies',
         SchemaInput extends SchemaNamespace.SchemaLike<any>,
         ReturnType extends SchemaInput["_return_type"]
     >(
@@ -94,21 +94,18 @@ export default class GenericMiddleware<
         schema: SchemaInput
     ): Promise<ReturnType> => {
 
-        // -- Validate the input type
-        const valid_types = ['body', 'query', 'headers', 'cookies'];
-        if (!valid_types.includes(input_type))
-            throw new MiddlewareGenericError(`Invalid input type: ${input_type}`);
-
         let data;
         switch (input_type) {
-            case 'body': data = this._request_object.fastify.request.body; break;
-            case 'query': data = this._request_object.fastify.request.query; break;
-            case 'headers': data = this._request_object.fastify.request.headers; break;
+            case 'body': data = this._request_object.fastify?.request?.body; break;
+            case 'query': data = this._request_object.fastify?.request?.query; break;
+            case 'headers': data = this._request_object.fastify?.request?.headers; break;
             case 'cookies': 
-                let raw_cookie = data = this._request_object.fastify.request.headers.cookie;
+                let raw_cookie = data = this._request_object.fastify?.request?.headers?.cookie;
                 if (!raw_cookie) raw_cookie = '';
                 data = Cookie.parse(raw_cookie);
                 break;
+
+            default: throw new GenericError(`Invalid input type: ${input_type}`, 500);
         };
 
         // -- Validate the input
