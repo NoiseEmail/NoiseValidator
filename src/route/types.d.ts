@@ -1,6 +1,6 @@
 export type RouteConfiguration = {
     friendly_name: string;
-    api_version: string;
+    api_version: string | number | undefined;
 };
 
 export type OptionalRouteConfiguration = Partial<RouteConfiguration>;

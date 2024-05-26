@@ -8,7 +8,7 @@ const router = nv.Router.instance;
 
 
 // -- Add optional configuration options
-const test_route = new nv.Route('/test');
+const test_route = new nv.Route('/test', { api_version: '1' });
 
 
 const test_sechema = new nv.Schema.Body({
@@ -59,12 +59,18 @@ await router.start({ port: 3000 });
 
 // -- Test the router
 console.log('Testing the router...');
-const response = await fetch(router.address + '/api/DEV/test', {
+const response = await fetch(router.address + '/1/test', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ name: 'John', age: 1}),
+    body: JSON.stringify({ 
+        name: 'John',
+        test: {
+            name: 1,
+            age: 'a'
+        }
+    }),
 });
 
 const data = await response.json();

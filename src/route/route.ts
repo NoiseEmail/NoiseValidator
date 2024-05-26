@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { BinderNamespace } from "../binder/types.d";
-import { RouteConfiguration } from "./types.d";
+import { OptionalRouteConfiguration, RouteConfiguration } from "./types.d";
 import { Log, MethodNotAvailableError, NoRouteHandlerError, Router } from "..";
 import { FastifyInstance, FastifyReply, HTTPMethods } from "fastify";
 import { GenericError } from "../error";
@@ -21,7 +21,7 @@ export default class Route<
 
     public constructor(
         path: UrlPath,
-        configuration?: RouteConfiguration
+        configuration?: OptionalRouteConfiguration
     ) {
         this._configuration = this._build_configuration(configuration || {});
         this._raw_path = path;
@@ -33,7 +33,7 @@ export default class Route<
 
     public static defualt_configuration: RouteConfiguration = {
         friendly_name: 'Unnamed Route',
-        api_version: 'DEV'
+        api_version: undefined
     };
 
 
@@ -100,7 +100,7 @@ export default class Route<
         raw_path: UrlPath
     ): string => {
         const version = this._configuration.api_version;
-        let path = version !== '' ? `/api/${version}/${raw_path}` : `/${raw_path}`;
+        let path = version !== '' || version !==  undefined ? `/${version}/${raw_path}` : `/${raw_path}`;
 
         // -- Remove any double slashes
         path = path.replace(/\/\//g, '/');
