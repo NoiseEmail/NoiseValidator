@@ -3,7 +3,7 @@ import { LogFunctions, LogObject } from '../logger/types';
 
 
 
-export namespace Schema {
+export namespace SchemaNamespace {
 
     export class GenericTypeLike<
         ReturnType extends unknown = unknown,
@@ -152,4 +152,10 @@ export namespace Schema {
     };        
 
 
+
+    /**
+     * Gets any schemas return type
+     */
+    export type ReturnType<T extends SchemaLike<SchemaType>> = 
+        T extends { _return_type: infer R } ? R : never;
 }

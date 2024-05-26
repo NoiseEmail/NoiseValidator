@@ -3,14 +3,14 @@ import { log_header } from '../logger/log';
 import { log_types } from '../logger/type_enum';
 import { LogFunctions, LogObject, LogType } from '../logger/types';
 import { MissingHandlerError, InvalidInputError } from './errors';
-import { Schema } from './types.d';
+import { SchemaNamespace } from './types.d';
 import { Log } from '..';
 
 
 export default class GenericType<
     ReturnType extends unknown | Promise<unknown> = unknown,
     InputShape extends unknown = unknown
-> extends Schema.GenericTypeLike<ReturnType> {   
+> extends SchemaNamespace.GenericTypeLike<ReturnType> {   
 
     protected _validated: ReturnType | undefined;
     private _executed: boolean = false;
@@ -208,13 +208,13 @@ export default class GenericType<
  * @returns {Promise<void>} A promise that resolves when the class constructor has been executed
  */
 export async function execute<
-    Constructor extends Schema.GenericTypeConstructor<unknown>,
-    ReturnType extends Schema.ExtractParamaterReturnType<Constructor>
+    Constructor extends SchemaNamespace.GenericTypeConstructor<unknown>,
+    ReturnType extends SchemaNamespace.ExtractParamaterReturnType<Constructor>
 >(
     class_constructor: Constructor,
     input_value: unknown,
 ): Promise<{
-    instance: Schema.GenericTypeLike;
+    instance: SchemaNamespace.GenericTypeLike;
     result: GenericError | ReturnType;
     is_error: boolean;
 }> {

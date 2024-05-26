@@ -1,6 +1,6 @@
 import { GenericError } from '../../error';
 import GenericType from '../generic';
-import { Schema } from '../types.d';
+import { SchemaNamespace } from '../types.d';
 
 
 
@@ -32,7 +32,7 @@ const create_optional = <
 
     DefaultValue extends OriginalReturnType | undefined,
 >(
-    constructor: Schema.GenericTypeConstructor<
+    constructor: SchemaNamespace.GenericTypeConstructor<
         OriginalReturnType, 
         OriginalInputShape
     >,

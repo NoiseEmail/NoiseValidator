@@ -1,4 +1,4 @@
-import { HTTPMethods, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { validate_binder_request } from '.';
 import { Schemas, Cookie, BinderNamespace } from './types.d';
 import { Route } from '../route';

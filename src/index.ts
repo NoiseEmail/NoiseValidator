@@ -13,7 +13,8 @@ import {
     Array,
     execute,
     Enum,
-    Optional
+    Optional,
+    SchemaTypes
 } from './schema';
 
 import {
@@ -67,6 +68,7 @@ export {
     Enum,
     Optional,
     Array,
+    SchemaTypes,
 
     // -- Middleware
     GenericMiddleware,

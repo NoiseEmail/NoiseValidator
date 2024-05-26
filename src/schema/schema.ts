@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { Schema as SchemaTypes } from './types.d';
+import { SchemaNamespace } from './types.d';
 import { GenericError } from '../error';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
 import { execute } from './generic';
@@ -9,8 +9,8 @@ import { Log } from '..';
 
 
 export default class Schema<
-    InputSchema extends SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
-    ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
+    InputSchema extends SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema,
+    ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
 > {
     public readonly _return_type: ReturnableData = {} as ReturnableData;    
     public readonly _type: 'body' | 'query' | 'headers' | 'cookies' = 'body';
@@ -31,32 +31,32 @@ export default class Schema<
 
 
     public static Body = class<
-        InputSchema extends SchemaTypes.InputSchema,
-        ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
+        InputSchema extends SchemaNamespace.InputSchema,
+        ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
     > extends Schema<InputSchema, ReturnableData> {
         public readonly _type: 'body' = 'body';
         public constructor(schema: InputSchema) { super(schema); };
     };
 
     public static Query = class<
-        InputSchema extends SchemaTypes.FlatSchema,
-        ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
+        InputSchema extends SchemaNamespace.FlatSchema,
+        ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
     > extends Schema<InputSchema, ReturnableData> {
         public readonly _type: 'query' = 'query';
         public constructor(schema: InputSchema) { super(schema); };
     };
 
     public static Headers = class<
-        InputSchema extends SchemaTypes.FlatSchema,
-        ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
+        InputSchema extends SchemaNamespace.FlatSchema,
+        ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
     > extends Schema<InputSchema, ReturnableData> {
         public readonly _type: 'headers' = 'headers';
         public constructor(schema: InputSchema) { super(schema); };
     };
 
     public static Cookies = class<
-        InputSchema extends SchemaTypes.FlatSchema,
-        ReturnableData = SchemaTypes.ParsedSchema<InputSchema>
+        InputSchema extends SchemaNamespace.FlatSchema,
+        ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
     > extends Schema<InputSchema, ReturnableData> {
         public readonly _type: 'cookies' = 'cookies';
         public constructor(schema: InputSchema) { super(schema); };
@@ -65,8 +65,8 @@ export default class Schema<
 
     
     public static _execute_validator = async (
-        instance: Schema<SchemaTypes.InputSchema | SchemaTypes.FlatSchema, unknown>,
-        value: SchemaTypes.GenericTypeConstructor,
+        instance: Schema<SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema, unknown>,
+        value: SchemaNamespace.GenericTypeConstructor,
         new_data: unknown,
         new_path: string[]
     ): Promise<unknown> => {
@@ -115,8 +115,8 @@ export default class Schema<
 
 
     public static _validate_value = async (
-        instance: Schema<SchemaTypes.InputSchema | SchemaTypes.FlatSchema, unknown>,
-        validator: SchemaTypes.InputSchema | SchemaTypes.GenericTypeConstructor<unknown, unknown>,
+        instance: Schema<SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema, unknown>,
+        validator: SchemaNamespace.InputSchema | SchemaNamespace.GenericTypeConstructor<unknown, unknown>,
         new_data: unknown,
         new_path: string[]
     ): Promise<unknown> => {
@@ -126,7 +126,7 @@ export default class Schema<
             case 'function': {
                 const walk_result = await Schema._execute_validator(
                     instance, 
-                    validator as SchemaTypes.GenericTypeConstructor, 
+                    validator as SchemaNamespace.GenericTypeConstructor, 
                     new_data, 
                     new_path
                 );
@@ -175,8 +175,8 @@ export default class Schema<
 
 
     public static _walk_object = async <ReturnableData>(
-        instance: Schema<SchemaTypes.InputSchema | SchemaTypes.FlatSchema, unknown>,
-        schema: SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
+        instance: Schema<SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema, unknown>,
+        schema: SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema,
         data: unknown,
         path: string[] = [],
         result: { [type: string]: unknown } = {}
@@ -236,8 +236,8 @@ export default class Schema<
 
     
     public static _walk = async <ReturnableData>(
-        instance: Schema<SchemaTypes.InputSchema | SchemaTypes.FlatSchema, unknown>,
-        schema: SchemaTypes.InputSchema | SchemaTypes.FlatSchema,
+        instance: Schema<SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema, unknown>,
+        schema: SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema,
         data: unknown,
         path: string[] = [],
         result: { [key: string]: unknown } = {}

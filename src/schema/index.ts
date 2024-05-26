@@ -16,6 +16,8 @@ import Uuid from './types/uuid';
 import Array from './types/array';
 import Enum from './types/enum';
 
+import * as SchemaTypes from './types';
+
 export {
     GenericType,
     Schema,
@@ -32,5 +34,7 @@ export {
     Enum,
     Array,
     execute,
-    Optional
+    Optional,
+
+    SchemaTypes
 }

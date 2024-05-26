@@ -1,6 +1,6 @@
 import { GenericError } from '../../error';
 import GenericType from '../generic';
-import { Schema } from '../types';
+import { SchemaNamespace } from '../types';
 
 
 
@@ -8,7 +8,7 @@ const create_array = <
     OriginalReturnType,
     OriginalInputShape,
 >(
-    constructor: Schema.GenericTypeConstructor<
+    constructor: SchemaNamespace.GenericTypeConstructor<
         OriginalReturnType, 
         OriginalInputShape
     >,

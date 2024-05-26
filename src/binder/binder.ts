@@ -1,7 +1,7 @@
 import { HTTPMethods } from 'fastify';
 import { DefaultBinderConfiguration } from '.';
 import { Middleware } from '../middleware/types.d';
-import { Schema } from '../schema/types.d';
+import { SchemaNamespace } from '../schema/types.d';
 import { SchemaOutput, BinderNamespace, Schemas, ArrayModifier } from './types.d';
 import { mergician } from 'mergician';
 import { Route } from '../route';
@@ -13,12 +13,12 @@ import callback from './callback';
 
 export default function Binder<
     Middleware              extends Middleware.MiddlewareObject,
-    BodyInputSchema         extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
-    QueryInputSchema        extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
-    HeadersInputSchema      extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
-    CookieInputSchema       extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
-    BodyOutputSchema        extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
-    HeadersOutputSchema     extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+    BodyInputSchema         extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'body'>>,
+    QueryInputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'query'>>,
+    HeadersInputSchema      extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'headers'>>,
+    CookieInputSchema       extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'cookies'>>,
+    BodyOutputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'body'>>,
+    HeadersOutputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'headers'>>,
     DynamicURLInputSchema   extends string,
 
 

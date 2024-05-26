@@ -1,6 +1,6 @@
 import { GenericError } from '../error';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { Schema } from '../schema/types';
+import { SchemaNamespace } from '../schema/types';
 import { Cookie } from '../binder/types';
 
 
@@ -25,9 +25,9 @@ export namespace Middleware {
         protected _on_valid: (result: ReturnType) => ReturnType;
 
         protected validate_input<
-            SchemaType extends Schema.SchemaType,
-            SchemaInput extends Schema.SchemaLike<any>,
-            ReturnType extends Schema.ParsedSchema<SchemaInput["_schema"]>
+            SchemaType extends SchemaNamespace.SchemaType,
+            SchemaInput extends SchemaNamespace.SchemaLike<any>,
+            ReturnType extends SchemaNamespace.ParsedSchema<SchemaInput["_schema"]>
         >(
             input_type: SchemaType,
             schema: SchemaInput
@@ -89,9 +89,9 @@ export namespace Middleware {
 
 
     export type MiddlewareConfiguration<
-        BodySchema extends Schema.InputSchema,
-        QuerySchema extends Schema.FlatSchema,
-        HeaderSchema extends Schema.FlatSchema,
+        BodySchema extends SchemaNamespace.InputSchema,
+        QuerySchema extends SchemaNamespace.FlatSchema,
+        HeaderSchema extends SchemaNamespace.FlatSchema,
     > = {
         body: BodySchema;
         query: QuerySchema;
@@ -101,9 +101,9 @@ export namespace Middleware {
 
     
     export type OptionalMiddlewareConfiguration<
-        BodySchema extends Schema.InputSchema,
-        QuerySchema extends Schema.FlatSchema,
-        HeaderSchema extends Schema.FlatSchema,
+        BodySchema extends SchemaNamespace.InputSchema,
+        QuerySchema extends SchemaNamespace.FlatSchema,
+        HeaderSchema extends SchemaNamespace.FlatSchema,
     > = {
         body?: BodySchema;
         query?: QuerySchema;

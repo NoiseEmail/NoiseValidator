@@ -4,7 +4,7 @@ import { GenericError } from '../error';
 import { MiddlewareGenericError, MissingMiddlewareHandlerError } from "./errors";
 import { log_header } from "../logger/log";
 import { log_types } from "../logger/type_enum";
-import { Schema } from "../schema/types.d";
+import { SchemaNamespace } from "../schema/types.d";
 import { Log } from "..";
 import Cookie from 'cookie';
 
@@ -86,8 +86,8 @@ export default class GenericMiddleware<
      * @returns {Promise<ReturnType>} A promise that resolves when the input has been validated
      */
     protected validate_input = async <
-        SchemaType extends Schema.SchemaType,
-        SchemaInput extends Schema.SchemaLike<any>,
+        SchemaType extends SchemaNamespace.SchemaType,
+        SchemaInput extends SchemaNamespace.SchemaLike<any>,
         ReturnType extends SchemaInput["_return_type"]
     >(
         input_type: SchemaType,

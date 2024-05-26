@@ -8,7 +8,7 @@ import {
 } from "./types";
 import { GenericError } from "../error";
 import { FailedToValidateInputError } from "./errors";
-import { Schema } from "../schema/types";
+import { SchemaNamespace } from "../schema/types";
 import { mergician } from "mergician";
 import { Log } from "..";
 import { Middleware } from "../middleware/types";
@@ -30,10 +30,10 @@ import CookieParser from 'cookie';
  * @returns {Promise<BinderInputValidatorResult>} - The validated inputs
  */
 const validate_binder_request = async <
-    BodySchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
-    QuerySchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
-    HeadersSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
-    CookiesSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
+    BodySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'body'>>,
+    QuerySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'query'>>,
+    HeadersSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'headers'>>,
+    CookiesSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'cookies'>>,
     DynamicURLSchema extends string,
     ValidatedType = BinderInputValidatorResult<BodySchema, QuerySchema, HeadersSchema, CookiesSchema, DynamicURLSchema>
 >(
@@ -102,7 +102,7 @@ const validate_binder_output = async (
 
 const validate_input = async (
     data: unknown,
-    schema: Schema.SchemaLike<Schema.SchemaType>
+    schema: SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType>
 ): Promise<unknown> => {
     try {
         return await schema.validate(data);
@@ -120,14 +120,14 @@ const validate_input = async (
 
 const validate_inputs = async (
     data: unknown,
-    schemas: Array<Schema.SchemaLike<Schema.SchemaType>>
+    schemas: Array<SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType>>
 ): Promise<object> => {
     try {
         // -- Attempt to validate the data against all the schemas
         const result = await Promise.all(schemas.map(async (
             schema: 
-                Schema.SchemaLike<Schema.SchemaType, 
-                Schema.ParsedSchema<Schema.InputSchema>>
+                SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType, 
+                SchemaNamespace.ParsedSchema<SchemaNamespace.InputSchema>>
         ) => {
             const validated = await validate_input(data, schema);
             if (validated instanceof GenericError) throw validated;

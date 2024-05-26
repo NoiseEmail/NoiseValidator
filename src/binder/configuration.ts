@@ -1,6 +1,6 @@
 import { Middleware } from "../middleware/types";
 import { BinderNamespace } from "./types.d";
-import { Schema } from "../schema/types.d";
+import { SchemaNamespace } from "../schema/types.d";
 
 
 
@@ -20,10 +20,10 @@ export default {
     }
 } as BinderNamespace.Configuration<
     Middleware.MiddlewareObject,
-    Array<Schema.SchemaLike<'body'>>,
-    Array<Schema.SchemaLike<'query'>>,
-    Array<Schema.SchemaLike<'headers'>>,
-    Array<Schema.SchemaLike<'cookies'>>,
-    Array<Schema.SchemaLike<'body'>>,
-    Array<Schema.SchemaLike<'headers'>>
+    Array<SchemaNamespace.SchemaLike<'body'>>,
+    Array<SchemaNamespace.SchemaLike<'query'>>,
+    Array<SchemaNamespace.SchemaLike<'headers'>>,
+    Array<SchemaNamespace.SchemaLike<'cookies'>>,
+    Array<SchemaNamespace.SchemaLike<'body'>>,
+    Array<SchemaNamespace.SchemaLike<'headers'>>
 >;
