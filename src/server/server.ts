@@ -1,9 +1,10 @@
-import Fastify, {FastifyInstance} from 'fastify';
-import { OptionalServerConfiguration, ServerConfiguration } from './types';
-
-import { DefualtServerConfiguration } from '.';
+import Fastify, { FastifyInstance } from 'fastify';
 import Log from '@logger';
+import { DefualtServerConfiguration } from '.';
+import { OptionalServerConfiguration, ServerConfiguration } from './types';
 import { Route } from '@route';
+
+
 
 export default class Server {
 

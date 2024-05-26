@@ -1,13 +1,14 @@
+import callback from './callback';
+import validate from './validate';
 import { ArrayModifier, BinderNamespace, SchemaOutput, Schemas } from './types.d';
-
 import { DefaultBinderConfiguration } from './';
 import { HTTPMethods } from 'fastify';
+import { mergician } from 'mergician';
 import { MiddlewareNamespace } from '@middleware/types';
 import { Route } from '@route';
 import { SchemaNamespace } from '@schema/types';
-import callback from './callback';
-import { mergician } from 'mergician';
-import validate from './validate';
+
+
 
 export default function Binder<
     // -- Input types

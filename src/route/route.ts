@@ -1,10 +1,11 @@
+import { BinderNamespace } from '@binder/types';
 import { FastifyInstance, FastifyReply, HTTPMethods } from 'fastify';
+import { GenericError } from '@error';
 import { Log, MethodNotAvailableError, NoRouteHandlerError, Server } from '..';
 import { OptionalRouteConfiguration, RouteConfiguration } from './types.d';
-
-import { BinderNamespace } from '@binder/types';
-import { GenericError } from '@error';
 import { randomUUID } from 'crypto';
+
+
 
 export default class Route<
     UrlPath extends string

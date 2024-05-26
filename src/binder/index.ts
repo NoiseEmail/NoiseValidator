@@ -1,11 +1,11 @@
 import * as BinderTypes from './types.d';
-
-import { BinderFailedToExecuteError, FailedToValidateInputError } from './errors';
-import { cookie, create_set_cookie_header, serialize_cookie } from './cookie';
-
 import Binder from './binder';
 import DefaultBinderConfiguration from './configuration';
+import { BinderFailedToExecuteError, FailedToValidateInputError } from './errors';
+import { cookie, create_set_cookie_header, serialize_cookie } from './cookie';
 import { validate_binder_request } from './validators';
+
+
 
 export {
     Binder,

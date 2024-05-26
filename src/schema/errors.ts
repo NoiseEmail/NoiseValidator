@@ -1,5 +1,7 @@
 import { GenericError } from '@error';
 
+
+
 class MissingHandlerError extends GenericError {
     public constructor(
         message: string,

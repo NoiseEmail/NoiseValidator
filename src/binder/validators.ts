@@ -1,13 +1,14 @@
-import { ArrayModifier, BinderInputValidatorResult, BinderOutputValidatorResult, Cookie, Schemas } from './types';
-import { FastifyReply, FastifyRequest } from 'fastify';
-
 import CookieParser from 'cookie';
-import { FailedToValidateInputError } from './errors';
-import { GenericError } from '@error';
 import Log from '@logger';
+import { ArrayModifier, BinderInputValidatorResult, BinderOutputValidatorResult, Cookie, Schemas } from './types';
+import { FailedToValidateInputError } from './errors';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { GenericError } from '@error';
+import { mergician } from 'mergician';
 import { MiddlewareNamespace } from '@middleware/types';
 import { SchemaNamespace } from '@schema/types';
-import { mergician } from 'mergician';
+
+
 
 /**
  * @name validate_binder_request

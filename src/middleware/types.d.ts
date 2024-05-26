@@ -1,7 +1,7 @@
-import { GenericError } from '@error';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { SchemaNamespace } from '@schema/types';
 import { Cookie } from '@binder/types';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { GenericError } from '@error';
+import { SchemaNamespace } from '@schema/types';
 
 
 

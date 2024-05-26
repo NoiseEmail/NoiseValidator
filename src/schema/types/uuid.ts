@@ -1,12 +1,8 @@
 import GenericType from '../generic';
-import { 
-    v1 as uuidv1,
-    v4 as uuidv4, 
-
-    validate, 
-    version 
-} from 'uuid';
 import { GenericError } from '@error';
+import { v1 as uuidv1, v4 as uuidv4, validate, version } from 'uuid';
+
+
 
 export default class Uuid extends GenericType<string, string> {
     protected create_new_if_invalid = false;

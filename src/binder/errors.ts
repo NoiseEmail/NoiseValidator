@@ -1,5 +1,7 @@
 import { GenericError } from '@error';
 
+
+
 class BinderFailedToExecuteError extends GenericError {
     public constructor(
         binder_name: string,

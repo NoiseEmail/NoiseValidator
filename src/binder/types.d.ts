@@ -1,7 +1,7 @@
-import { MiddlewareNamespace } from '@middleware/types';
 import { DynamicURL } from '@route/types';
-import { SchemaNamespace } from '@schema/types';
 import { FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
+import { MiddlewareNamespace } from '@middleware/types';
+import { SchemaNamespace } from '@schema/types';
 
 
 

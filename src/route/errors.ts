@@ -1,5 +1,7 @@
 import { GenericError } from '@error';
 
+
+
 class MethodNotAvailableError extends GenericError {
     public constructor(
         method: string

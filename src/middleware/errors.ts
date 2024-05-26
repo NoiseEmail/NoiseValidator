@@ -1,5 +1,7 @@
 import { GenericError } from '@error';
 
+
+
 class MiddlewareGenericError extends GenericError {
     public constructor(
         message: string,

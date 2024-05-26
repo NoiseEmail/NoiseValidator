@@ -1,5 +1,7 @@
-import { GenericError } from '@error';
 import GenericType from '../generic';
+import { GenericError } from '@error';
+
+
 
 export default class String extends GenericType<string, string> {
 
