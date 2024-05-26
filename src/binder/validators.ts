@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import {
+    ArrayModifier,
     BinderInputValidatorResult,
     BinderOutputValidatorResult,
     Cookie,
@@ -15,32 +16,49 @@ import CookieParser from 'cookie';
 
 
 
-const validate_binder_request = async (
+/**
+ * @name validate_binder_request
+ * 
+ * @description Validates the request inputs, it requires the schema types to be passed in
+ * so that we can achive type safety later on, this function wont return unless all the
+ * schemas PASSED validation, if anything causes validation to fail, an error will be thrown.
+ * 
+ * @param {FastifyRequest} fastify_request - The request object from Fastify
+ * @param {Schemas} schemas - The schemas to validate the request against
+ * @param {string} name - The name of the binder
+ * 
+ * @returns {Promise<BinderInputValidatorResult>} - The validated inputs
+ */
+const validate_binder_request = async <
+    BodySchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    QuerySchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
+    HeadersSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+    CookiesSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
+    DynamicURLSchema extends string,
+    ValidatedType = BinderInputValidatorResult<BodySchema, QuerySchema, HeadersSchema, CookiesSchema, DynamicURLSchema>
+>(
     fastify_request: FastifyRequest,
     schemas: Schemas,
     name: string
-): Promise<BinderInputValidatorResult> => {
+): Promise<ValidatedType> => {
     try {
         const body = validate_inputs(fastify_request?.body, schemas?.input?.body);
         const query = validate_inputs(fastify_request?.query, schemas?.input?.query);
         const headers = validate_inputs(fastify_request?.headers, schemas?.input?.headers);
-
-        // -- Parse the cookies
         const cookie_string = fastify_request?.headers?.cookie ?? '';
         const cookie_object = CookieParser.parse(cookie_string);
         const cookies = validate_inputs(cookie_object, schemas?.input?.cookies);
-
-
-        // -- We are entrusting the url to be parsed by Fastify
         const url = fastify_request?.params;
 
+
+        
         return { 
             body: await body, 
             query: await query, 
             headers: await headers, 
             cookies: await cookies,
             url
-        }
+        } as ValidatedType;
     }
 
     catch (unknown_error) {

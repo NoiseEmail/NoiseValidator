@@ -2,30 +2,33 @@ import { HTTPMethods } from 'fastify';
 import { DefaultBinderConfiguration } from '.';
 import { Middleware } from '../middleware/types.d';
 import { Schema } from '../schema/types.d';
-import { ExtractOutputSchemaTypes, Schemas, BinderNamespace, ArrayModifier } from './types.d';
+import { SchemaOutput, BinderNamespace, Schemas, ArrayModifier } from './types.d';
 import { mergician } from 'mergician';
 import { Route } from '../route';
+
 import validate from './validate';
 import callback from './callback';
 
 
 
 export default function Binder<
-    Middleware extends Middleware.MiddlewareObject,
-    BodyInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
-    QueryInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
-    HeadersInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
-    CookieInputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
-    BodyOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
-    HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
-    DynamicURLInputSchema extends string,
-    BinderCallbackReturn extends ExtractOutputSchemaTypes<BodyOutputSchema, HeadersOutputSchema>,
+    Middleware              extends Middleware.MiddlewareObject,
+    BodyInputSchema         extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    QueryInputSchema        extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
+    HeadersInputSchema      extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+    CookieInputSchema       extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
+    BodyOutputSchema        extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    HeadersOutputSchema     extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+    DynamicURLInputSchema   extends string,
+
+
+    BinderCallbackReturn extends SchemaOutput.Types<BodyOutputSchema, HeadersOutputSchema>,
     CallbackObject extends BinderNamespace.CallbackObject<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, DynamicURLInputSchema>,
 >(
     route: Route<DynamicURLInputSchema>,
     method: HTTPMethods,
     configuration: BinderNamespace.OptionalConfiguration<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, BodyOutputSchema, HeadersOutputSchema>,
-    binder_callback: (data: CallbackObject) => BinderCallbackReturn | Promise<BinderCallbackReturn>
+    binder_callback: (data: CallbackObject) => void
 ): void {
     
 
@@ -50,7 +53,7 @@ export default function Binder<
     configuration = mergician(DefaultBinderConfiguration, configuration);
     route.add_binder({
         callback: async (data) => callback(binder_callback, data, route, schemas),
-        validate: async (request, reply) => validate(route, method, schemas, request, reply, configuration),
+        validate: async (request, reply) => validate(route, schemas, request, reply, configuration),
         method
     });
 }

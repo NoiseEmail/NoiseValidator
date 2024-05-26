@@ -1,11 +1,10 @@
 import { Middleware } from "../middleware/types";
-import { OptionalBinderConfiguration } from "./types.d";
+import { BinderNamespace } from "./types.d";
 import { Schema } from "../schema/types.d";
 
 
 
 export default {
-    method: 'GET',
     middleware: {},
     schemas: {
         input: {
@@ -19,14 +18,12 @@ export default {
             headers: [],
         }
     }
-} as OptionalBinderConfiguration<
+} as BinderNamespace.Configuration<
     Middleware.MiddlewareObject,
     Array<Schema.SchemaLike<'body'>>,
     Array<Schema.SchemaLike<'query'>>,
     Array<Schema.SchemaLike<'headers'>>,
     Array<Schema.SchemaLike<'cookies'>>,
-
-
     Array<Schema.SchemaLike<'body'>>,
     Array<Schema.SchemaLike<'headers'>>
 >;

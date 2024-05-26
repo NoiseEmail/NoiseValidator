@@ -1,9 +1,9 @@
-import { CookieOptions, CookieShape } from "./types";
-import Cookie from 'cookie';
+import { Cookie } from "./types";
+import CookieParser from 'cookie';
 
 
 
-const default_cookie_options: Partial<CookieOptions> = {
+const default_cookie_options: Partial<Cookie.Options> = {
     domain: undefined,
     expires: undefined,
     http_only: false,
@@ -23,14 +23,14 @@ const default_cookie_options: Partial<CookieOptions> = {
  * `CookieShape` type.
  * 
  * @param {string} value - The value of the cookie, it will be url encoded
- * @param {Partial<CookieOptions>} options - The options for the cookie
+ * @param {Partial<Cookie.Options>} options - The options for the cookie
  * 
- * @returns {CookieShape} - The cookie
+ * @returns {Cookie.Shape} - The cookie
  */
 const cookie = (
     value: string, 
-    options: Partial<CookieOptions> = {}
-): CookieShape => {
+    options: Partial<Cookie.Options> = {}
+): Cookie.Shape => {
     return {
         value,
         options: {
@@ -47,14 +47,14 @@ const cookie = (
  * @description Serializes a cookie object into a string
  * 
  * @param {string} name - The name of the cookie
- * @param {CookieShape} cookie - The cookie to serialize
+ * @param {Cookie.Shape} cookie - The cookie to serialize
  * 
  * @returns {string} - The serialized cookie
  */
 const serialize_cookie = (
     name: string,
-    cookie: CookieShape
-): string => Cookie.serialize(name, cookie.value, {
+    cookie: Cookie.Shape
+): string => CookieParser.serialize(name, cookie.value, {
     domain: cookie.options.domain,
     expires: cookie.options.expires,
     httpOnly: cookie.options.http_only,
@@ -72,12 +72,12 @@ const serialize_cookie = (
  * @description Creates the data for the `Set-Cookie` header
  * given an map of cookies
  * 
- * @param {Map<string, CookieShape>} cookies - The cookies to serialize
+ * @param {Map<string, Cookie.Shape>} cookies - The cookies to serialize
  * 
  * @returns {string} - The `Set-Cookie` header
  */
 const create_set_cookie_header = (
-    cookies: Map<string, CookieShape>
+    cookies: Map<string, Cookie.Shape>
 ): string => {
     const cookie_strings: string[] = [];
     cookies.forEach((cookie, name) => cookie_strings.push(serialize_cookie(name,cookie)));
@@ -89,5 +89,6 @@ const create_set_cookie_header = (
 export {
     cookie,
     serialize_cookie,
-    create_set_cookie_header
-}
+    create_set_cookie_header,
+    default_cookie_options
+};

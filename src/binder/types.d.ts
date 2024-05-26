@@ -13,12 +13,18 @@ import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
  * Everything is unknow as we don't know what the
  * user passed in.
  */
-export type BinderInputValidatorResult = {
-    body: unknown,
-    query: unknown,
-    headers: unknown,
-    cookies: unknown,
-    url: unknown
+export type BinderInputValidatorResult<
+    BodySchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+    QuerySchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
+    HeadersSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+    CookiesSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>,
+    DynamicURLSchema extends string
+> = {
+    body: ObjectModifier.DeepMergeReturnTypes<BodySchema>,
+    query: ObjectModifier.DeepMergeReturnTypes<QuerySchema>,
+    headers: ObjectModifier.DeepMergeReturnTypes<HeadersSchema>,
+    cookies: ObjectModifier.DeepMergeReturnTypes<CookiesSchema>,
+    url: DynamicURL.Extracted<DynamicURLSchema>
 };
 
 
@@ -83,6 +89,33 @@ export type ExtractOutputSchemaTypes<
 
 
 
+export namespace SchemaOutput {
+
+    export type Extract<
+        RawSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>
+    > = ExtractOutputSchemaHelperMerge<ExtractOutputSchemaHelperSplit<ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<RawSchema>>>>
+
+
+
+    export type Types<
+        OutputBodySchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>,
+        OutputHeadersSchema extends ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+        MergedBodySchema = Extract<OutputBodySchema>,
+        MergedHeadersSchema = Extract<OutputHeadersSchema>,
+    > =
+        (MergedBodySchema extends object ? { body: MergedBodySchema } : {}) &
+        (MergedHeadersSchema extends object ? { headers: MergedHeadersSchema } : {})
+
+
+
+    export type GenericTypes = {
+        body: any,
+        headers: any
+    }
+}
+
+
+
 
 
 
@@ -125,13 +158,22 @@ export namespace BinderNamespace {
 
 
 
-    export type GenericConfiguration = {
-        middleware: Middleware.MiddlewareObject,
-        schemas: {
-            input: { body: Schema.SchemaLike<'body'>, query: Schema.SchemaLike<'query'>, headers: Schema.SchemaLike<'headers'>, cookies: Schema.SchemaLike<'cookies'> },
-            output: { body: Schema.SchemaLike<'body'>, headers: Schema.SchemaLike<'headers'> }
+    export type GenericOptionalConfiguration = {
+        middleware?: Middleware.MiddlewareObject,
+        schemas?: {
+            input?: { 
+                body?: ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>, 
+                query?: ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'query'>>,
+                headers?: ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>,
+                cookies?: ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'cookies'>>
+            },
+            output?: { 
+                body?: ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'body'>>, 
+                headers?: ArrayModifier.ArrayOrSingle<Schema.SchemaLike<'headers'>>
+            }
         }
     };
+    
 
 
 
@@ -160,12 +202,16 @@ export namespace BinderNamespace {
 
     export type GenericCallbackObject = CallbackObject<
         Middleware.MiddlewareObject,
-        Schema.SchemaLike<'body'>,
-        Schema.SchemaLike<'query'>,
-        Schema.SchemaLike<'headers'>,
-        Schema.SchemaLike<'cookies'>,
+        ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
+        ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
+        ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
+        ArrayModifier.ArrayOrSingle<Schema.SchemaLike<Schema.SchemaType>>,
         string
     >;
+
+
+    
+    export type Callback<Data> = (data: Data) => SchemaOutput.GenericTypes | Promise<SchemaOutput.GenericTypes>;
 
 
 

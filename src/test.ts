@@ -21,7 +21,7 @@ const other_schema = new nv.Schema.Body({
 
 nv.Binder(test_route, 'POST', {
     schemas: {
-        input: { body: [test_sechema, other_schema] }
+        input: { body: [test_sechema] }
     }
 }, async (req) => {
     console.log('Hello world!', req.body);

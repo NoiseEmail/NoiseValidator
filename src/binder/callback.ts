@@ -3,18 +3,14 @@ import { GenericError } from '../error';
 import { Log, Route } from '..';
 import { validate_binder_output } from './validators';
 import { create_set_cookie_header } from './cookie';
-import { ExtractOutputSchemaTypes, Schemas, BinderNamespace } from './types';
+import { ExtractOutputSchemaTypes, Schemas, BinderNamespace, SchemaOutput } from './types';
 
 
 
-const callback = async <
-    CallbackObject extends BinderNamespace.GenericCallbackObject,
-    OutputObject extends ExtractOutputSchemaTypes,
-    InputRoute extends Route<any>
->(  
-    callback: (data: CallbackObject) => OutputObject | Promise<OutputObject>,
-    data: CallbackObject,
-    route: InputRoute,
+const callback = async (  
+    callback: (data: BinderNamespace.GenericCallbackObject) => void,
+    data: BinderNamespace.GenericCallbackObject,
+    route: Route<any>,
     schemas: Schemas,
 ) => {
     try {
