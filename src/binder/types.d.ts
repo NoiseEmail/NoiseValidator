@@ -13,10 +13,10 @@ import { FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
  * user passed in.
  */
 export type BinderInputValidatorResult<
-    BodySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    QuerySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    HeadersSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    CookiesSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+    BodySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+    QuerySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+    HeadersSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+    CookiesSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
     DynamicURLSchema extends string
 > = {
     body: ObjectModifier.MergeSchemas<BodySchema>,
@@ -48,15 +48,15 @@ export type BinderOutputValidatorResult = {
  */
 export type Schemas = {
     input: {
-        body: Array<SchemaNamespace.SchemaLike>,
-        query: Array<SchemaNamespace.SchemaLike>,
-        headers: Array<SchemaNamespace.SchemaLike>,
-        cookies: Array<SchemaNamespace.SchemaLike>
+        body: Array<SchemaNamespace.NestedSchemaLike>,
+        query: Array<SchemaNamespace.FlatSchmeaLike>,
+        headers: Array<SchemaNamespace.FlatSchmeaLike>,
+        cookies: Array<SchemaNamespace.FlatSchmeaLike>
     },
 
     output: {
-        body: Array<SchemaNamespace.SchemaLike>,
-        headers: Array<SchemaNamespace.SchemaLike>,
+        body: Array<SchemaNamespace.NestedSchemaLike>,
+        headers: Array<SchemaNamespace.FlatSchmeaLike>,
     }
 };
 
@@ -68,14 +68,26 @@ export namespace SchemaOutput {
         Schemas extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>
     > = ObjectModifier.SplitObject<ObjectModifier.MergeSchemas<Schemas>>;
 
+    
     /**
      * Takes the output from split and checks if the object is optional,
      * eg if there are no keys in 'required' then the object is optional.
      */
+    // export type IsOptional<
+    //     SplitObject extends { required: object, optional: object }
+    // > = ObjectModifier.HasKeys<SplitObject['required']> extends true ? false : true;
     export type IsOptional<
         SplitObject extends { required: object, optional: object }
-    > = ObjectModifier.GetOutputType<SplitObject['required'], SplitObject['optional']>;
+    > =     
+        // -- If the required object has keys, then the object is not optional
+        ObjectModifier.HasKeys<SplitObject['required']> extends true ? 'required' : (
 
+            // -- If the optional object has keys, then the object is optional
+            ObjectModifier.HasKeys<SplitObject['optional']> extends true ? 'optional' : 
+
+            // -- Else, the object is not needed
+            'not_needed'
+        )
 
 
     /**
@@ -90,8 +102,14 @@ export namespace SchemaOutput {
         BodyIsOptional = IsOptional<Split<OutputBodySchema>>,
         HeadersIsOptional = IsOptional<Split<OutputHeadersSchema>>
     > =
-        (BodyIsOptional extends object ? { body: ObjectModifier.MergeSchemas<OutputBodySchema> } : {}) &
-        (HeadersIsOptional extends object ? { headers: ObjectModifier.MergeSchemas<OutputHeadersSchema> } : {});
+        (BodyIsOptional extends 'required' ? 
+            { body: ObjectModifier.MergeSchemas<OutputBodySchema> } : 
+            (BodyIsOptional extends 'optional' ? { body?: ObjectModifier.MergeSchemas<OutputBodySchema> } : {})
+        ) &
+        (HeadersIsOptional extends 'required' ? 
+            { headers: ObjectModifier.MergeSchemas<OutputHeadersSchema> } : 
+            (HeadersIsOptional extends 'optional' ? { headers?: ObjectModifier.MergeSchemas<OutputHeadersSchema> } : {})
+        );
 
 
 
@@ -106,13 +124,13 @@ export namespace SchemaOutput {
 export namespace BinderNamespace {
 
     export type Configuration<
-        Middleware extends Middleware.MiddlewareObject,
-        BodyInputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        QueryInputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        HeadersInputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        CookieInputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        BodyOutputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>
+        Middleware          extends Middleware.MiddlewareObject,
+        BodyInputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+        QueryInputSchema    extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        HeadersInputSchema  extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        CookieInputSchema   extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        BodyOutputSchema    extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+        HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>
     > = {
         middleware: Middleware,
         schemas: {
@@ -124,13 +142,13 @@ export namespace BinderNamespace {
 
 
     export type OptionalConfiguration<
-        Middleware extends Middleware.MiddlewareObject,
-        BodyInputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        QueryInputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        HeadersInputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        CookieInputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        BodyOutputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>
+        Middleware          extends Middleware.MiddlewareObject,
+        BodyInputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+        QueryInputSchema    extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        HeadersInputSchema  extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        CookieInputSchema   extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        BodyOutputSchema    extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+        HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>
     > = {
         middleware?: Middleware,
         schemas?: {
@@ -145,14 +163,14 @@ export namespace BinderNamespace {
         middleware?: Middleware.MiddlewareObject,
         schemas?: {
             input?: { 
-                body?: ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>, 
-                query?: ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-                headers?: ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-                cookies?: ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>
+                body?: ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>, 
+                query?: ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+                headers?: ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+                cookies?: ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>
             },
             output?: { 
-                body?: ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>, 
-                headers?: ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>
+                body?: ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>, 
+                headers?: ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>
             }
         }
     };
@@ -162,10 +180,10 @@ export namespace BinderNamespace {
 
     export type CallbackObject<
         Middleware  extends Middleware.MiddlewareObject,
-        Body        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        Query       extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        Headers     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        Cookies     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+        Body        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+        Query       extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        Headers     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        Cookies     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
         DynamicURLString extends string
     > = {
         middleware: Middleware.ParsedMiddlewareObject<Middleware>,
@@ -185,10 +203,10 @@ export namespace BinderNamespace {
 
     export type GenericCallbackObject = CallbackObject<
         Middleware.MiddlewareObject,
-        ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-        ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+        ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+        ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+        ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
         string
     >;
 
@@ -212,6 +230,7 @@ export namespace BinderNamespace {
 
 
 export namespace ArrayModifier {
+    
     /**
      * If the input is an array, return true, otherwise return false
      */
@@ -237,6 +256,8 @@ export namespace ArrayModifier {
 
 export namespace ObjectModifier {
 
+    export type HasKeys<T> = T extends {} ? keyof T extends never ? false : true : false;
+    
     export type UnionToIntersection<U> = 
         (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;        
 

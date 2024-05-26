@@ -9,19 +9,19 @@ import { Log } from '..';
 
 
 export default class Schema<
-    InputSchema extends SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema,
-    ReturnableData = SchemaNamespace.ParsedSchema<InputSchema>
+    NestedSchema extends SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema,
+    ReturnableData = SchemaNamespace.ParsedSchema<NestedSchema>
 > {
     public readonly _return_type: ReturnableData = {} as ReturnableData;    
     public readonly _type: 'body' | 'query' | 'headers' | 'cookies' = 'body';
     public readonly _id: string = randomUUID();
-    public readonly _schema: InputSchema;
+    public readonly _schema: NestedSchema;
 
     private _log_stacks: Array<LogObject>;
     private _errors: Array<GenericError>;
 
     public constructor(
-        schema: InputSchema
+        schema: NestedSchema
     ) {
         this._schema = schema;
         this._log_stacks = [];
@@ -31,7 +31,7 @@ export default class Schema<
 
     
     public static _execute_validator = async (
-        instance: Schema<SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema, unknown>,
+        instance: Schema<SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema, unknown>,
         value: SchemaNamespace.GenericTypeConstructor,
         new_data: unknown,
         new_path: string[]
@@ -81,8 +81,8 @@ export default class Schema<
 
 
     public static _validate_value = async (
-        instance: Schema<SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema, unknown>,
-        validator: SchemaNamespace.InputSchema | SchemaNamespace.GenericTypeConstructor<unknown, unknown>,
+        instance: Schema<SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema, unknown>,
+        validator: SchemaNamespace.NestedSchema | SchemaNamespace.GenericTypeConstructor<unknown, unknown>,
         new_data: unknown,
         new_path: string[]
     ): Promise<unknown> => {
@@ -141,8 +141,8 @@ export default class Schema<
 
 
     public static _walk_object = async <ReturnableData>(
-        instance: Schema<SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema, unknown>,
-        schema: SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema,
+        instance: Schema<SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema, unknown>,
+        schema: SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema,
         data: unknown,
         path: string[] = [],
         result: { [type: string]: unknown } = {}
@@ -202,8 +202,8 @@ export default class Schema<
 
     
     public static _walk = async <ReturnableData>(
-        instance: Schema<SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema, unknown>,
-        schema: SchemaNamespace.InputSchema | SchemaNamespace.FlatSchema,
+        instance: Schema<SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema, unknown>,
+        schema: SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema,
         data: unknown,
         path: string[] = [],
         result: { [key: string]: unknown } = {}
@@ -252,7 +252,7 @@ export default class Schema<
 
 
     public get id(): string { return this._id; };
-    public get schema(): InputSchema { return this._schema; };
+    public get schema(): NestedSchema { return this._schema; };
     public set_log_stack = (log_stack: Array<LogObject>) => this._log_stacks.push(...log_stack);
     public get log_stack(): Array<LogObject> { return this._log_stacks; };
 

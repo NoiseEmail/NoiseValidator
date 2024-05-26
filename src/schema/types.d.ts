@@ -51,37 +51,45 @@ export namespace SchemaNamespace {
         validated?: ReturnType
     ) => GenericTypeLike<ReturnType, InputShape>;
 
-    export type InputSchema = {
-        [key: string]: GenericTypeConstructor<any> | InputSchema;
+    export type NestedSchema = {
+        [key: string]: GenericTypeConstructor<any> | NestedSchema;
     }
 
     export type FlatSchema = {
         [key: string]: GenericTypeConstructor<any> ;
     };
 
-
-    
-    /**
-     * Simple type that checks if an object contains other
-     * objects, eg { key: { key: 'value' } }
-     */
-    export type ObjectIsNested<T> = {
-        [K in keyof T]: T[K] extends object ? true : false;
-    } extends { [key: string]: true } ? true : false;
-
-
-
     
 
     export class SchemaLike<
-        ReturnableData = ParsedSchema<InputSchema>
+        ReturnableData = ParsedSchema<NestedSchema | FlatSchema>
     > {
         public readonly _return_type: ReturnableData;
         public readonly _id: string;
-        public readonly _schema: InputSchema | FlatSchema;
-        private constructor(schema: InputSchema);
+        public readonly _schema: NestedSchema | FlatSchema;
+        private constructor(schema: NestedSchema);
         public validate: (data: unknown) => Promise<ReturnableData>;
-    }        
+    }
+
+    export class FlatSchmeaLike<
+        ReturnableData = ParsedSchema<NestedSchema | FlatSchema>
+    > {
+        public readonly _return_type: ReturnableData;
+        public readonly _id: string;
+        public readonly _schema: FlatSchema;
+        private constructor(schema: FlatSchema);
+        public validate: (data: unknown) => Promise<ReturnableData>;
+    }
+
+    export class NestedSchemaLike<
+        ReturnableData = ParsedSchema<NestedSchema | FlatSchema>
+    > {
+        public readonly _return_type: ReturnableData;
+        public readonly _id: string;
+        public readonly _schema: NestedSchema ;
+        private constructor(schema: NestedSchema);
+        public validate: (data: unknown) => Promise<ReturnableData>;
+    }
 
 
 
@@ -112,13 +120,13 @@ export namespace SchemaNamespace {
      *   key2: { id: string, name: string }
      * }
      */
-    export type ParsedSchema<Schema extends InputSchema | FlatSchema> = {
+    export type ParsedSchema<Schema extends NestedSchema | FlatSchema> = {
         [K in keyof Schema]: 
             // -- Run it trough the ExtractParamaterReturnType to get the return type
             Schema[K] extends GenericTypeConstructor<any>
                 ? ExtractParamaterReturnType<Schema[K]>
             
-            : Schema[K] extends InputSchema
+            : Schema[K] extends NestedSchema
                 ? ParsedSchema<Schema[K]>
             
             : never;
@@ -145,12 +153,12 @@ export namespace SchemaNamespace {
      * This will be used later on to create a client side validation schema for the
      * frontend, so we can validate the input before sending it to the server.
      */
-    export type ParsedInputSchema<Schema extends InputSchema | FlatSchema> = {
+    export type ParsedInputSchema<Schema extends NestedSchema | FlatSchema> = {
         [K in keyof Schema]: 
             Schema[K] extends GenericTypeConstructor<any>
                 ? ExtractParamaterInputShape<Schema[K]>
             
-            : Schema[K] extends InputSchema
+            : Schema[K] extends NestedSchema
                 ? ParsedSchema<Schema[K]>
             
             : never;

@@ -20,10 +20,10 @@ export default {
     }
 } as BinderNamespace.Configuration<
     Middleware.MiddlewareObject,
-    Array<SchemaNamespace.SchemaLike>,
-    Array<SchemaNamespace.SchemaLike>,
-    Array<SchemaNamespace.SchemaLike>,
-    Array<SchemaNamespace.SchemaLike>,
-    Array<SchemaNamespace.SchemaLike>,
-    Array<SchemaNamespace.SchemaLike>
+    Array<SchemaNamespace.NestedSchemaLike>,
+    Array<SchemaNamespace.FlatSchmeaLike>,
+    Array<SchemaNamespace.FlatSchmeaLike>,
+    Array<SchemaNamespace.FlatSchmeaLike>,
+    Array<SchemaNamespace.NestedSchemaLike>,
+    Array<SchemaNamespace.FlatSchmeaLike>
 >;

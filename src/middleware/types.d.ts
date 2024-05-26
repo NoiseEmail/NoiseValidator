@@ -89,7 +89,7 @@ export namespace Middleware {
 
 
     export type MiddlewareConfiguration<
-        BodySchema extends SchemaNamespace.InputSchema,
+        BodySchema extends SchemaNamespace.NestedSchema,
         QuerySchema extends SchemaNamespace.FlatSchema,
         HeaderSchema extends SchemaNamespace.FlatSchema,
     > = {
@@ -101,7 +101,7 @@ export namespace Middleware {
 
     
     export type OptionalMiddlewareConfiguration<
-        BodySchema extends SchemaNamespace.InputSchema,
+        BodySchema extends SchemaNamespace.NestedSchema,
         QuerySchema extends SchemaNamespace.FlatSchema,
         HeaderSchema extends SchemaNamespace.FlatSchema,
     > = {

@@ -26,38 +26,33 @@ const test_sechema = new nv.Schema({
 
 const other_schema = new nv.Schema({
     age: nv.Optional(nv.Number),
+    name: nv.String,
     // test: {
-    //     name: nv.String
+    //     name: nv.String // -- Resolve 'never' if we have to clashing types,
+    //      make it a union type
     
     // }
 });
 
 nv.Binder(test_route, 'POST', {
     schemas: {
-        input: { body: [test_sechema, other_schema] },
-        output: { body: [test_sechema, other_schema] }
-    }
-}, async (req) => {
-    console.log('Hello world!', req.body.test.age);
-
-    return {
-        body: {
-            age: undefined,
-            name: 'John',
-            test: {
-                name: 1,
-                age: 'a'
-            }
+        input: { 
+            // query: other_schema
+        },
+        output: {
         }
     }
+}, async (req) => {
+    console.log('Hello world!');
+
+
 });
 
 await rerver.start();
 console.log('Server started...', rerver.address);
 
-// let test: nv.BinderTypes.SchemaOutput.Types<typeof other_schema, typeof test_sechema> = {
-
-// }
+// let test: nv.BinderTypes.SchemaOutput.IsOptional<nv.BinderTypes.SchemaOutput.Split<
+// {}>>
 
 // -- Test the rerver
 console.log('Testing the rerver...');

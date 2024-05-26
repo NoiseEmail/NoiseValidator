@@ -30,10 +30,10 @@ import CookieParser from 'cookie';
  * @returns {Promise<BinderInputValidatorResult>} - The validated inputs
  */
 const validate_binder_request = async <
-    BodySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    QuerySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    HeadersSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    CookiesSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+    BodySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+    QuerySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+    HeadersSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+    CookiesSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
     DynamicURLSchema extends string,
     ValidatedType = BinderInputValidatorResult<BodySchema, QuerySchema, HeadersSchema, CookiesSchema, DynamicURLSchema>
 >(
@@ -125,7 +125,7 @@ const validate_inputs = async (
     try {
         // -- Attempt to validate the data against all the schemas
         const result = await Promise.all(schemas.map(async (
-            schema: SchemaNamespace.SchemaLike<SchemaNamespace.ParsedSchema<SchemaNamespace.InputSchema>>
+            schema: SchemaNamespace.SchemaLike<SchemaNamespace.ParsedSchema<SchemaNamespace.NestedSchema>>
         ) => {
             const validated = await validate_input(data, schema);
             if (validated instanceof GenericError) throw validated;

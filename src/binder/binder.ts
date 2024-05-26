@@ -15,18 +15,18 @@ export default function Binder<
     // -- Input types
     Middleware              extends Middleware.MiddlewareObject,
     DynamicURLInputSchema   extends string,
-    BodyInputSchema         extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    QueryInputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    HeadersInputSchema      extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    CookieInputSchema       extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+    BodyInputSchema         extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+    QueryInputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+    HeadersInputSchema      extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
+    CookieInputSchema       extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
 
     // -- Output types
-    BodyOutputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
-    HeadersOutputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>,
+    BodyOutputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
+    HeadersOutputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
 
     // -- Callback types
-    BinderCallbackReturn extends SchemaOutput.Types<BodyOutputSchema, HeadersOutputSchema>,
-    CallbackObject extends BinderNamespace.CallbackObject<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, DynamicURLInputSchema>,
+    BinderCallbackReturn    extends SchemaOutput.Types<BodyOutputSchema, HeadersOutputSchema>,
+    CallbackObject          extends BinderNamespace.CallbackObject<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, DynamicURLInputSchema>,
 >(
     route: Route<DynamicURLInputSchema>,
     method: HTTPMethods,
