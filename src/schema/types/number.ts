@@ -6,6 +6,8 @@ import { GenericError } from '@error';
 export default class NumberType extends GenericType<number, number> {
 
     protected mode: 'integer' | 'float' | 'both' = 'both';
+    protected min: number = Number.MIN_SAFE_INTEGER;
+    protected max: number = Number.MAX_SAFE_INTEGER;
 
 
     /**
@@ -47,8 +49,8 @@ export default class NumberType extends GenericType<number, number> {
             if (isNaN(parsed)) throw new Error('Invalid number');
             
             // -- Parsed has to be under the maximum value of a number
-            if (parsed > Number.MAX_SAFE_INTEGER) 
-                throw new Error('Number exceeds maximum value');
+            if (parsed > this.max) throw new Error('Number is too large');
+            if (parsed < this.min) throw new Error('Number is too small');
 
             return parsed;
         }
@@ -63,9 +65,13 @@ export default class NumberType extends GenericType<number, number> {
 
 
     public static config = (configuration: {
-        mode: 'integer' | 'float' | 'both'
+        mode?: 'integer' | 'float' | 'both',
+        min?: number,
+        max?: number
     }): typeof GenericType<number, number> => (class extends NumberType {
         protected mode: 'integer' | 'float' | 'both' = configuration.mode || 'both';
+        protected min = configuration.min || Number.MIN_SAFE_INTEGER;
+        protected max = configuration.max || Number.MAX_SAFE_INTEGER;
     }) 
 
 
