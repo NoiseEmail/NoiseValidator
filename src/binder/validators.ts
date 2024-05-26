@@ -120,11 +120,7 @@ const validate_inputs = async (
         // -- Attempt to validate the data against all the schemas
         const result = await Promise.all(schemas.map(async (
             schema: SchemaNamespace.SchemaLike<SchemaNamespace.ParsedSchema<SchemaNamespace.NestedSchema>>
-        ) => {
-            const validated = await validate_input(data, schema);
-            if (validated instanceof GenericError) throw validated;
-            return validated;
-        }));
+        ) => await validate_input(data, schema)));
 
 
         // -- Cant merge a single or no objects

@@ -98,13 +98,16 @@ export class GenericError extends Error {
 
     public static from_unknown = (
         error: unknown,
-        else_error: GenericError = new GenericError('An unknown error occurred', 500)
+        else_error: GenericError = new GenericError('An unknown error occurred', 500),
+        hint?: string
     ): GenericError => {
-        if (error instanceof GenericError) return error;
-        if (error instanceof Error) return GenericError.from_error(error);
-        if (typeof error === 'string') return new GenericError(error, 500);
+        let return_error = else_error;
+        if (error instanceof GenericError) return_error = error;
+        if (error instanceof Error) return_error = GenericError.from_error(error);
+        if (typeof error === 'string') return_error = new GenericError(error, 500);
 
-        else_error.data = { input: error };
-        return else_error;
+        return_error.data = { input: error };
+        if (hint) return_error.hint = hint;
+        return return_error;
     };
 }

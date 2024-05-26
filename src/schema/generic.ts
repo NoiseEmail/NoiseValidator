@@ -184,7 +184,7 @@ export default class GenericType<
             // -- Convert anything to a generic error
             const error = GenericError.from_unknown(
                 unknown_error,
-                new InvalidInputError(`An error occurred trying to execute ${this.constructor.name}`)
+                new InvalidInputError(`An error occurred trying to execute ${this.constructor.name}`),
             );  
 
             // -- Log and return the error
