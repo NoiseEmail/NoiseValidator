@@ -73,9 +73,6 @@ export namespace SchemaOutput {
      * Takes the output from split and checks if the object is optional,
      * eg if there are no keys in 'required' then the object is optional.
      */
-    // export type IsOptional<
-    //     SplitObject extends { required: object, optional: object }
-    // > = ObjectModifier.HasKeys<SplitObject['required']> extends true ? false : true;
     export type IsOptional<
         SplitObject extends { required: object, optional: object }
     > =     
