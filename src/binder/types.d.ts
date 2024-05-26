@@ -19,10 +19,10 @@ export type BinderInputValidatorResult<
     CookiesSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'cookies'>>,
     DynamicURLSchema extends string
 > = {
-    body: ObjectModifier.DeepMergeReturnTypes<BodySchema>,
-    query: ObjectModifier.DeepMergeReturnTypes<QuerySchema>,
-    headers: ObjectModifier.DeepMergeReturnTypes<HeadersSchema>,
-    cookies: ObjectModifier.DeepMergeReturnTypes<CookiesSchema>,
+    body: ObjectModifier.MergeSchemas<BodySchema>,
+    query: ObjectModifier.MergeSchemas<QuerySchema>,
+    headers: ObjectModifier.MergeSchemas<HeadersSchema>,
+    cookies: ObjectModifier.MergeSchemas<CookiesSchema>,
     url: DynamicURL.Extracted<DynamicURLSchema>
 };
 
@@ -62,48 +62,36 @@ export type Schemas = {
 
 
 
+export namespace SchemaOutput { 
+
+    export type Split<
+        Schemas extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType>>
+    > = ObjectModifier.SplitObject<ObjectModifier.MergeSchemas<Schemas>>;
+
+    /**
+     * Takes the output from split and checks if the object is optional,
+     * eg if there are no keys in 'required' then the object is optional.
+     */
+    export type IsOptional<
+        SplitObject extends { required: object, optional: object }
+    > = ObjectModifier.GetOutputType<SplitObject['required'], SplitObject['optional']>;
 
 
 
-type ExtractOutputSchemaHelperSplit<DeepMergeReturnTypes extends object
-> = ObjectModifier.SplitObject<ObjectModifier.GetOutputType<DeepMergeReturnTypes, DeepMergeReturnTypes>>
-
-type ExtractOutputSchemaHelperMerge<SplitObject extends { required: object, optional: object }
-> = SplitObject['required'] & SplitObject['optional'];
-
-export type ExtractOutputSchema<
-    RawSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType>>
-> = ExtractOutputSchemaHelperMerge<ExtractOutputSchemaHelperSplit<ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<RawSchema>>>>
-
-
-
-export type ExtractOutputSchemaTypes<
-    OutputBodySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'body'>>,
-    OutputHeadersSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'headers'>>,
-    MergedBodySchema = ExtractOutputSchema<OutputBodySchema>,
-    MergedHeadersSchema = ExtractOutputSchema<OutputHeadersSchema>,
-> = 
-    (MergedBodySchema extends object ? { body: MergedBodySchema } : {}) &
-    (MergedHeadersSchema extends object ? { headers: MergedHeadersSchema } : {})
-
-
-
-export namespace SchemaOutput {
-
-    export type Extract<
-        RawSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType>>
-    > = ExtractOutputSchemaHelperMerge<ExtractOutputSchemaHelperSplit<ObjectModifier.DeepMergeReturnTypes<ArrayModifier.CreateArray<RawSchema>>>>
-
-
-
+    /**
+     * This function extracts the return types from the schemas and returns an
+     * object that only contains the keys needed, eg if body had no schemas, or
+     * all data in the body was optional, the body key would also be optional.
+     */
     export type Types<
         OutputBodySchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'body'>>,
         OutputHeadersSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'headers'>>,
-        MergedBodySchema = Extract<OutputBodySchema>,
-        MergedHeadersSchema = Extract<OutputHeadersSchema>,
+
+        BodyIsOptional = IsOptional<Split<OutputBodySchema>>,
+        HeadersIsOptional = IsOptional<Split<OutputHeadersSchema>>
     > =
-        (MergedBodySchema extends object ? { body: MergedBodySchema } : {}) &
-        (MergedHeadersSchema extends object ? { headers: MergedHeadersSchema } : {})
+        (BodyIsOptional extends object ? { body: ObjectModifier.MergeSchemas<OutputBodySchema> } : {}) &
+        (HeadersIsOptional extends object ? { headers: ObjectModifier.MergeSchemas<OutputHeadersSchema> } : {});
 
 
 
@@ -112,10 +100,6 @@ export namespace SchemaOutput {
         headers: any
     }
 }
-
-
-
-
 
 
 
@@ -185,10 +169,10 @@ export namespace BinderNamespace {
         DynamicURLString extends string
     > = {
         middleware: Middleware.ParsedMiddlewareObject<Middleware>,
-        body:       ObjectModifier.DeepMergeReturnTypes<Body>,
-        query:      ObjectModifier.DeepMergeReturnTypes<Query>,
-        headers:    ObjectModifier.DeepMergeReturnTypes<Headers>,
-        cookies:    ObjectModifier.DeepMergeReturnTypes<Cookies>,
+        body:       ObjectModifier.MergeSchemas<Body>,
+        query:      ObjectModifier.MergeSchemas<Query>,
+        headers:    ObjectModifier.MergeSchemas<Headers>,
+        cookies:    ObjectModifier.MergeSchemas<Cookies>,
         url:        DynamicURL.Extracted<DynamicURLString>,
 
         cookie_objects: Map<string, Cookie.Shape>,
@@ -252,44 +236,13 @@ export namespace ArrayModifier {
 
 
 export namespace ObjectModifier {
-    // export type DeepMerge<T> = { [K in keyof T]: T[K] extends object ? DeepMerge<T[K]> : T[K]; };
-    
-    // export type MergedObjectType<T> = DeepMerge<UnionToIntersection<T[number]>>;
-      
-    // export type UnionToIntersection<U> = 
-    //     (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
-      
 
+    export type UnionToIntersection<U> = 
+        (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;        
 
-    // /**
-    //  * Given an array of schemas, it will return the return type of the
-    //  * schemas
-    //  * 
-    //  * IN: { a: { _return_type: string }, b: { _return_type: number } }
-    //  * OUT: { a: string, b: number }
-    //  */
-    // export type DeepMergeReturnTypes<
-    //     Schemas extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType>>
-    // > = MergedObjectType<DeepReturnArrayTypes<ArrayModifier.CreateArray<Schemas>>>;
-        
-
-
-
-    // export type DeepReturnType<T extends SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType>> = T extends { _return_type: infer R } ? R : never;
-
-    // export type DeepReturnArrayTypes<T extends Array<SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType>>> = { [K in keyof T]: DeepReturnType<T[K]> };
-
-
-
-    /**
-     * So, the goal is to take an array of SchemaLike objects and return 
-     * the return type of the schemas.
-     * 
-     * We need to extract the return type of each schema and merge them.
-     * 
-     * we will achieve this by creating a 'reduce' function, instead of
-     * a 'all at once' function.
-     */
+    export type MergeSchemas<
+        Schemas extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<SchemaNamespace.SchemaType>>
+    > = UnionToIntersection<SchemaNamespace.ReturnType<ArrayModifier.CreateArray<Schemas>[number]>>
     
     
 

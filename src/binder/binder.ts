@@ -12,16 +12,19 @@ import callback from './callback';
 
 
 export default function Binder<
+    // -- Input types
     Middleware              extends Middleware.MiddlewareObject,
+    DynamicURLInputSchema   extends string,
     BodyInputSchema         extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'body'>>,
     QueryInputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'query'>>,
     HeadersInputSchema      extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'headers'>>,
     CookieInputSchema       extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'cookies'>>,
+
+    // -- Output types
     BodyOutputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'body'>>,
     HeadersOutputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike<'headers'>>,
-    DynamicURLInputSchema   extends string,
 
-
+    // -- Callback types
     BinderCallbackReturn extends SchemaOutput.Types<BodyOutputSchema, HeadersOutputSchema>,
     CallbackObject extends BinderNamespace.CallbackObject<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, DynamicURLInputSchema>,
 >(

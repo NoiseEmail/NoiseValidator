@@ -15,37 +15,47 @@ const test_sechema = new nv.Schema.Body({
     name: nv.String,
     test: {
         name: nv.Number,
-        age: nv.Number
+        age: nv.String
         
     }
 
 });
 
 const other_schema = new nv.Schema.Body({
-    age: nv.Number,
-    test: {
-        name: nv.String
+    age: nv.Optional(nv.Number),
+    // test: {
+    //     name: nv.String
     
-    }
+    // }
 });
 
 nv.Binder(test_route, 'POST', {
     schemas: {
-        input: { body: [test_sechema, other_schema] }
+        input: { body: [test_sechema, other_schema] },
+        output: { body: [test_sechema, other_schema] }
     }
 }, async (req) => {
-    console.log('Hello world!', req.body.test.name);
+    console.log('Hello world!', req.body.test.age);
+
+    return {
+        body: {
+            age: undefined,
+            name: 'John',
+            test: {
+                name: 1,
+                age: 'a'
+            }
+        }
+    }
 });
 
 test_route.add_to_router();
 await router.start({ port: 3000 });
 
 
-let test: nv.SchemaTypes.Schema.ExtractParamaterReturnType<typeof test_sechema> = {
-    
-    name: 'John',
-    
-}
+// let test: nv.BinderTypes.SchemaOutput.Types<typeof other_schema, typeof test_sechema> = {
+
+// }
 
 // -- Test the router
 console.log('Testing the router...');
