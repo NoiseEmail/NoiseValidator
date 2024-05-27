@@ -62,8 +62,7 @@ nv.Binder(test_route, 'POST', {
         }
     }
 }, async (req) => {
-    req.middleware.test
-    console.log('Hello world!');
+    console.log('Hello world! DATA', req.middleware.test);
 
 });
 

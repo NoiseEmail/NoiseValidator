@@ -93,7 +93,7 @@ export namespace MiddlewareNamespace {
 
 
     export type MiddlewareObject = {
-        [key: string]: GenericMiddlewareConstructor<any>;
+        [key: string]: GenericMiddlewareConstructor<unknown>;
     }
 
 

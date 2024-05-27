@@ -25,7 +25,7 @@ const validate = async <
 
     // -- Return the validated data
     return {
-        middleware: middleware.middleware,
+        middleware: Object.fromEntries(middleware.middleware),
         cookie_objects: middleware.cookies,
         body: validated.body,
         query: validated.query,

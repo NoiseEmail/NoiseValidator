@@ -199,7 +199,7 @@ export namespace BinderNamespace {
 
 
     export type GenericCallbackObject = CallbackObject<
-    MiddlewareNamespace.MiddlewareObject,
+        MiddlewareNamespace.MiddlewareObject,
         ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
         ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
         ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
