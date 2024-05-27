@@ -14,12 +14,9 @@
     "url": "git+https://github.com/NoiseEmail/NoiseValidator.git"
   },
   "scripts": {
-    "node": "node --experimental-specifier-resolution=node --loader ts-node/esm ./src/test.ts",
-    "node:dev": "nodemon --exec \"npm run node\" --watch ./src --ext ts",
-    "node:test": "",
-    "bun": "RUNTIME=BUN bun ./src/test.ts",
-    "bun:dev": "RUNTIME=BUN nodemon --exec \"npm run bun\" --watch ./src --ext ts",
-    "lint": " bunx eslint -c ./eslint.config.js ./src/"
+    "dev": "bun ./src/test.ts",
+    "dev:watch": "nodemon --exec \"npm run dev\" --watch ./src --ext ts",
+    "x509": "bash ./certs.sh"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.9",

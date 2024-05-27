@@ -3,7 +3,7 @@ import Log from '@logger';
 import { DefualtServerConfiguration } from '.';
 import { OptionalServerConfiguration, ServerConfiguration } from './types';
 import { Route } from '@route';
-
+import { Http2SecureServer } from 'http2';
 
 
 export default class Server {

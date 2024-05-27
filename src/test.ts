@@ -22,16 +22,16 @@ class TestMiddleware extends nv.GenericMiddleware<{
         test: string;
     }> => {
         console.log('Hello world!');
-        this.set_header('test', 'Hello world!');
-        // this.set_cookie('test', {
-        //     value: 'Hello world!',
-        //     options: {
-        //         same_site: 'strict',
-        //         domain: 'localhost',
-        //         secure: true
-        //     }
+        this.set_header('test', 'Hello world!', 'on-both');
+        this.set_cookie('test', {
+            value: 'Hello world!',
+            options: {
+                same_site: 'strict',
+                domain: 'localhost',
+                secure: true
+            }
         
-        // });
+        });
 
          this.set_cookie('test2', {
             value: 'Hello world!',
@@ -92,14 +92,10 @@ console.log('Server started...', rerver.address);
 // -- Test the rerver
 console.log('Testing the rerver...');
 const response = await fetch(rerver.address + '/1/test?name=test', {
-    method: 'POST',
+    method: 'GET',
     headers: {
-        'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ 
-        name: 'test',
 
-    }),
 });
 
 const data = await response.json();

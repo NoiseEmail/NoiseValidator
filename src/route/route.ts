@@ -6,6 +6,7 @@ import { OptionalRouteConfiguration, RouteConfiguration } from './types.d';
 import { randomUUID } from 'crypto';
 import { RouteHandlerExecutedError, UnkownRouteHandlerError } from './errors';
 import { MiddlewareNamespace } from '@/middleware/types';
+import { Http2SecureServer } from 'http2';
 
 
 
@@ -235,7 +236,8 @@ export default class Route<
         methods.forEach(method => fastify_instance.route({
             method: method,
             url: `${path}`,
-            handler: async (request, reply) => this._process(method, request, reply)
+            handler: async (request: FastifyRequest, reply: FastifyReply) => 
+                await this._process(method, request, reply)
         }));
 
         Log.info(`Route: ${path} has been added to the rerver`);
