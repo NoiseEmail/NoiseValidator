@@ -22,6 +22,7 @@ class TestMiddleware extends nv.GenericMiddleware<{
         test: string;
     }> => {
         console.log('Hello world!');
+        
         return {
             test: 'Hello world!'
         }

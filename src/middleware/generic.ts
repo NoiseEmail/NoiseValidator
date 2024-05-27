@@ -16,7 +16,6 @@ export default class GenericMiddleware<
     public readonly _return_type: ReturnType = {} as ReturnType;
     protected readonly _request_object: RequestObject;
     protected _validated: ReturnType | undefined;
-
     private _returned: boolean = false;
     private _executed: boolean = false;
 
