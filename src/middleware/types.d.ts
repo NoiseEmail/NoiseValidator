@@ -49,10 +49,10 @@ export namespace MiddlewareNamespace {
         body: BodySchema;
         query: QuerySchema;
 
-        set_header: (key: string, value: string) => void;
+        set_header: (key: string, value: string, on?: ExecuteOn) => void;
         remove_header: (key: string) => void;
 
-        set_cookie: (name: string, cookie: Cookie.Shape) => void;
+        set_cookie: (name: string, cookie: Cookie.Shape, on?: ExecuteOn) => void;
         remove_cookie: (name: string) => void;
 
         fastify: {
@@ -88,7 +88,7 @@ export namespace MiddlewareNamespace {
 
 
     export type AnyMiddlewareRequestObject = 
-        MiddlewareRequestObject<any, any, any>;
+        MiddlewareRequestObject<unknown, unknown, unknown>;
 
 
 

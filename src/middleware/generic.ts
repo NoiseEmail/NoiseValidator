@@ -5,6 +5,7 @@ import { MiddlewareValidationError } from './errors';
 import { MiddlewareGenericError, MissingMiddlewareHandlerError } from './errors';
 import { MiddlewareNamespace } from './types.d';
 import { SchemaNamespace } from '@schema/types';
+import { Cookie } from '@/binder/types';
 
 
 export default class GenericMiddleware<
@@ -36,10 +37,23 @@ export default class GenericMiddleware<
      */
     protected handler = (input_value: unknown): Promise<ReturnType> => { 
         throw new MissingMiddlewareHandlerError(`Handler not implemented for ${this.constructor.name}`); }
+
+    protected set_header = (key: string, value: string, on: MiddlewareNamespace.ExecuteOn = 'on-success') => this._request_object.set_header(key, value, on);
+    protected remove_header = (key: string) => this._request_object.remove_header(key);
+
+    protected set_cookie = (name: string, cookie: Cookie.Shape, on: MiddlewareNamespace.ExecuteOn = 'on-success') => this._request_object.set_cookie(name, cookie, on);
+    protected remove_cookie: (name: string) => void = (name: string) => this._request_object.remove_cookie(name);
+
+    protected get body() { return this._request_object.body; }
+    protected get query() { return this._request_object.query; }
+    protected get headers() { return this._request_object.headers; }
+    protected get request() { return this._request_object.fastify.request; }
+    protected get reply() { return this._request_object.fastify.reply; }
     
 
 
-
+    // -- NOTE: This function is meant to be called by the extending class
+    //          so that it can validate its own inputs.
     /**
      * @name validate_input
      * @description This function validates incoming data against
@@ -82,7 +96,6 @@ export default class GenericMiddleware<
 
 
 
-
     /**
      * @name name
      * @description The name of the class, this is used to identify the class
@@ -100,9 +113,6 @@ export default class GenericMiddleware<
     */
     // deepcode ignore StaticAccessThis: Cant access on an inherited class
     public static get name(): string { return this.name; }
-
-
-
 
 
 
