@@ -24,7 +24,6 @@ const build_middleware_object = (
         body: fastify.request.body,
         query: fastify.request.query,
         fastify,
-        middleware: {},
 
         set_header: (
             key: string, 
@@ -70,7 +69,6 @@ const one = async (
     success: boolean,
     cookies: Map<string, Cookie.Shape>,
     headers: Map<string, string>,
-    error?: GenericError | unknown
 }> => {
     try {
 
@@ -81,37 +79,11 @@ const one = async (
         const request_object = build_middleware_object(cookie_map, header_map, fastify);
 
         // -- Variables to store the result
-        let final_result: GenericError | unknown = null;
-        let callback_already_called = false;
-        const instance = new middleware(request_object, 
-            // -- On invalid
-            (error: GenericError) => {
-                if (callback_already_called) 
-                    return Log.warn(`${middleware.name} - Middleware invalid callback called multiple times`)
-                callback_already_called = true;
-                final_result = error;
-            },
-
-            // -- On valid
-            (data: unknown) => {
-                if (callback_already_called) 
-                    return Log.warn(`${middleware.name} - Middleware valid callback called multiple times`)
-                callback_already_called = true;
-                final_result = data;
-            }
-        ); 
-
-        // -- Execute the middleware
-        await instance.execute();
-        if (!callback_already_called) throw new Error('Middleware did not call the callback');
+        const instance = new middleware(request_object); 
+        const data = await instance.execute();
 
         // -- Return the result
-        return {
-            data: final_result,
-            success: callback_already_called,
-            error: final_result,
-            ...build_return_object(!(final_result instanceof Error), cookie_map, header_map)
-        };
+        return { ...build_return_object(data.success, cookie_map, header_map), ...data };
     }
 
     catch (unknown_error) {
@@ -148,7 +120,7 @@ const many = async (
         result.cookies.forEach((value, key) => cookies.set(key, value));
 
         // -- If the middleware failed, throw an error
-        if (!result.success) throw result.error;
+        if (!result.success) throw result.data;
         middleware.set(key, result.data);
     });
 

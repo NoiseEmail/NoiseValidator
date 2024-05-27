@@ -14,15 +14,8 @@ export namespace MiddlewareNamespace {
     > {
         _return_type: ReturnType;
 
-        public constructor(
-            _request_object: RequestObject,
-            _on_invalid: (error: GenericError) => void,
-            _on_valid: (result: ReturnType) => ReturnType
-        );
-
+        public constructor(request_object: RequestObject);
         protected _request_object: RequestObject;
-        protected _on_invalid: (error: GenericError) => void;
-        protected _on_valid: (result: ReturnType) => ReturnType;
 
         protected validate_input<
             SchemaType extends 'body' | 'query' | 'headers' | 'cookies',
@@ -33,20 +26,8 @@ export namespace MiddlewareNamespace {
             schema: SchemaInput
         ): Promise<ReturnType>
 
-        protected handler: (
-            input_value: RequestObject,
-            invalid: (error: GenericError) => void,
-            valid: (result: ReturnType) => void
-        ) => 
-            ReturnType | 
-            Promise<ReturnType> |  
-            Promise<GenericError> | 
-            GenericError;
-
-        protected invalid: (error: GenericError | string) => GenericError;
-        protected valid: (result: ReturnType) => void;
-
-        public execute: () => Promise<void>;
+        protected handler: (input_value: RequestObject) => Promise<ReturnType>
+        public execute: () => Promise<{ data: ReturnType, success: true } | { data: GenericError, success: false }>;
         public static get name(): string;
     }
 
@@ -55,24 +36,18 @@ export namespace MiddlewareNamespace {
     export type GenericMiddlewareConstructor<
         ReturnType extends unknown = unknown,
         RequestObject extends AnyMiddlewareRequestObject = AnyMiddlewareRequestObject
-    > = new (
-        _request_object: RequestObject,
-        _on_invalid: (error: GenericError) => void,
-        _on_valid: (result: ReturnType) => ReturnType
-    ) => GenericMiddlewareLike<ReturnType, RequestObject>;
+    > = new (request_object: RequestObject) => GenericMiddlewareLike<ReturnType, RequestObject>;
 
 
 
     export type MiddlewareRequestObject<
         BodySchema, 
         QuerySchema, 
-        HeaderSchema,
-        MiddlewareData
+        HeaderSchema
     > = {
         headers: HeaderSchema;
         body: BodySchema;
         query: QuerySchema;
-        middleware: MiddlewareData;
 
         set_header: (key: string, value: string) => void;
         remove_header: (key: string) => void;
@@ -113,7 +88,7 @@ export namespace MiddlewareNamespace {
 
 
     export type AnyMiddlewareRequestObject = 
-        MiddlewareRequestObject<any, any, any, any>;
+        MiddlewareRequestObject<any, any, any>;
 
 
 
