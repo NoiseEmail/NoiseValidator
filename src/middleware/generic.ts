@@ -1,8 +1,6 @@
 import CookieParser from 'cookie';
 import Log from '@logger';
 import { GenericError } from '@error';
-import { log_header, log_types } from '@logger';
-import { LogFunctions, LogObject, LogType } from '@logger/types';
 import { MiddlewareGenericError, MissingMiddlewareHandlerError } from './errors';
 import { MiddlewareNamespace } from './types.d';
 import { SchemaNamespace } from '@schema/types';
@@ -16,7 +14,6 @@ export default class GenericMiddleware<
     public readonly _return_type: ReturnType = {} as ReturnType;
     protected _validated: ReturnType | undefined;
     private _executed: boolean = false;
-    private _log_stack: Array<LogObject> = [];
 
 
     protected readonly _request_object: RequestObject;
@@ -133,60 +130,6 @@ export default class GenericMiddleware<
 
 
 
-    /**
-     * @name log_stack
-     * @description A stack of log messages that have been generated
-     * during the execution of the handler
-     * 
-     * NOTE: If the handler has not been executed, or if the handler
-     * is still executing, the log stack will either be empty or incomplete
-     * 
-     * @type {Array<LogObject>}
-     */
-    public get log_stack(): Array<LogObject> { return this._log_stack; }
-
-
-
-    /**
-     * @name log
-     * @description A set of logging functions, these will be stored
-     * within the instance and can be used to log information about the
-     * specific instance / request, etc.
-     * 
-     * Really handy for tracing down specifc user errors, etc.
-     * 
-     * @type {LogFunctions}
-     * @example
-     * 
-     * // -- Log a debug message
-     * this.log.debug('This is a debug message');
-     * 
-     * // -- Throw an error, this will casue the request to fail
-     * this.log.throw('This is an error message');
-     */
-    public log: LogFunctions = {
-        debug: (...args: unknown[]) => this._log(log_types.DEBUG, ...args),
-        error: (...args: unknown[]) => this._log(log_types.ERROR, ...args),
-        info: (...args: unknown[]) => this._log(log_types.INFO, ...args),
-        warn: (...args: unknown[]) => this._log(log_types.WARN, ...args),
-        throw: (...args: unknown[]) => this._log(log_types.THROW, ...args),
-    }
-
-
-
-    private _log = (
-        log_type: LogType,
-        ...args: unknown[]
-    ) => {
-        const header = log_header(log_type);
-        this._log_stack.push({
-            args,
-            type: log_type,
-            header,
-            date: new Date(),
-            group: this.constructor.name
-        });
-    };
 
 
 
@@ -198,7 +141,7 @@ export default class GenericMiddleware<
      * @returns {Promise<void>} A promise that resolves when the handler has been executed
      */
     public execute = async () => {
-        if (this._executed) return this.log.error('This instance has already been executed');
+        if (this._executed) return Log.error('This instance has already been executed');
         this._executed = true;
         
         try { 
@@ -209,12 +152,12 @@ export default class GenericMiddleware<
             if (value instanceof Error) {
 
                 // -- Make sure to return a generic error not just any error
-                this.log.debug(`Schema handler failed to execute`);
+                Log.debug(`Schema handler failed to execute`);
                 const error = GenericError.from_unknown(value);
                 return this._on_invalid(error);
             }
 
-            this.log.debug(`Middleware handler executed successfully`);
+            Log.debug(`Middleware handler executed successfully`);
             this._validated = value;
             this._on_valid(value);
         }
@@ -228,7 +171,7 @@ export default class GenericMiddleware<
 
             // -- Log and return the error
             Log.debug(`An error occurred trying to execute ${this.constructor.name}: ${error.id}`);
-            this.log.error(error.serialize());
+            Log.error(error.serialize());
             this._on_invalid(error);
         }
     }  

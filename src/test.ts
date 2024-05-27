@@ -14,6 +14,23 @@ const rerver = new nv.Server({
 const test_route = new nv.Route(rerver, '/test', { api_version: '1' });
 
 
+class TestMiddleware extends nv.GenericMiddleware<{
+    test: string;
+}> {
+    
+    protected handler = async (): Promise<{
+        test: string;
+    }> => {
+        console.log('Hello world!');
+        
+        return {
+            test: 'Hello world!'
+        }
+    }
+
+}
+
+
 const test_sechema = new nv.Schema({
     name: nv.String,
     test: {
@@ -34,14 +51,18 @@ const other_schema = new nv.Schema({
 });
 
 nv.Binder(test_route, 'POST', {
+    middleware: {
+        test: TestMiddleware
+    },
     schemas: {
         input: { 
-            query: other_schema
+            body: other_schema
         },
         output: {
         }
     }
 }, async (req) => {
+    req.middleware.test
     console.log('Hello world!');
 
 });
