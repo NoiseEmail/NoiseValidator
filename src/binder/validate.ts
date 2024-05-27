@@ -2,7 +2,7 @@ import { BinderNamespace, Cookie, Schemas } from './types.d';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Route } from '@route';
 import { validate_binder_request } from '.';
-import { validate_middlewares } from './validators';
+import { Execute } from '@/middleware';
 
 
 
@@ -18,7 +18,7 @@ const validate = async <
 
     // -- Validate the request inputs
     const validated = await validate_binder_request(request, schemas, route.path);
-    const middleware = await validate_middlewares(request, reply, configuration.middleware);
+    const middleware = await Execute.many(configuration.middleware || {}, { request, reply });
 
     // -- Set the headers provided by the middleware
     middleware.headers.forEach((value, name) => reply.header(name, value));
