@@ -16,9 +16,27 @@ class NoRouteHandlerError extends GenericError {
     ) {
         super(message, 404);
     }
-}
+};
+
+class RouteHandlerExecutedError extends GenericError {
+    public constructor(
+        message: string
+    ) {
+        super(message, 500);
+    }
+};
+
+class UnkownRouteHandlerError extends GenericError {
+    public constructor(
+        message: string
+    ) {
+        super(message, 500);
+    }
+};
 
 export {
     MethodNotAvailableError,
+    RouteHandlerExecutedError,
+    UnkownRouteHandlerError,
     NoRouteHandlerError
 }

@@ -1,9 +1,11 @@
-import { BinderNamespace } from '@binder/types';
+import { BinderNamespace, Cookie } from '@binder/types';
 import { FastifyInstance, FastifyReply, HTTPMethods } from 'fastify';
 import { GenericError } from '@error';
 import { Log, MethodNotAvailableError, NoRouteHandlerError, Server } from '..';
 import { OptionalRouteConfiguration, RouteConfiguration } from './types.d';
 import { randomUUID } from 'crypto';
+import { RouteHandlerExecutedError, UnkownRouteHandlerError } from './errors';
+import { MiddlewareNamespace } from '@/middleware/types';
 
 
 
@@ -58,34 +60,6 @@ export default class Route<
             ...Route.defualt_configuration,
             ...configuration
         };
-    }
-    
-
-
-    /**
-     * @name send_exception
-     * @description Sends an exception to the client, formatted as a JSON object
-     * use this to send exceptions to the client, as it will be in a
-     * consistent format
-     * 
-     * @param {FastifyReply} reply - The fastify reply object
-     * @param {GenericErrorLike} error - The error to send
-     * 
-     * @returns {void} - Nothing
-     */
-    public send_exception = (
-        reply: FastifyReply,
-        error: GenericError
-    ): void => {
-        Log.debug(error.message);
-
-        // -- Check if debug is enabled, if not strip the error data
-        if (!this._rerver.configuration.debug) error.data = {};
-
-        // -- Send the error
-        reply.code(error.code).send({
-            error: error.serialize()
-        });
     };
 
 
@@ -121,6 +95,39 @@ export default class Route<
 
 
     /**
+     * @name send_exception
+     * @description Sends an exception to the client, formatted as a JSON object
+     * use this to send exceptions to the client, as it will be in a
+     * consistent format
+     * 
+     * @param {FastifyReply} reply - The fastify reply object
+     * @param {GenericErrorLike} error - The error to send
+     * 
+     * @returns {void} - Nothing
+     */
+    public send_exception = (
+        reply: FastifyReply,
+        errors: Array<GenericError>
+    ): void => {
+        if (errors.length < 1) errors.push(new GenericError('An unknown error occurred', 500));
+        const latest = errors[errors.length - 1];
+        errors.shift();
+
+        // -- Send the error
+        reply.code(latest.code).send({
+            message: latest.message,
+            id: latest.id,
+            data: latest.data,
+            hint: latest.hint,
+            type: latest.type,
+            errors: errors.map(e => e.serialize()),
+            code: latest.code
+        });
+    };
+
+
+
+    /**
      * @name _process
      * @description Processes any incoming requests and matches them
      * to any binders
@@ -134,74 +141,73 @@ export default class Route<
 
         // -- Get the binders for the method
         const binders = this._binder_map.get(method);
-        if (!binders || binders.length < 1) return this.send_exception(reply, new MethodNotAvailableError(method));
+        if (!binders || binders.length < 1) return this.send_exception(reply, [new MethodNotAvailableError(method)]);
 
         // -- Loop through the binders
-        const errors: Array<GenericError> = [];
-        let error_response: GenericError | undefined;
+        let errors: Array<GenericError> = [];
+        let error_cookies = new Map<string, Cookie.Shape>();
+        let error_headers = new Map<string, string>();
 
         for (let i = 0; i < binders.length; i++) {
 
             // -- Check if the response has been sent
-            if (reply.sent) return Log.warn(`
-                Path: ${this._path}
-                Method: ${method}
-                A response has been sent outside of the route handler
-            `);
+            if (reply.sent) throw new RouteHandlerExecutedError('A response has been sent outside of the route handler');
+            const binder = binders[i];
+            errors = [];
+            error_cookies = new Map();
+            error_headers = new Map();
+            
 
-            try {
-                // -- Get the binder
-                const binder = binders[i];
-                const validator_result = await binder.validate(request, reply);
-
-
-                // -- FAILED Schema validation
-                if (validator_result instanceof Error) {
-                    Log.debug(`Route: ${this._path} has FAILED schema validation`);
-                    const error = GenericError.from_unknown(validator_result);
-                    errors.push(error);
-                    error_response = error;
-                    continue;
-                }
-
-
-                // -- PASSED Schema validation
-                else {
-                    Log.debug(`Route: ${this._path} has PASSED schema validation`);
-                    const callback_result = await binder.callback(validator_result);
-
-
-                    // -- Check if the response is an error
-                    if (callback_result instanceof Error) {
-                        error_response = GenericError.from_unknown(callback_result);
-                        Log.debug(`Route: ${this._path} has returned an error`, error_response.id);
-                        break; // -- So we can return an error
-                    }
-
-
-                    // - If the response has been sent, break the loop
-                    else {
-                        Log.debug(`Route: ${this._path} has been processed`);
-                        return; // -- Reply has been sent
-                    }
-                }
+            // -- Execute the binder
+            let validator_result: BinderNamespace.ValidateDataReturn;
+            try { validator_result = await binder.validate(request, reply); }
+            catch (unknown_error) {
+                errors.push(GenericError.from_unknown(unknown_error));
+                Log.debug(`Route: ${this._path} has FAILED to process`);
+                continue;
             }
 
-            catch (unknown_error) {
-                const error = GenericError.from_unknown(unknown_error);
-                error_response = error;
-                Log.debug(`Route: ${this._path} has FAILED to process`, error.id);
-                errors.push(error);                      
+
+            Log.debug(`Route: ${this._path} has PASSED schema validation`);
+            switch (validator_result.success) {
+
+                // -- If the middleware has passed, execute the callback
+                //    the callback it self will handle the response
+                case true: {
+                    Log.debug(`Route: ${this._path} has PASSED middleware validation`);
+                    try { await binder.callback(validator_result); }
+                    catch (unknown_error) {
+                        errors.push(UnkownRouteHandlerError.from_unknown(unknown_error));
+                        continue;
+                    };
+
+                    // -- Exit the loop as the response has been sent
+                    return;
+                }
+
+
+                // -- Set the failed middleware cookies and headers as these were explicitly set
+                //    by the middleware to be sent regardless of the success of the middleware
+                case false: {
+                    Log.debug(`Route: ${this._path} has FAILED middleware validation`);
+                    (validator_result.middleware as MiddlewareNamespace.MiddlewareValidationMap).forEach((middleware, key) => {
+                        if (middleware.success) return;
+                        middleware.cookies.forEach((value, key) => error_cookies.set(key, value));
+                        middleware.headers.forEach((value, key) => error_headers.set(key, value));
+                        errors.push(middleware.data);
+                    });
+
+                    // -- Continue to the next binder
+                    continue;
+                }
             }
         }
 
-        // -- Send the exception with the errors if debug is enabled
-        let error = new NoRouteHandlerError('No valid handler found for this route');
-        if (error_response) error = error_response;
 
-        // -- Append the error data if debug is enabled
-        if (this._rerver.configuration.debug) errors.forEach(e => error.add_error(e));
-        this.send_exception(reply, error);
+
+        // -- This area is only reached if no valid handler is found
+        if (errors.length < 1) errors.push(new NoRouteHandlerError('No valid handler found for this route'));
+        this.send_exception(reply, errors);
     };
 
 

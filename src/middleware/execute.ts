@@ -64,12 +64,7 @@ const build_return_object = (
 const one = async (
     middleware: MiddlewareNamespace.GenericMiddlewareConstructor<unknown>,
     fastify: { request: FastifyRequest, reply: FastifyReply }
-): Promise<{
-    data: unknown,
-    success: boolean,
-    cookies: Map<string, Cookie.Shape>,
-    headers: Map<string, string>,
-}> => {
+): Promise<MiddlewareNamespace.MiddlewareValidationResult> => {
     try {
 
         // -- In the middlware youll be able to set headers and cookies
@@ -100,33 +95,32 @@ const many = async (
     middlewares: { [key: string]: MiddlewareNamespace.GenericMiddlewareConstructor<unknown> },
     fastify: { request: FastifyRequest, reply: FastifyReply }
 ): Promise<{ 
-    middleware: Map<string, unknown>,
+    data: Record<string, unknown>,
+    middleware: MiddlewareNamespace.MiddlewareValidationMap,
+    overall_success: boolean,
     cookies: Map<string, Cookie.Shape>,
     headers: Map<string, string>
 }> => {
-    const middleware: Map<string, unknown> = new Map();
-    const cookies: Map<string, Cookie.Shape> = new Map();
-    const headers: Map<string, string> = new Map();
-
-    // -- If there are no middlewares, return an empty object
-    if (!middlewares) return { middleware, cookies, headers };
+    const middleware: MiddlewareNamespace.MiddlewareValidationMap = new Map();
+    const cookie_map: Map<string, Cookie.Shape> = new Map();
+    const header_map: Map<string, string> = new Map();
+    const data: Record<string, unknown> = {};
+    if (!middlewares) return { middleware, overall_success: true, cookies: cookie_map, headers: header_map, data: {} };
+    let overall_success = true;
 
     // -- Execute all the middlewares
     const promises: Array<Promise<void>> = Object.keys(middlewares).map(async (key) => {
         const result = await one(middlewares[key], fastify);
-
-        // -- Set the cookies and header
-        result.headers.forEach((value, key) => headers.set(key, value));
-        result.cookies.forEach((value, key) => cookies.set(key, value));
-
-        // -- If the middleware failed, throw an error
-        if (!result.success) throw result.data;
-        middleware.set(key, result.data);
+        middleware.set(key, result);
+        data[key] = result.data;
+        result.cookies.forEach((value, key) => cookie_map.set(key, value));
+        result.headers.forEach((value, key) => header_map.set(key, value));
+        if (!result.success) overall_success = false;
     });
 
     // -- Wait for all the promises to resolve
     await Promise.all(promises);
-    return { middleware, cookies, headers };
+    return { middleware, overall_success, cookies: cookie_map, headers: header_map, data };
 };
 
 

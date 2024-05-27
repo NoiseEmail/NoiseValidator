@@ -208,6 +208,16 @@ export namespace BinderNamespace {
     >;
 
 
+    /**
+     * This store the return data from the `validate` function.
+     * its used as some middleware can set actions on failure
+     * etc so we need to pass their data, not just throw an error.
+     */
+    export type ValidateDataReturn = 
+        (GenericCallbackObject & { success: true }) | 
+        { middleware: MiddlewareNamespace.MiddlewareValidationMap, success: false };
+
+
     
     export type Callback<Data> = (data: Data) => SchemaOutput.GenericTypes | Promise<SchemaOutput.GenericTypes>;
 
@@ -215,7 +225,7 @@ export namespace BinderNamespace {
 
     export type MapObject = {
         callback: (data: GenericCallbackObject) => unknown | Promise<unknown>,
-        validate: (request: FastifyRequest, reply: FastifyReply) => Promise<GenericCallbackObject>,
+        validate: (request: FastifyRequest, reply: FastifyReply) => Promise<ValidateDataReturn>,
         method: HTTPMethods
     };
 

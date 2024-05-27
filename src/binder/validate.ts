@@ -14,18 +14,15 @@ const validate = async <
     request: FastifyRequest,
     reply: FastifyReply,
     configuration: BinderNamespace.GenericOptionalConfiguration
-): Promise<BinderNamespace.GenericCallbackObject> => {
+): Promise<BinderNamespace.ValidateDataReturn> => {
 
-    // -- Validate the request inputs
-    const validated = await validate_binder_request(request, schemas, route.path);
     const middleware = await Execute.many(configuration.middleware || {}, { request, reply });
-
-    // -- Set the headers provided by the middleware
-    middleware.headers.forEach((value, name) => reply.header(name, value));
+    if (!middleware.overall_success) return { ...middleware, success: false };
+    const validated = await validate_binder_request(request, schemas, route.path);
 
     // -- Return the validated data
     return {
-        middleware: Object.fromEntries(middleware.middleware),
+        middleware: middleware.data,
         cookie_objects: middleware.cookies,
         body: validated.body,
         query: validated.query,
@@ -35,6 +32,7 @@ const validate = async <
         fastify: { request, reply },
         set_cookie: (name: string, cookie: Cookie.Shape) => middleware.cookies.set(name, cookie),
         remove_cookie: (name: string) => middleware.cookies.delete(name),
+        success: true
     };
 };
 

@@ -22,6 +22,8 @@ class TestMiddleware extends nv.GenericMiddleware<{
         test: string;
     }> => {
         console.log('Hello world!');
+        this.set_header('test', 'Hello world!');
+        // throw new Error('Hello world!');
         
         return {
             test: 'Hello world!'
@@ -63,6 +65,7 @@ nv.Binder(test_route, 'POST', {
     }
 }, async (req) => {
     console.log('Hello world! DATA', req.middleware.test);
+    console.log(req.headers)
 
 });
 
@@ -87,6 +90,8 @@ const response = await fetch(rerver.address + '/1/test?name=test', {
 
 const data = await response.json();
 console.log(data);
+console.log(response.headers);
+console.log('Testing complete...');
 
 
 // -- transiton to ZED for data validation

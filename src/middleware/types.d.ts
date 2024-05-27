@@ -122,4 +122,18 @@ export namespace MiddlewareNamespace {
         'on-success' |
         'on-failure' |
         'on-both';
+
+
+
+    export type MiddlewareValidationResult = {
+        cookies: Map<string, Cookie.Shape>,
+        headers: Map<string, string>,
+    } & (
+        { success: true, data: unknown } |
+        { success: false, data: GenericError }
+    );
+
+
+
+    export type MiddlewareValidationMap = Map<string, MiddlewareValidationResult>;
 }
