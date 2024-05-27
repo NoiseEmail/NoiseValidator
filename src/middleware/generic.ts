@@ -1,4 +1,4 @@
-import Cookie from 'cookie';
+import CookieParser from 'cookie';
 import Log from '@logger';
 import { GenericError } from '@error';
 import { log_header, log_types } from '@logger';
@@ -6,7 +6,6 @@ import { LogFunctions, LogObject, LogType } from '@logger/types';
 import { MiddlewareGenericError, MissingMiddlewareHandlerError } from './errors';
 import { MiddlewareNamespace } from './types.d';
 import { SchemaNamespace } from '@schema/types';
-
 
 
 export default class GenericMiddleware<
@@ -101,7 +100,7 @@ export default class GenericMiddleware<
             case 'cookies': 
                 let raw_cookie = data = this._request_object.fastify?.request?.headers?.cookie;
                 if (!raw_cookie) raw_cookie = '';
-                data = Cookie.parse(raw_cookie);
+                data = CookieParser.parse(raw_cookie);
                 break;
 
             default: throw new GenericError(`Invalid input type: ${input_type}`, 500);
@@ -232,6 +231,5 @@ export default class GenericMiddleware<
             this.log.error(error.serialize());
             this._on_invalid(error);
         }
-    }
-    
-}
+    }  
+};

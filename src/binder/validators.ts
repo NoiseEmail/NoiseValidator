@@ -45,7 +45,6 @@ const validate_binder_request = async <
         const url = fastify_request?.params;
 
 
-        
         return { 
             body: await body, 
             query: await query, 
@@ -118,12 +117,7 @@ const validate_inputs = async (
 ): Promise<object> => {
     try {
         // -- Attempt to validate the data against all the schemas
-        const result = await Promise.all(schemas.map(async (
-            schema: SchemaNamespace.SchemaLike<SchemaNamespace.ParsedSchema<SchemaNamespace.NestedSchema>>
-        ) => await validate_input(data, schema)));
-
-
-        // -- Cant merge a single or no objects
+        const result = await Promise.all(schemas.map(async (schema) => await validate_input(data, schema)));
         if (result.length <= 1) return result[0] ?? {};
         else return mergician({}, ...result as Array<object>) as object;
     }
@@ -144,10 +138,26 @@ const execute_middleware = async (
     middleware: MiddlewareNamespace.GenericMiddlewareConstructor<unknown> 
 ): Promise<{
     data: unknown,
-    cookies: Map<string, Cookie.Shape>
+    success: boolean,
+    cookies: Map<string, Cookie.Shape>,
+    headers: Map<string, string>,
+    error?: GenericError | unknown
 }> => {
     try {
-        const cookie_map: Map<string, Cookie.Shape> = new Map();
+
+        // -- In the middlware youll be able to set headers and cookies
+        //    in 3 different ways, on failure, on success and on both
+        const cookie_map: Map<string, {
+            cookie: Cookie.Shape,
+            on: MiddlewareNamespace.ExecuteOn
+        }> = new Map();
+
+        const header_map: Map<string, {
+            value: string,
+            on: MiddlewareNamespace.ExecuteOn
+        }> = new Map();
+
+
 
         const request_object = {
             headers: fastify_request?.headers,
@@ -155,44 +165,44 @@ const execute_middleware = async (
             query: fastify_request?.query,
             middleware: {},
 
-            set_header: (key: string, value: string) => fastify_reply.header(key, value),
-            remove_header: (key: string) => fastify_reply.removeHeader(key),
+            set_header: (
+                key: string, 
+                value: string,
+                on: MiddlewareNamespace.ExecuteOn = 'on-success'
+            ) => header_map.set(key, { value, on }),
+            remove_header: (key: string) => header_map.delete(key),
 
-            set_cookie: (name: string, cookie: Cookie.Shape) => cookie_map.set(name, cookie),
+            set_cookie: (
+                name: string, 
+                cookie: Cookie.Shape,
+                on: MiddlewareNamespace.ExecuteOn = 'on-success'
+            ) => cookie_map.set(name, { cookie, on }),
             remove_cookie: (name: string) => cookie_map.delete(name),
 
-            fastify: { request: fastify_request, reply: fastify_reply }
+            fastify: {
+                request: fastify_request,
+                reply: fastify_reply
+            }
         };
 
 
 
         // -- Variables to store the result
-        let final_result: unknown;
-        let callback_called = false;
-
-
-
+        let final_result: GenericError | unknown = null;
+        let callback_already_called = false;
         const instance = new middleware(request_object, 
             // -- On invalid
             (error: GenericError) => {
-                if (callback_called) return
-                    Log.warn(middleware.name + ' - Middleware invalid callback called multiple times');
-
-                callback_called = true;
+                if (callback_already_called) return Log.warn(`${middleware.name} - Middleware invalid callback called multiple times`)
+                callback_already_called = true;
                 final_result = error;
-
-                Log.debug(`Middleware failed to execute: ${middleware.name} - ${error.message}`);
             },
 
             // -- On valid
             (data: unknown) => {
-                if (callback_called) return 
-                    Log.warn(middleware.name + ' - Middleware success callback called multiple times');
-
-                callback_called = true;
+                if (callback_already_called) return Log.warn(`${middleware.name} - Middleware valid callback called multiple times`)
+                callback_already_called = true;
                 final_result = data;
-
-                Log.debug(`Middleware successfully executed: ${middleware.name}`);
             }
         ); 
 
@@ -200,11 +210,24 @@ const execute_middleware = async (
 
         // -- Execute the middleware
         await instance.execute();
-        if (final_result instanceof Error) throw final_result;
-        if (!callback_called) throw new Error('Middleware did not call the callback');
+
+        // -- Ensure the callback was called
+        if (!callback_already_called) throw new Error('Middleware did not call the callback');
+
+        // -- Get the final headers and cookies
+        const final_header_map: Map<string, string> = new Map();
+        const final_cookie_map: Map<string, Cookie.Shape> = new Map();
+        const on = callback_already_called ? 'on-success' : 'on-failure';
+        header_map.forEach((value, key) => { if (value.on === on || value.on === 'on-both') final_header_map.set(key, value.value); });
+        cookie_map.forEach((value, key) => { if (value.on === on || value.on === 'on-both') final_cookie_map.set(key, value.cookie); });
+
+        // -- Return the result
         return {
             data: final_result,
-            cookies: cookie_map
+            cookies: final_cookie_map,
+            headers: final_header_map,
+            success: callback_already_called,
+            error: final_result
         };
     }
 
@@ -223,37 +246,34 @@ const validate_middlewares = async (
     fastify_reply: FastifyReply,
     middlewares?: { [key: string]: MiddlewareNamespace.GenericMiddlewareConstructor<unknown> }
 ): Promise<{ 
-    middleware: { [key: string]: unknown },
-    cookies: Map<string, Cookie.Shape>
+    middleware: Map<string, unknown>,
+    cookies: Map<string, Cookie.Shape>,
+    headers: Map<string, string>
 }> => {
     try {   
+        const middleware: Map<string, unknown> = new Map();
+        const cookies: Map<string, Cookie.Shape> = new Map();
+        const headers: Map<string, string> = new Map();
 
         // -- If there are no middlewares, return an empty object
-        if (!middlewares) return { middleware: {}, cookies: new Map<string, Cookie.Shape>() };
-        const middleware_data: { [key: string]: unknown } = {};
-        const middleware_cookies: Map<string, Cookie.Shape> = new Map<string, Cookie.Shape>();
-
-
+        if (!middlewares) return { middleware, cookies, headers };
 
         // -- Execute all the middlewares
         const promises: Array<Promise<void>> = Object.keys(middlewares).map(async (key) => {
-            
-            const middleware = middlewares[key];
-            const result = await execute_middleware(fastify_request, fastify_reply, middleware);
-            if (result instanceof Error) throw result;
+            const result = await execute_middleware(fastify_request, fastify_reply, middlewares[key]);
 
-            middleware_data[key] = result.data;
-            result.cookies.forEach((value, key) => middleware_cookies.set(key, value));
+            // -- Set the cookies and header
+            result.headers.forEach((value, key) => headers.set(key, value));
+            result.cookies.forEach((value, key) => cookies.set(key, value));
+
+            // -- If the middleware failed, throw an error
+            if (!result.success) throw result.error;
+            middleware.set(key, result.data);
         });
-
-
 
         // -- Wait for all the promises to resolve
         await Promise.all(promises);
-        return {
-            middleware: middleware_data,
-            cookies: middleware_cookies
-        };
+        return { middleware, cookies, headers };
     }
 
     catch (unknown_error) {

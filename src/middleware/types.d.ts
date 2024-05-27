@@ -131,4 +131,20 @@ export namespace MiddlewareNamespace {
                 ? ExtractMiddlewareReturnTypes<Mo[K]>
             : never;
     };
+
+
+
+    /**
+     * This type represents the different ways that things can be executed
+     * in a middleware, as you might want to execute something regardless of
+     * whether the middleware was successful or not.
+     * 
+     * - `on-success` - Only execute if the middleware was successful
+     * - `on-failure` - Only execute if the middleware failed
+     * - `on-both`    - Execute regardless of the outcome
+     */
+    export type ExecuteOn =
+        'on-success' |
+        'on-failure' |
+        'on-both';
 }

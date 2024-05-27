@@ -20,13 +20,11 @@ const validate = async <
     const validated = await validate_binder_request(request, schemas, route.path);
     const middleware = await validate_middlewares(request, reply, configuration.middleware);
 
-
-    const remove_cookie = (name: string) => middleware.cookies.delete(name);
-    const set_cookie = (name: string, cookie: Cookie.Shape) => middleware.cookies.set(name, cookie);
-
+    // -- Set the headers provided by the middleware
+    middleware.headers.forEach((value, name) => reply.header(name, value));
 
     // -- Return the validated data
-    const response_object: BinderNamespace.GenericCallbackObject =  {
+    return {
         middleware: middleware.middleware,
         cookie_objects: middleware.cookies,
         body: validated.body,
@@ -35,13 +33,9 @@ const validate = async <
         cookies: validated.cookies,
         url: validated.url,
         fastify: { request, reply },
-        set_cookie: (name: string, cookie: Cookie.Shape) => { set_cookie(name, cookie); },
-        remove_cookie: (name: string) =>{ remove_cookie(name); }
+        set_cookie: (name: string, cookie: Cookie.Shape) => middleware.cookies.set(name, cookie),
+        remove_cookie: (name: string) => middleware.cookies.delete(name),
     };
-
-
-
-    return response_object;
 };
 
 

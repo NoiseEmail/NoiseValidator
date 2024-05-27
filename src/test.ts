@@ -25,7 +25,6 @@ const test_sechema = new nv.Schema({
 });
 
 const other_schema = new nv.Schema({
-    age: nv.Optional(nv.Number),
     name: nv.String,
     // test: {
     //     name: nv.String // -- Resolve 'never' if we have to clashing types,
@@ -45,7 +44,6 @@ nv.Binder(test_route, 'POST', {
 }, async (req) => {
     console.log('Hello world!');
 
-    req.query.age;
 });
 
 await rerver.start();
@@ -56,17 +54,14 @@ console.log('Server started...', rerver.address);
 
 // -- Test the rerver
 console.log('Testing the rerver...');
-const response = await fetch(rerver.address + '/1/test', {
+const response = await fetch(rerver.address + '/1/test?name=test', {
     method: 'POST',
     headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
     },
     body: JSON.stringify({ 
-        name: 'John',
-        test: {
-            name: 1,
-            age: 'a'
-        }
+        name: 'test',
+
     }),
 });
 
