@@ -23,6 +23,24 @@ class TestMiddleware extends nv.GenericMiddleware<{
     }> => {
         console.log('Hello world!');
         this.set_header('test', 'Hello world!');
+        // this.set_cookie('test', {
+        //     value: 'Hello world!',
+        //     options: {
+        //         same_site: 'strict',
+        //         domain: 'localhost',
+        //         secure: true
+        //     }
+        
+        // });
+
+         this.set_cookie('test2', {
+            value: 'Hello world!',
+            options: {
+                same_site: 'strict',
+                domain: 'localhost',
+                secure: true
+            }
+         });
         // throw new Error('Hello world!');
         
         return {
@@ -52,16 +70,12 @@ const other_schema = new nv.Schema({
     // }
 });
 
-nv.Binder(test_route, 'POST', {
+nv.Binder(test_route, 'GET', {
     middleware: {
         test: TestMiddleware
     },
     schemas: {
-        input: { 
-            body: other_schema
-        },
-        output: {
-        }
+
     }
 }, async (req) => {
     console.log('Hello world! DATA', req.middleware.test);

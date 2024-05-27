@@ -23,7 +23,6 @@ const validate = async <
     // -- Return the validated data
     return {
         middleware: middleware.data,
-        cookie_objects: middleware.cookies,
         body: validated.body,
         query: validated.query,
         headers: validated.headers,
@@ -32,6 +31,9 @@ const validate = async <
         fastify: { request, reply },
         set_cookie: (name: string, cookie: Cookie.Shape) => middleware.cookies.set(name, cookie),
         remove_cookie: (name: string) => middleware.cookies.delete(name),
+
+        middleware_cookies: middleware.cookies,
+        middleware_headers: middleware.headers,
         success: true
     };
 };

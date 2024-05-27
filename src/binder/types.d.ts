@@ -190,7 +190,6 @@ export namespace BinderNamespace {
         cookies:    ObjectModifier.MergeSchemas<Cookies>,
         url:        DynamicURL.Extracted<DynamicURLString>,
 
-        cookie_objects: Map<string, Cookie.Shape>,
         set_cookie:     (name: string, cookie: Cookie.Shape) => void,
         remove_cookie:  (name: string) => void,
         fastify:        { request: FastifyRequest, reply: FastifyReply }
@@ -214,7 +213,7 @@ export namespace BinderNamespace {
      * etc so we need to pass their data, not just throw an error.
      */
     export type ValidateDataReturn = 
-        (GenericCallbackObject & { success: true }) | 
+        ( GenericCallbackObject & { success: true, middleware_cookies: Map<string, Cookie.Shape>, middleware_headers: Map<string, string> }) | 
         { middleware: MiddlewareNamespace.MiddlewareValidationMap, success: false };
 
 
@@ -224,7 +223,7 @@ export namespace BinderNamespace {
 
 
     export type MapObject = {
-        callback: (data: GenericCallbackObject) => unknown | Promise<unknown>,
+        callback: (data: GenericCallbackObject, middleware_cookies: Map<string, Cookie.Shape>, middleware_headers: Map<string, string>) => Promise<void>,
         validate: (request: FastifyRequest, reply: FastifyReply) => Promise<ValidateDataReturn>,
         method: HTTPMethods
     };

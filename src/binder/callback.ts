@@ -1,5 +1,5 @@
 import { BinderFailedToExecuteError } from '.';
-import { BinderNamespace, Schemas } from './types';
+import { BinderNamespace, Cookie, Schemas } from './types';
 import { create_set_cookie_header } from './cookie';
 import { GenericError } from '@error';
 import { Route } from '@route';
@@ -12,21 +12,18 @@ const callback = async (
     data: BinderNamespace.GenericCallbackObject,
     route: Route<any>,
     schemas: Schemas,
+    middleware_cookies: Map<string, Cookie.Shape>,
+    middleware_headers: Map<string, string>
 ) => {
     try {
         const result = await callback(data);
         const output = await validate_binder_output(result, schemas, route.path);
-
-        // -- Set the headers
+        
         data.fastify.reply.headers(output.headers);
 
-        // -- Set the cookies (if any)
-        if (data.cookie_objects.size > 0) data.fastify.reply.header(
-            'Set-Cookie', 
-            create_set_cookie_header(data.cookie_objects)
-        );
-
-        // -- Send the body
+        if (middleware_cookies.size > 0) middleware_headers.set('Set-Cookie', create_set_cookie_header(middleware_cookies));
+        middleware_headers.forEach((value, key) => data.fastify.reply.header(key, value));
+        
         data.fastify.reply.send(output.body);
     }
 

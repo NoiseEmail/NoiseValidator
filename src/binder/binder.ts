@@ -54,7 +54,7 @@ export default function Binder<
     // -- Merge the default configuration with the user configuration
     configuration = mergician(DefaultBinderConfiguration, configuration);
     route.add_binder({
-        callback: async (data) => callback(binder_callback, data, route, schemas),
+        callback: async (data, middleware_cookies, middleware_headers) => callback(binder_callback, data, route, schemas, middleware_cookies, middleware_headers),
         validate: async (request, reply) => validate(route, schemas, request, reply, configuration),
         method
     });

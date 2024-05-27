@@ -1,7 +1,7 @@
 import { BinderNamespace, Cookie } from '@binder/types';
-import { FastifyInstance, FastifyReply, HTTPMethods } from 'fastify';
+import { FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
 import { GenericError } from '@error';
-import { Log, MethodNotAvailableError, NoRouteHandlerError, Server } from '..';
+import { create_set_cookie_header, Log, MethodNotAvailableError, NoRouteHandlerError, Server } from '..';
 import { OptionalRouteConfiguration, RouteConfiguration } from './types.d';
 import { randomUUID } from 'crypto';
 import { RouteHandlerExecutedError, UnkownRouteHandlerError } from './errors';
@@ -134,8 +134,8 @@ export default class Route<
      */
     private _process = async (
         method: HTTPMethods,
-        request: any,
-        reply: any
+        request: FastifyRequest,
+        reply: FastifyReply
     ): Promise<void> => {
         Log.debug(`Processing route: ${this._path} with method: ${method}`)
 
@@ -175,7 +175,7 @@ export default class Route<
                 //    the callback it self will handle the response
                 case true: {
                     Log.debug(`Route: ${this._path} has PASSED middleware validation`);
-                    try { await binder.callback(validator_result); }
+                    try { await binder.callback(validator_result, validator_result.middleware_cookies, validator_result.middleware_headers); }
                     catch (unknown_error) {
                         errors.push(UnkownRouteHandlerError.from_unknown(unknown_error));
                         continue;
@@ -202,6 +202,11 @@ export default class Route<
                 }
             }
         }
+
+
+        // -- Set the cookies and headers
+        if (error_cookies.size > 0) error_headers.set('Set-Cookie', create_set_cookie_header(error_cookies));
+        error_headers.forEach((value, key) => reply.header(key, value));
 
 
 
