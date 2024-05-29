@@ -171,7 +171,6 @@ export namespace BinderNamespace {
             }
         }
     };
-    
 
 
 
@@ -256,6 +255,13 @@ export namespace ArrayModifier {
      * Allows for A or array of A
      */
     export type ArrayOrSingle<T> = T | Array<T>;      
+
+
+
+    /**
+     * Returns Never if the input arry is empty, otherwise returns the input array
+     */
+    export type EmptyArrayToNever<T> = T extends [] ? never : T;
 }
 
 
@@ -268,10 +274,10 @@ export namespace ObjectModifier {
         (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;        
 
     export type MergeSchemas<
-        Schemas extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>
-    > = UnionToIntersection<SchemaNamespace.ReturnType<ArrayModifier.CreateArray<Schemas>[number]>>
-    
-    
+        InputSchemas extends ArrayModifier.ArrayOrSingle<SchemaNamespace.SchemaLike>
+    > = UnionToIntersection<SchemaNamespace.ReturnType<ArrayModifier.CreateArray<InputSchemas>[number]>>;
+
+
 
     /**
      * Check if the input is optional, if it is, return true, otherwise return false

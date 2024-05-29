@@ -11,7 +11,7 @@ const rerver = new nv.Server({
 
 
 // -- Add optional configuration options
-const test_route = new nv.Route(rerver, '/test', { api_version: '1' });
+const test_route = new nv.Route(rerver, '/test:ID', { api_version: '1' });
 
 
 class TestMiddleware extends nv.GenericMiddleware<{
@@ -70,17 +70,36 @@ const other_schema = new nv.Schema({
     // }
 });
 
-nv.Binder(test_route, 'GET', {
+nv.Binder(test_route, 'POST', {
     middleware: {
         test: TestMiddleware
     },
     schemas: {
-
+        input: {
+            body: test_sechema,
+            headers: other_schema,
+            cookies: other_schema
+        },
+        output: {
+            body: test_sechema,
+            headers: other_schema
+        }
     }
 }, async (req) => {
-    console.log('Hello world! DATA', req.middleware.test);
-    console.log(req.headers)
+    console.log('IT WORKED!', req.url.ID);
 
+    return {
+       body: {
+              name: 'test',
+              test: {
+                name: 1,
+                age: 'test'
+              }
+         }, 
+        headers: {
+            name: 'test'
+        }
+    }
 });
 
 await rerver.start();
@@ -105,3 +124,38 @@ console.log('Testing complete...');
 
 
 // -- transiton to ZED for data validation
+
+
+
+const client_route = nv.register_api_route(rerver.address, '1/test:ID', 'POST', {
+    input: {
+        body: test_sechema,
+        headers: other_schema,
+        cookies: other_schema
+    },
+    output: {
+        body: test_sechema,
+        headers: other_schema
+    }
+});
+
+
+
+await client_route({
+    body: {
+        name: 'test',
+        test: {
+            name: 1,
+            age: 'test'
+        }
+    },
+    headers: {
+        name: 'test'
+    },
+    cookies: {
+        name: 'test'
+    },
+    route: {
+        ID: 'test'
+    }
+});

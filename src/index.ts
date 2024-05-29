@@ -5,7 +5,7 @@ import { GenericError } from './error';
 import { GenericMiddleware, MiddlewareGenericError, MissingMiddlewareHandlerError } from './middleware';
 import { MethodNotAvailableError, NoRouteHandlerError, Route } from './route';
 import { Server } from './server';
-
+import { build_query_string, clean_url, execute_api_route, handle_error, register_api_route, replace_route_parameters } from './client';
 
 
 export {
@@ -55,5 +55,13 @@ export {
     // -- Cookie
     cookie,
     serialize_cookie,
-    create_set_cookie_header
+    create_set_cookie_header,
+
+    // -- Executor
+    register_api_route,
+    execute_api_route,
+    handle_error,
+    replace_route_parameters,
+    build_query_string,
+    clean_url,
 }
