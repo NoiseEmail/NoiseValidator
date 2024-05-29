@@ -175,7 +175,7 @@ const replace_route_parameters = (
 ): string => {
     if (parameters === undefined) throw new GenericError('Parameters are undefined', 500);
     let new_route = route;
-    for (const [key, value] of Object.entries(parameters)) new_route = new_route.replace(`:${key}`, String(value));
+    for (const [key, value] of Object.entries(parameters)) new_route = new_route.replace(`:${key}`, '/' + String(value));
     return new_route;
 };
 
