@@ -2,7 +2,7 @@
   "name": "noise_validator",
   "version": "1.0.2",
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "license": "MIT",
   "author": {
     "email": "os@noise.email",
