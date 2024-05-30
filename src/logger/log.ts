@@ -1,5 +1,5 @@
 import { log_types } from './type_enum';
-import { LogType } from './types.d';
+import { LogType } from './types';
 
 
 

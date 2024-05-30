@@ -3,7 +3,7 @@ import Log from '@logger';
 import { GenericError } from '@error';
 import { MiddlewareValidationError } from './errors';
 import { MiddlewareGenericError, MissingMiddlewareHandlerError } from './errors';
-import { MiddlewareNamespace } from './types.d';
+import { MiddlewareNamespace } from './types';
 import { SchemaNamespace } from '@schema/types';
 import { Cookie } from '@/binder/types';
 

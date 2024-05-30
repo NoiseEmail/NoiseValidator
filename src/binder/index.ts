@@ -1,4 +1,4 @@
-import * as BinderTypes from './types.d';
+import * as BinderTypes from './types';
 import Binder from './binder';
 import DefaultBinderConfiguration from './configuration';
 import { BinderFailedToExecuteError, FailedToValidateInputError } from './errors';

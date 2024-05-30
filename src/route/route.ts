@@ -2,11 +2,10 @@ import { BinderNamespace, Cookie } from '@binder/types';
 import { FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
 import { GenericError } from '@error';
 import { create_set_cookie_header, Log, MethodNotAvailableError, NoRouteHandlerError, Server } from '..';
-import { OptionalRouteConfiguration, RouteConfiguration } from './types.d';
+import { OptionalRouteConfiguration, RouteConfiguration } from './types';
 import { randomUUID } from 'crypto';
 import { RouteHandlerExecutedError, UnkownRouteHandlerError } from './errors';
 import { MiddlewareNamespace } from '@/middleware/types';
-import { Http2SecureServer } from 'http2';
 
 
 

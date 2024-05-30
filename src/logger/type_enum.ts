@@ -1,4 +1,4 @@
-import { LogEnum } from './types.d';
+import { LogEnum } from './types';
 
 
 
