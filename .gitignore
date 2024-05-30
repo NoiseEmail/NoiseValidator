@@ -2,3 +2,4 @@
 /coverage/
 bun.lockb
 certs/
+dist/

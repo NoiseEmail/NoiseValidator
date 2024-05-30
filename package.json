@@ -16,7 +16,8 @@
   "scripts": {
     "dev": "bun ./src/test.ts",
     "dev:watch": "nodemon --exec \"npm run dev\" --watch ./src --ext ts",
-    "x509": "bash ./certs.sh"
+    "x509": "bash ./certs.sh",
+    "build": "tsc && cp ./package.json ./dist/package.json"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.9",

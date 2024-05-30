@@ -6,12 +6,12 @@
 			"ESNext",
 			"dom"
 		],
-		"declaration": false,
+		"declaration": true,
 		"noImplicitAny": true,
 		"removeComments": true,
 		"esModuleInterop": true,
 		"isolatedModules": false,
-		"sourceMap": false,
+		"sourceMap": true,
 		"allowJs": false,
 		"moduleResolution": "node",
 		"outDir": "./dist",
@@ -19,7 +19,6 @@
 		"types": [
 			"bun-types",
 			"jest",
-			"node"
 		],
 		"paths": {
 			"@/*": 			["./src/*"],
