@@ -1,4 +1,4 @@
-import * as SchemaTypes from './types';
+import * as SchemaTypes from './types.d';
 import Array from './types/array';
 import Boolean from './types/boolean';
 import Enum from './types/enum';

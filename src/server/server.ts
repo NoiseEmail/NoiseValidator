@@ -1,7 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import Log from '@logger';
 import { DefualtServerConfiguration } from '.';
-import { OptionalServerConfiguration, ServerConfiguration } from './types';
+import { OptionalServerConfiguration, ServerConfiguration } from './types.d';
 import { Route } from '@route';
 import { Http2SecureServer } from 'http2';
 

@@ -4,7 +4,7 @@ import { GenericError } from '@error';
 import { LogObject } from '@/logger/types';
 import { randomUUID } from 'crypto';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
-import { SchemaNamespace } from './types';
+import { SchemaNamespace } from './types.d';
 
 
 

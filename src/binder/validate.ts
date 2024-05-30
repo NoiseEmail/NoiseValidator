@@ -1,4 +1,4 @@
-import { BinderNamespace, Cookie, Schemas } from './types';
+import { BinderNamespace, Cookie, Schemas } from './types.d';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Route } from '@route';
 import { validate_binder_request } from '.';

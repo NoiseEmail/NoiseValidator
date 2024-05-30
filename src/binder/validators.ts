@@ -1,6 +1,6 @@
 import CookieParser from 'cookie';
 import Log from '@logger';
-import { ArrayModifier, BinderInputValidatorResult, BinderOutputValidatorResult, Cookie, Schemas } from './types';
+import { ArrayModifier, BinderInputValidatorResult, BinderOutputValidatorResult, Cookie, Schemas } from './types.d';
 import { FailedToValidateInputError } from './errors';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { GenericError } from '@error';

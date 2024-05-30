@@ -1,7 +1,7 @@
 import { ArrayModifier, BinderNamespace, SchemaOutput, Schemas } from '@binder/types';
 import { SchemaNamespace } from '@schema/types';
 import { HTTPMethods } from 'fastify';
-import { BinderInputObject } from './types';
+import { BinderInputObject } from './types.d';
 import { GenericError } from '@error';
 
 

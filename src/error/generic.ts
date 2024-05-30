@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { SerializedGenericError } from './types';
+import { SerializedGenericError } from './types.d';
 
 
 

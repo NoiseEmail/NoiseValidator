@@ -1,4 +1,4 @@
-import { BinderNamespace } from './types';
+import { BinderNamespace } from './types.d';
 import { MiddlewareNamespace } from '@middleware/types';
 import { SchemaNamespace } from '@schema/types';
 

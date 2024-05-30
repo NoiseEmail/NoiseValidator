@@ -1,5 +1,5 @@
 import CookieParser from 'cookie';
-import { Cookie } from './types';
+import { Cookie } from './types.d';
 
 
 

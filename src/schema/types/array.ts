@@ -1,6 +1,6 @@
 import GenericType from '../generic';
 import { GenericError } from '@error';
-import { SchemaNamespace } from '../types';
+import { SchemaNamespace } from '../types.d';
 
 
 

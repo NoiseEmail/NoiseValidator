@@ -1,5 +1,5 @@
 import { BinderFailedToExecuteError } from '.';
-import { BinderNamespace, Cookie, Schemas } from './types';
+import { BinderNamespace, Cookie, Schemas } from './types.d';
 import { create_set_cookie_header } from './cookie';
 import { GenericError } from '@error';
 import { Route } from '@route';

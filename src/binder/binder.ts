@@ -1,6 +1,6 @@
 import callback from './callback';
 import validate from './validate';
-import { ArrayModifier, BinderNamespace, SchemaOutput, Schemas } from './types';
+import { ArrayModifier, BinderNamespace, SchemaOutput, Schemas } from './types.d';
 import { DefaultBinderConfiguration } from './';
 import { HTTPMethods } from 'fastify';
 import { mergician } from 'mergician';
