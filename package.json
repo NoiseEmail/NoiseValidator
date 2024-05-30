@@ -1,6 +1,6 @@
 {
   "name": "noise_validator",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "main": "./index.js",
   "license": "MIT",
@@ -17,7 +17,8 @@
     "dev": "bun ./src/test.ts",
     "dev:watch": "nodemon --exec \"npm run dev\" --watch ./src --ext ts",
     "x509": "bash ./certs.sh",
-    "build": "tsc"
+    "build": "tsc",
+    "publish": "sh ./package.sh"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.9",

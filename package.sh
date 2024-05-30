@@ -1,5 +1,5 @@
 # -- TSC Compile (Ignore Errors)
-tsc --noEmit --skipLibCheck
+tsc 2> /dev/null
 echo "TSC Compile Done"
 
 # -- Copy over the package.json, README.md, and LICENSE
