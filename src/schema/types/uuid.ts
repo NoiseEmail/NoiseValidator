@@ -8,7 +8,7 @@ export default class Uuid extends GenericType<string, string> {
     protected create_new_if_invalid = false;
     protected version = 4;
 
-    protected handler = async () => {
+    public async handler() {
 
         try {
             // -- If the value is not provided, return undefined
@@ -57,13 +57,13 @@ export default class Uuid extends GenericType<string, string> {
 
 
 
-    public static config = (configuration: {
+    public static config(configuration: {
         create_new_if_invalid?: boolean,
         version?: 1 | 4
-    }): typeof GenericType<string, string> => (class extends Uuid {
+    }): typeof GenericType<string, string> { return (class extends Uuid {
         protected create_new_if_invalid = configuration.create_new_if_invalid ?? false;
         protected version = configuration.version ?? 4;
-    })
+    })};
 
 
     

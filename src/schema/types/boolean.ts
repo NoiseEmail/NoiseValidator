@@ -4,7 +4,7 @@ import GenericType from '../generic';
 
 export default class Boolean extends GenericType<boolean, boolean> {
 
-    protected handler = async (): Promise<boolean> => {
+    public async handler(): Promise<boolean> {
         // -- If the value is not provided, return undefined
         if (
             this.value === undefined ||

@@ -14,7 +14,7 @@ export default class NumberType extends GenericType<number, number> {
      * The input could be a string or a number
      * so we need to check for both
      */
-    protected handler = async (): Promise<number> => {
+    public async handler(): Promise<number> {
 
         try {
             // -- If the value is not provided, return undefined
@@ -64,15 +64,15 @@ export default class NumberType extends GenericType<number, number> {
     }
 
 
-    public static config = (configuration: {
+    public static config(configuration: {
         mode?: 'integer' | 'float' | 'both',
         min?: number,
         max?: number
-    }): typeof GenericType<number, number> => (class extends NumberType {
+    }): typeof GenericType<number, number> { return (class extends NumberType {
         protected mode: 'integer' | 'float' | 'both' = configuration.mode || 'both';
         protected min = configuration.min || Number.MIN_SAFE_INTEGER;
         protected max = configuration.max || Number.MAX_SAFE_INTEGER;
-    }) 
+    })};
 
 
     public static get name() {

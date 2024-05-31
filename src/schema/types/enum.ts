@@ -23,7 +23,7 @@ class EnumTypeClass<
     }
 
 
-    handler = async (): Promise<InputTypes> => {
+    public async handler(): Promise<InputTypes> {
         // -- No value was provided
         if (
             this.value === undefined ||

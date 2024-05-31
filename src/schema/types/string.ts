@@ -34,7 +34,7 @@ export default class String extends GenericType<string, string> {
      * so try covert it to a string, if
      * it fails, it's invalid
      */
-    protected handler = async () => {
+    public async handler() {
 
         try {   
 
@@ -71,15 +71,15 @@ export default class String extends GenericType<string, string> {
 
 
 
-    public static config = (configuration: {
+    public static config(configuration: {
         max_length?: number,
         min_length?: number,
         regex?: RegExp
-    }): typeof GenericType<string, string> => (class extends String {
+    }): typeof GenericType<string, string> { return (class extends String {
         protected max_length = configuration.max_length;
         protected min_length = configuration.min_length;
         protected regex = configuration.regex;
-    })
+    })};
 
 
     

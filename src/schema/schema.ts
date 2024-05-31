@@ -29,12 +29,12 @@ export default class Schema<
 
 
     
-    public static _execute_validator = async (
+    public static async _execute_validator(
         instance: Schema<SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema, unknown>,
         value: SchemaNamespace.GenericTypeConstructor,
         new_data: unknown,
         new_path: string[]
-    ): Promise<unknown> => {
+    ): Promise<unknown> {
 
         // -- If it's a constructor, execute it
         const validator_instance = new value(new_data);
@@ -79,12 +79,12 @@ export default class Schema<
 
 
 
-    public static _validate_value = async (
+    public static async _validate_value(
         instance: Schema<SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema, unknown>,
         validator: SchemaNamespace.NestedSchema | SchemaNamespace.GenericTypeConstructor<unknown, unknown>,
         new_data: unknown,
         new_path: string[]
-    ): Promise<unknown> => {
+    ): Promise<unknown> {
 
         switch (typeof validator) {
             // -- Function, execute it
@@ -139,13 +139,13 @@ export default class Schema<
     
 
 
-    public static _walk_object = async <ReturnableData>(
+    public static async _walk_object<ReturnableData>(
         instance: Schema<SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema, unknown>,
         schema: SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema,
         data: unknown,
         path: string[] = [],
         result: { [type: string]: unknown } = {}
-    ): Promise<ReturnableData> => {
+    ): Promise<ReturnableData> {
 
         for (const type in schema) {
 
@@ -200,14 +200,13 @@ export default class Schema<
 
 
     
-    public static _walk = async <ReturnableData>(
+    public static async _walk<ReturnableData>(
         instance: Schema<SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema, unknown>,
         schema: SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema,
         data: unknown,
         path: string[] = [],
         result: { [key: string]: unknown } = {}
-    ): Promise<ReturnableData> => 
-        await Schema._walk_object(instance, schema, data, path, result);
+    ): Promise<ReturnableData> { return await Schema._walk_object(instance, schema, data, path, result); };
     
 
 
@@ -219,9 +218,9 @@ export default class Schema<
      * @param {object} data - The data to validate against the schema
      * @returns 
      */
-    public validate = async (
+    public async validate(
         data: unknown
-    ): Promise<ReturnableData> => {
+    ): Promise<ReturnableData> {
 
         try {
             // -- Try to walk the schema
@@ -252,9 +251,6 @@ export default class Schema<
 
     public get id(): string { return this._id; };
     public get schema(): NestedSchema { return this._schema; };
-    public set_log_stack = (log_stack: Array<LogObject>) => this._log_stacks.push(...log_stack);
-    public get log_stack(): Array<LogObject> { return this._log_stacks; };
-
     public get errors(): Array<GenericError> { return this._errors; };
-    protected push_error = (error: GenericError) => this._errors.push(error);
+    protected push_error(error: GenericError): void { this._errors.push(error); };
 };

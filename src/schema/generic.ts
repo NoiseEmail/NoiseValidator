@@ -24,9 +24,9 @@ export default class GenericType<
 
 
 
-    protected handler = async (
+    protected async handler(
         input_value: unknown,
-    ): Promise<ReturnType> => {
+    ): Promise<ReturnType> {
         throw new MissingHandlerError(`Handler not implemented for ${this.constructor.name}`);
     };
 
@@ -73,10 +73,10 @@ export default class GenericType<
      * 
      * @returns {Promise<void>} A promise that resolves when the class constructor has been executed
      */
-    public execute = async (): Promise<
+    public async execute(): Promise<
         { data: ReturnType, success: true } | 
         { data: GenericError, success: false }
-    > => {
+    > {
 
 
         // -- Check if the instance has already been executed

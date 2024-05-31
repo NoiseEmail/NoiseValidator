@@ -26,7 +26,7 @@ class OptionalClass<
 
 
     
-    handler = async (): Promise<Array<OriginalReturnType>> => {
+    public async handler(): Promise<Array<OriginalReturnType>> {
         try {
             // -- Make sure the value is an array to begin with
             if (!Array.isArray(this.value)) 

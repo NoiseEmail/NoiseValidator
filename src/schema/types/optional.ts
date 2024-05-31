@@ -37,7 +37,7 @@ class OptionalTypeClass<
 
     
 
-    handler = async (): Promise<ExtractReturnType<DefaultValue, OriginalReturnType> | undefined> => {
+    public async handler(): Promise<ExtractReturnType<DefaultValue, OriginalReturnType> | undefined> {
         try {
 
             // -- If the value is not provided, return undefined

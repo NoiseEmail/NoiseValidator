@@ -12,8 +12,8 @@ export namespace SchemaNamespace {
         _input_shape: InputShape;
         public constructor(_input_value: unknown);
         protected _input_value: unknown;
-        protected handler: (input_value: unknown) => Promise<ReturnType>;
-        public execute: () => Promise<{ data: ReturnType, success: true } | { data: GenericError, success: false }>;
+        protected handler(input_value: unknown): Promise<ReturnType>;
+        public execute(): Promise<{ data: ReturnType, success: true } | { data: GenericError, success: false }>;
         public static get name(): string;
     }
 
