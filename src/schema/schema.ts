@@ -2,9 +2,9 @@ import Log from '@logger';
 import { execute } from './generic';
 import { GenericError } from '@error';
 import { LogObject } from '@/logger/types';
-import { randomUUID } from 'crypto';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
 import { SchemaNamespace } from './types.d';
+import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -14,7 +14,7 @@ export default class Schema<
 > {
     public readonly _return_type: ReturnableData = {} as ReturnableData;    
     public readonly _type: 'body' | 'query' | 'headers' | 'cookies' = 'body';
-    public readonly _id: string = randomUUID();
+    public readonly _id: string = uuidv4();
     public readonly _schema: NestedSchema;
 
     private _log_stacks: Array<LogObject>;

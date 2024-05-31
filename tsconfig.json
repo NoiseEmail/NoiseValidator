@@ -12,6 +12,7 @@
 		"esModuleInterop": true,
 		"isolatedModules": false,
 		"sourceMap": true,
+		"declarationDir": "./dist",
 		"allowJs": false,
 		"moduleResolution": "node",
 		"outDir": "./dist",

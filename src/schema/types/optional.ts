@@ -29,7 +29,6 @@ type ExtractReturnType<
 const create_optional = <
     OriginalReturnType,
     OriginalInputShape,
-
     DefaultValue extends OriginalReturnType | undefined,
 >(
     constructor: SchemaNamespace.GenericTypeConstructor<
@@ -41,7 +40,7 @@ const create_optional = <
     ExtractReturnType<DefaultValue, OriginalReturnType>,
     OriginalInputShape
 > { 
-    private readonly _default_value: ExtractReturnType<
+    protected readonly _default_value: ExtractReturnType<
         DefaultValue, 
         OriginalReturnType
     > | undefined = default_value;
@@ -60,7 +59,7 @@ const create_optional = <
 
 
 
-    private validate_optional = (): Promise<
+    protected validate_optional = (): Promise<
         ExtractReturnType<DefaultValue, OriginalReturnType> | 
         GenericError
     > => new Promise((resolve) => {

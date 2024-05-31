@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 import { SerializedGenericError } from './types.d';
 
 
@@ -6,7 +6,7 @@ import { SerializedGenericError } from './types.d';
 export class GenericError extends Error {
     private _other_errors: Map<string, GenericError> = new Map();
 
-    protected readonly _id: string = randomUUID();
+    protected readonly _id: string = uuidv4();
     protected readonly _message: string;
     protected readonly _code: number;
     protected readonly _type: string = this.constructor.name;
