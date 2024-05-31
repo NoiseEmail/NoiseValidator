@@ -1,6 +1,6 @@
 {
   "name": "noise_validator",
-  "version": "1.1.22",
+  "version": "1.1.23",
   "main": "./src/index.ts",
   "license": "MIT",
   "author": {
@@ -9,6 +9,10 @@
     "url": "https://os.noise.email"
   },
   "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts"
+    },
     "./src/binder": {
       "import": "./src/binder/index.ts",
       "require": "./src/binder/index.ts"
