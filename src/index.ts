@@ -5,19 +5,8 @@ import { GenericMiddleware, MiddlewareGenericError, MissingMiddlewareHandlerErro
 import { MethodNotAvailableError, NoRouteHandlerError, Route } from './route';
 import { Server } from './server';
 import { build_query_string, clean_url, execute_api_route, handle_error, register_api_route, replace_route_parameters } from './client';
-import { debug, error, info, log, log_header, log_types, throw_err, warn, is_debug } from './logger';
+import { Log, debug, error, info, log, log_header, log_types, throw_err, warn, is_debug } from './logger';
 
-const Log = {
-    debug,
-    error,
-    info,
-    log,
-    log_header,
-    log_types,
-    throw_err,
-    warn,
-    is_debug
-};
 
 
 export {
