@@ -18,8 +18,7 @@
 		"outDir": "./dist",
 		"strict": true,
 		"types": [
-			"bun-types",
-			"jest",
+			"bun-types"
 		],
 		"paths": {
 			"noise_validator/src/schema": 		["./src/schema/index.ts"],
