@@ -1,8 +1,8 @@
-import { ArrayModifier, BinderNamespace, SchemaOutput, Schemas } from '@binder/types';
-import { SchemaNamespace } from '@schema/types';
+import { ArrayModifier, BinderNamespace, SchemaOutput } from 'noise_validator/src/binder/types';
+import { SchemaNamespace } from 'noise_validator/src/schema/types';
 import { HTTPMethods } from 'fastify';
 import { BinderInputObject } from './types.d';
-import { GenericError } from '@error';
+import { GenericError } from 'noise_validator/src/error';
 
 
 

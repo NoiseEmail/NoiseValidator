@@ -1,6 +1,6 @@
-import Log from '@logger';
-import { GenericError } from '@error';
-import { LogObject } from '@/logger/types';
+import Log from 'noise_validator/src/logger';
+import { GenericError } from 'noise_validator/src/error';
+import { LogObject } from 'noise_validator/src/logger/types';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
 import { SchemaNamespace } from './types.d';
 import { v4 as uuidv4 } from 'uuid';

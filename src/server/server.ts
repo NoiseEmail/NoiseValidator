@@ -1,8 +1,8 @@
 import Fastify, { FastifyInstance } from 'fastify';
-import Log from '@logger';
+import Log from 'noise_validator/src/logger';
 import { DefualtServerConfiguration } from '.';
 import { OptionalServerConfiguration, ServerConfiguration } from './types.d';
-import { Route } from '@route';
+import { Route } from 'noise_validator/src/route';
 import { Http2SecureServer } from 'http2';
 
 

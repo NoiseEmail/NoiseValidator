@@ -1,11 +1,11 @@
-import { BinderNamespace, Cookie } from '@binder/types';
+import { BinderNamespace, Cookie } from 'noise_validator/src/binder/types';
 import { FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
-import { GenericError } from '@error';
+import { GenericError } from 'noise_validator/src/error';
 import { create_set_cookie_header, Log, MethodNotAvailableError, NoRouteHandlerError, Server } from '..';
 import { OptionalRouteConfiguration, RouteConfiguration } from './types.d';
-import { randomUUID } from 'crypto';
 import { RouteHandlerExecutedError, UnkownRouteHandlerError } from './errors';
-import { MiddlewareNamespace } from '@/middleware/types';
+import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
+import { v4 } from 'uuid';
 
 
 
@@ -14,7 +14,7 @@ export default class Route<
 > {
     public readonly _raw_path: UrlPath;
     public readonly _path: string;
-    public readonly _id: string = randomUUID();
+    public readonly _id: string = v4();
 
     private _friendly_name: string | undefined;
     private _binder_map: BinderNamespace.Binders = new Map();

@@ -1,5 +1,5 @@
 import GenericType from '../generic';
-import { GenericError } from '@error';
+import { GenericError } from 'noise_validator/src/error';
 import { v1 as uuidv1, v4 as uuidv4, validate, version } from 'uuid';
 
 

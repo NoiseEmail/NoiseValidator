@@ -1,6 +1,6 @@
 {
   "name": "noise_validator",
-  "version": "1.1.6",
+  "version": "1.1.19",
   "main": "./src/index.ts",
   "license": "MIT",
   "author": {
@@ -8,12 +8,78 @@
     "name": "Noise",
     "url": "https://os.noise.email"
   },
+  "exports": {
+    "./src/binder": {
+      "import": "./src/binder/index.ts",
+      "require": "./src/binder/index.ts"
+    },
+    "./src/binder/types": {
+      "import": "./src/binder/types.d.ts",
+      "require": "./src/binder/types.d.ts"
+    },
+    "./src/client": {
+      "import": "./src/client/index.ts",
+      "require": "./src/client/index.ts"
+    },
+    "./src/client/types": {
+      "import": "./src/client/types.d.ts",
+      "require": "./src/client/types.d.ts"
+    },
+    "./src/error": {
+      "import": "./src/error/index.ts",
+      "require": "./src/error/index.ts"
+    },
+    "./src/error/types": {
+      "import": "./src/error/types.d.ts",
+      "require": "./src/error/types.d.ts"
+    },
+    "./src/logger": {
+      "import": "./src/logger/index.ts",
+      "require": "./src/logger/index.ts"
+    },
+    "./src/logger/types": {
+      "import": "./src/logger/types.d.ts",
+      "require": "./src/logger/types.d.ts"
+    },
+    "./src/middleware": {
+      "import": "./src/middleware/index.ts",
+      "require": "./src/middleware/index.ts"
+    },
+    "./src/middleware/types": {
+      "import": "./src/middleware/types.d.ts",
+      "require": "./src/middleware/types.d.ts"
+    },
+    "./src/route": {
+      "import": "./src/route/index.ts",
+      "require": "./src/route/index.ts"
+    },
+    "./src/route/types": {
+      "import": "./src/route/types.d.ts",
+      "require": "./src/route/types.d.ts"
+    },
+    "./src/schema": {
+      "import": "./src/schema/index.ts",
+      "require": "./src/schema/index.ts"
+    },
+    "./src/schema/types": {
+      "import": "./src/schema/types.d.ts",
+      "require": "./src/schema/types.d.ts"
+    },
+    "./src/server": {
+      "import": "./src/server/index.ts",
+      "require": "./src/server/index.ts"
+    },
+    "./src/server/types": {
+      "import": "./src/server/types.d.ts",
+      "require": "./src/server/types.d.ts"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NoiseEmail/NoiseValidator.git"
   },
   "scripts": {
-    "dev": "bun ./src/test.ts",
+    "dev": "bun ./src/test/index.ts",
     "dev:watch": "nodemon --exec \"npm run dev\" --watch ./src --ext ts",
     "x509": "bash ./certs.sh",
     "build": "tsc",

@@ -1,8 +1,8 @@
 import { BinderNamespace, Cookie, Schemas } from './types.d';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { Route } from '@route';
+import { Route } from 'noise_validator/src/route';
 import { validate_binder_request } from '.';
-import { Execute } from '@/middleware';
+import { Execute } from 'noise_validator/src/middleware';
 
 
 

@@ -1,5 +1,5 @@
 import GenericType from '../generic';
-import { GenericError } from '@error';
+import { GenericError } from 'noise_validator/src/error';
 import { SchemaNamespace } from '../types.d';
 
 
@@ -86,7 +86,7 @@ const create_optional = <
         OriginalInputShape
     >,
     default_value: DefaultValue = undefined as DefaultValue
-) => class extends OptionalTypeClass<
+) => (class extends OptionalTypeClass<
     OriginalReturnType,
     OriginalInputShape,
     DefaultValue
@@ -96,7 +96,7 @@ const create_optional = <
     ) {
         super(input_value, constructor, default_value);
     }
-};
+});
 
 
 

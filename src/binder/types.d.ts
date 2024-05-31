@@ -1,7 +1,7 @@
-import { DynamicURL } from '@route/types';
+import { DynamicURL } from 'noise_validator/src/route/types';
 import { FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
-import { MiddlewareNamespace } from '@middleware/types';
-import { SchemaNamespace } from '@schema/types';
+import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
+import { SchemaNamespace } from 'noise_validator/src/schema/types';
 
 
 

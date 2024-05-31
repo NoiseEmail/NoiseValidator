@@ -4,9 +4,9 @@ import { ArrayModifier, BinderNamespace, SchemaOutput, Schemas } from './types.d
 import { DefaultBinderConfiguration } from './';
 import { HTTPMethods } from 'fastify';
 import { mergician } from 'mergician';
-import { MiddlewareNamespace } from '@middleware/types';
-import { Route } from '@route';
-import { SchemaNamespace } from '@schema/types';
+import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
+import { Route } from 'noise_validator/src/route';
+import { SchemaNamespace } from 'noise_validator/src/schema/types';
 
 
 

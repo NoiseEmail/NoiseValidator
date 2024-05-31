@@ -33,32 +33,41 @@ const sub_packages = [
     out: 'client/index',
     name: 'client',
     path: 'client/',
+    dependencies: ['noise_validator/src/error', 'noise_validator/src/schema', 'noise_validator/src/logger', 'noise_validator/src/binder']
   },
   {
     in: 'src/error/index.ts',
     out: 'error/index',
     name: 'error',
-    path: 'error/'
+    path: 'error/',
+    dependencies: ['noise_validator/src/logger']
   },
   {
     in: 'src/schema/index.ts',
     out: 'schema/index',
     name: 'schema',
-    path: 'schema/'
+    path: 'schema/',
+    dependencies: ['noise_validator/src/error', 'noise_validator/src/logger']
   },
   {
     in: 'src/logger/index.ts',
     out: 'logger/index',
     name: 'logger',
     path: 'logger/'
-  }
+  },
+  {
+    in: 'src/binder/index.ts',
+    out: 'binder/index',
+    name: 'binder',
+    path: 'binder/'
+  },
 ];
 
 
 
 const build_package_json = (config) => {
   const package_json = {
-    name: `@noise/${config.name}`,
+    name: `noise_validator/src/${config.name}`,
     version,
     description: `NoiseValidator ${config.name} sub-package for web clients`,
     main: `index.js`,
@@ -69,6 +78,9 @@ const build_package_json = (config) => {
     publish,
     repository,
     license,
+    exports: {
+      types: './index.d.ts',
+    }
   };
 
   return package_json;
@@ -84,11 +96,7 @@ await esbuild.build({
     // --esm
     format: 'esm',
     bundle: true,
-    plugins: [
-      esbuildPluginTsc({
-        force: true,
-      }),
-    ],
+    plugins: [ esbuildPluginTsc({ force: true }) ],
     tsconfig: 'tsconfig.json',
 }).then(async () => {
   console.log('Build complete!');

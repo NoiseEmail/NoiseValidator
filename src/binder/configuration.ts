@@ -1,6 +1,6 @@
 import { BinderNamespace } from './types.d';
-import { MiddlewareNamespace } from '@middleware/types';
-import { SchemaNamespace } from '@schema/types';
+import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
+import { SchemaNamespace } from 'noise_validator/src/schema/types';
 
 
 

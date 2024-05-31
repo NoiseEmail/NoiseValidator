@@ -1,5 +1,5 @@
 import GenericType from '../generic';
-import { GenericError } from '@error';
+import { GenericError } from 'noise_validator/src/error';
 import { SchemaNamespace } from '../types.d';
 
 

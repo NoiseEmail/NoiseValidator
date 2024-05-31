@@ -1,5 +1,4 @@
 import GenericType from '../generic';
-import { GenericError } from '@error';
 
 
 

@@ -1,7 +1,7 @@
-import { Cookie } from '@binder/types';
+import { Cookie } from 'noise_validator/src/binder/types';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { GenericError } from '@error';
-import { SchemaNamespace } from '@schema/types';
+import { GenericError } from 'noise_validator/src/error';
+import { SchemaNamespace } from 'noise_validator/src/schema/types';
 
 
 
