@@ -94,7 +94,7 @@ await esbuild.build({
   console.log('Build complete!');
 
   // -- Run tsc --emitDeclarationOnly to generate types
-  try { await $`tsc --emitDeclarationOnly --skipLibCheck`; }
+  try { await $`tsc --emitDeclarationOnly`; }
   catch (e) { console.error(e); }
   console.log('Types generated!');
 
