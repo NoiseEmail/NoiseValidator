@@ -1,5 +1,4 @@
 import Log from '@logger';
-import { execute } from './generic';
 import { GenericError } from '@error';
 import { LogObject } from '@/logger/types';
 import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
@@ -38,15 +37,15 @@ export default class Schema<
     ): Promise<unknown> => {
 
         // -- If it's a constructor, execute it
-        const validator_result = await execute(value, new_data);
-        instance.set_log_stack(validator_result.instance.log_stack);
+        const validator_instance = new value(new_data);
+        const validator_result = await validator_instance.execute();
 
 
         // -- If the result is an error and theres no new data, return a missing field error
         //    as if the data was optional, it would not throw an error
         if (
             new_data === undefined && 
-            validator_result.is_error
+            validator_result.success === false
         ) {
             const error = new SchemaMissingFieldError(new_path);
             error.hint = 'Field is missing';
@@ -61,8 +60,8 @@ export default class Schema<
 
 
         // -- If the result is an error, return it
-        else if (validator_result.is_error) {
-            const thrown_error = GenericError.from_unknown(validator_result.result);
+        else if (validator_result.success === false) {
+            const thrown_error = GenericError.from_unknown(validator_result.data);
             thrown_error.hint = 'Error occurred while validating the schema';
             thrown_error.data = { 
                 path: new_path,
@@ -75,7 +74,7 @@ export default class Schema<
 
 
         // -- If the validator_result is not an error, add it to the result
-        else return validator_result.result as unknown;
+        else return validator_result.data as unknown;
     };
 
 

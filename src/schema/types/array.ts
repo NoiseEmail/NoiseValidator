@@ -4,6 +4,63 @@ import { SchemaNamespace } from '../types.d';
 
 
 
+class OptionalClass<
+    OriginalReturnType,
+    OriginalInputShape,
+> extends GenericType<
+    Array<OriginalReturnType>,
+    OriginalInputShape
+> { 
+
+    _input_value: unknown;
+    _original_constructor: SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>;
+
+    constructor(
+        input_value: unknown,
+        original_constructor: SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>,
+    ) {
+        super(input_value);
+        this._input_value = input_value;
+        this._original_constructor = original_constructor;
+    }
+
+
+    
+    handler = async (): Promise<Array<OriginalReturnType>> => {
+        try {
+            // -- Make sure the value is an array to begin with
+            if (!Array.isArray(this.value)) 
+                throw new GenericError('Invalid array, must be an array', 400);
+
+            const results: Array<OriginalReturnType> = [];
+            for (const value of this.value) {
+                const instance = new this._original_constructor(value);
+                const result = await instance.execute();
+                if (result.success === true) results.push(result.data);
+                else throw result.data;
+            }
+
+            // -- Return the results
+            return results;
+        }
+
+
+        catch (unknown_error) {
+            throw GenericError.from_unknown(
+                unknown_error, 
+                new GenericError('Unknown error occurred in array handler', 500)
+            );
+        }
+    };
+
+
+
+    public static get name() {
+        return `Array<${this.constructor.name}>`;
+    };
+};
+
+
 const create_array = <
     OriginalReturnType,
     OriginalInputShape,
@@ -12,69 +69,12 @@ const create_array = <
         OriginalReturnType, 
         OriginalInputShape
     >,
-) => (class OptionalClass extends GenericType<
-    Array<OriginalReturnType>,
-    OriginalInputShape
-> { 
-    constructor(
-        input_value: unknown,
-        on_invalid: (error: GenericError) => void,
-        on_valid: (result: Array<OriginalReturnType>) => void,
-    ) {
-        super(input_value, on_invalid, on_valid);
+) => (class extends OptionalClass<OriginalReturnType, OriginalInputShape> {
+    constructor(input_value: unknown) {
+        super(input_value, constructor);
     }
+});
 
-
-    
-    // TODO: Figure out why the return type dose not want to work
-    protected handler = async (): Promise<any> => {
-
-        try {
-            // -- Make sure the value is an array to begin with
-            if (!Array.isArray(this.value)) 
-                throw new GenericError('Invalid array, must be an array', 400);
-
-
-            // -- Else, loop through the array and execute the constructor
-            //    for each value in the array
-            const results: Array<OriginalReturnType> = [];
-            for (const value of this.value) {
-                const instance = new constructor(value,
-                    (unknown_error) => {
-                        const error = GenericError.from_unknown(
-                            unknown_error, 
-                            new GenericError('Error in array handler', 500)
-                        );
-
-                        error.hint = 'Error occurred while processing array';
-                        throw error;
-                    },
-                    (value) => results.push(value)
-                );
-
-                await instance.execute();
-            }
-
-
-            // -- Return the results
-            return results;
-        }
-
-
-        catch (unknown_error) {
-            return this.invalid(GenericError.from_unknown(
-                unknown_error, 
-                new GenericError('Unknown error occurred in array handler', 500)
-            ));
-        }
-    }
-
-
-
-    public static get name() {
-        return `Array<${constructor.name}>`;
-    }
-})
 
 
 export default create_array;

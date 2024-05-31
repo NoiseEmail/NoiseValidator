@@ -8,8 +8,7 @@ export default class Uuid extends GenericType<string, string> {
     protected create_new_if_invalid = false;
     protected version = 4;
 
-    protected handler = () => {
-        this.log.debug('Handling UUID');        
+    protected handler = async () => {
 
         try {
             // -- If the value is not provided, return undefined
@@ -42,7 +41,6 @@ export default class Uuid extends GenericType<string, string> {
         catch (unknown_error) {
             // -- Check if we should create a new UUID if the input is invalid
             if (this.create_new_if_invalid) {
-                this.log.debug('Creating a new UUID');
                 switch (this.version) {
                     case 1: return uuidv1();
                     case 4: return uuidv4();
@@ -50,10 +48,10 @@ export default class Uuid extends GenericType<string, string> {
             }
 
             // -- Create an error and return it
-            return this.invalid(GenericError.from_unknown(
+            throw GenericError.from_unknown(
                 unknown_error, 
                 new GenericError('Unknown error occurred in UUID handler', 500)
-            ));
+            );
         }
     }
 

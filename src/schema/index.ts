@@ -2,7 +2,7 @@ import * as SchemaTypes from './types.d';
 import Array from './types/array';
 import Boolean from './types/boolean';
 import Enum from './types/enum';
-import GenericType, { execute } from './generic';
+import GenericType from './generic';
 import Number from './types/number';
 import Optional from './types/optional';
 import Schema from './schema';
@@ -27,7 +27,6 @@ export {
 
     Enum,
     Array,
-    execute,
     Optional,
 
     SchemaTypes

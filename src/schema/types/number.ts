@@ -14,7 +14,7 @@ export default class NumberType extends GenericType<number, number> {
      * The input could be a string or a number
      * so we need to check for both
      */
-    protected handler = () => {
+    protected handler = async (): Promise<number> => {
 
         try {
             // -- If the value is not provided, return undefined
@@ -56,10 +56,10 @@ export default class NumberType extends GenericType<number, number> {
         }
 
         catch (unknown_error) {
-            return this.invalid(GenericError.from_unknown(
+            throw GenericError.from_unknown(
                 unknown_error, 
                 new GenericError('Unknown error occurred parsing number', 500)
-            ));
+            );
         }
     }
 

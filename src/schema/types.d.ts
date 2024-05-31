@@ -11,45 +11,18 @@ export namespace SchemaNamespace {
     > {        
         _return_type: ReturnType;
         _input_shape: InputShape;
-
-        public constructor(
-            _input_value: unknown,
-            _on_invalid: (error: GenericError) => void,
-            _on_valid: (result: ReturnType) => void
-        );
-
+        public constructor(_input_value: unknown);
         protected _input_value: unknown;
-        protected _on_invalid: (error: GenericError) => void;
-        protected _on_valid: (result: ReturnType) => void;
-
-        protected handler: (
-            input_value: unknown,
-            invalid: (error: GenericError) => void,
-            valid: (result: ReturnType) => void
-        ) => 
-            (ReturnType | Promise<ReturnType>) |
-            (Promise<GenericError> | GenericError);
-
-        protected invalid: (error: GenericError | string) => GenericError;
-        protected valid: (result: ReturnType) => ReturnType;
-        public execute: () => Promise<void>;
-
+        protected handler: (input_value: unknown) => Promise<ReturnType>;
+        public execute: () => Promise<{ data: ReturnType, success: true } | { data: GenericError, success: false }>;
         public static get name(): string;
-        public log: LogFunctions;
-        public get log_stack(): Array<LogObject>;
     }
-
-
 
     export type GenericTypeConstructor<
         ReturnType extends unknown = unknown,
         InputShape extends unknown = unknown
-    > = new (
-        input_value: unknown,
-        on_invalid: (error: GenericError) => void,
-        on_valid: (result: ReturnType) => void,
-        validated?: ReturnType
-    ) => GenericTypeLike<ReturnType, InputShape>;
+    > = new (input_value: unknown, validated?: ReturnType) => GenericTypeLike<ReturnType, InputShape>;
+
 
     export type NestedSchema = {
         [key: string]: GenericTypeConstructor<any> | NestedSchema;

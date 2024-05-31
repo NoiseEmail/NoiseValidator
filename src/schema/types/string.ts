@@ -34,7 +34,7 @@ export default class String extends GenericType<string, string> {
      * so try covert it to a string, if
      * it fails, it's invalid
      */
-    protected handler = () => {
+    protected handler = async () => {
 
         try {   
 
@@ -62,10 +62,10 @@ export default class String extends GenericType<string, string> {
         }
         
         catch (unknown_error) {
-            return this.invalid(GenericError.from_unknown(
+            throw GenericError.from_unknown(
                 unknown_error, 
                 new GenericError('Unknown error occurred parsing string', 500)
-            ));
+            );
         }
     };
 
