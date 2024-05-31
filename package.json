@@ -1,6 +1,6 @@
 {
   "name": "noise_validator",
-  "version": "1.1.20",
+  "version": "1.1.21",
   "main": "./src/index.ts",
   "license": "MIT",
   "author": {
@@ -82,7 +82,8 @@
     "dev": "bun ./src/test/index.ts",
     "dev:watch": "nodemon --exec \"npm run dev\" --watch ./src --ext ts",
     "x509": "bash ./certs.sh",
-    "publish": "npm publish"
+    "bump": "npm --no-git-tag-version version patch",
+    "package": "bun run bump && npm publish"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.9",
