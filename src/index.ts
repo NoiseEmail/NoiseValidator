@@ -1,4 +1,3 @@
-import * as Log from './logger';
 import { Array, Boolean, Enum, GenericType, GenericTypeExecutionError, InvalidInputError, MissingHandlerError, Number, Optional, Schema, SchemaExecutionError, SchemaMissingFieldError, SchemaTypes, String, Uuid } from './schema';
 import { Binder, BinderFailedToExecuteError, BinderTypes, cookie, create_set_cookie_header, DefaultBinderConfiguration, FailedToValidateInputError, serialize_cookie, validate_binder_request } from './binder';
 import { GenericError } from './error';
@@ -6,6 +5,19 @@ import { GenericMiddleware, MiddlewareGenericError, MissingMiddlewareHandlerErro
 import { MethodNotAvailableError, NoRouteHandlerError, Route } from './route';
 import { Server } from './server';
 import { build_query_string, clean_url, execute_api_route, handle_error, register_api_route, replace_route_parameters } from './client';
+import { debug, error, info, log, log_header, log_types, throw_err, warn, is_debug } from './logger';
+
+const Log = {
+    debug,
+    error,
+    info,
+    log,
+    log_header,
+    log_types,
+    throw_err,
+    warn,
+    is_debug
+};
 
 
 export {
@@ -33,7 +45,16 @@ export {
 
     // -- Logger
     Log,
-
+    debug,
+    error,
+    info,
+    log,
+    log_header,
+    log_types,
+    throw_err,
+    warn,
+    is_debug,
+    
     // -- Error
     GenericError,
 

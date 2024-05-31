@@ -67,11 +67,3 @@ export const warn = (...args: Array<unknown>): void => log(log_types.WARN, ...ar
 export const error = (...args: Array<unknown>): void => log(log_types.ERROR, ...args);
 export const debug = (...args: Array<unknown>): void => log(log_types.DEBUG, ...args);
 export const throw_err = (...args: Array<unknown>): void => log(log_types.THROW, ...args);
-
-export default {
-    info,
-    warn,
-    error,
-    debug,
-    throw: throw_err
-};
