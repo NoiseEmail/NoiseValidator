@@ -13,6 +13,8 @@ import { SchemaNamespace } from 'noise_validator/src/schema/types';
 export default function Binder<
     // -- Input types
     Middleware              extends MiddlewareNamespace.MiddlewareObject,
+    ExternalMiddleware      extends MiddlewareNamespace.MiddlewareObject,
+    RouterMiddleware        extends MiddlewareNamespace.MiddlewareObject,
     DynamicURLInputSchema   extends string,
     BodyInputSchema         extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
     QueryInputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
@@ -25,9 +27,10 @@ export default function Binder<
 
     // -- Callback types
     BinderCallbackReturn    extends SchemaOutput.Types<BodyOutputSchema, HeadersOutputSchema>,
-    CallbackObject          extends BinderNamespace.CallbackObject<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, DynamicURLInputSchema>,
+    CombinedMiddleware      extends RouterMiddleware & ExternalMiddleware & Middleware,
+    CallbackObject          extends BinderNamespace.CallbackObject<CombinedMiddleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, DynamicURLInputSchema>,
 >(
-    route: Route<DynamicURLInputSchema>,
+    route: Route<DynamicURLInputSchema, ExternalMiddleware, RouterMiddleware>,
     method: HTTPMethods,
     configuration: BinderNamespace.OptionalConfiguration<Middleware, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, BodyOutputSchema, HeadersOutputSchema>,
     binder_callback: (data: CallbackObject) => BinderCallbackReturn | Promise<BinderCallbackReturn>

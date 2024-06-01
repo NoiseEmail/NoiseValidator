@@ -1,9 +1,16 @@
-export type RouteConfiguration = {
+import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
+
+export type RouteConfiguration<
+    Middleware extends MiddlewareNamespace.MiddlewareObject,
+> = {
     friendly_name: string;
     api_version: string | number | undefined;
+    middleware: Middleware;
 };
 
-export type OptionalRouteConfiguration = Partial<RouteConfiguration>;
+export type OptionalRouteConfiguration<
+    Middleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject
+> = Partial<RouteConfiguration<Middleware>>;
 
 
 export namespace DynamicURL {

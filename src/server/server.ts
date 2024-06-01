@@ -4,39 +4,43 @@ import { DefualtServerConfiguration } from '.';
 import { OptionalServerConfiguration, ServerConfiguration } from './types.d';
 import { Route } from 'noise_validator/src/route';
 import { Http2SecureServer } from 'http2';
+import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 
 
-export default class Server {
+export default class Server<
+    Middleware extends MiddlewareNamespace.MiddlewareObject
+> {
 
-    private _routes: Map<String, Route<any>>;
+    private _routes: Map<String, Route<any, Middleware>>;
     private _server: FastifyInstance;
-    private _configuration: ServerConfiguration;
+    private _middleware: Middleware;
+    private _configuration: ServerConfiguration<Middleware>;
     private _started: boolean = false;
 
     public constructor(
-        configuration: OptionalServerConfiguration = {}
+        configuration: OptionalServerConfiguration<Middleware> = {}
     ) {
         Log.info('Creating rerver...');
         this._routes = new Map();
         this._server = Fastify({ logger: false });
-        this._configuration = Server.build_configuration(configuration);
+        this._configuration = Server.build_configuration<Middleware>(configuration);
+        this._middleware = this._configuration.middleware ?? {};
     }
 
 
 
 
-    public static build_configuration = (configuration: ServerConfiguration | {}): ServerConfiguration => {
-        return {
-            ...DefualtServerConfiguration,
-            ...configuration
-        };
+    public static build_configuration = <
+        MO extends MiddlewareNamespace.MiddlewareObject
+    >(configuration: ServerConfiguration<MO> | {}): ServerConfiguration<MO> => {
+        return { ...DefualtServerConfiguration, ...configuration } as ServerConfiguration<MO>;
     };
 
 
 
     /**
      * @name start
-     * Starts the server (Or unpauses it)
+     * Starts the server
      *
      * @returns {void} - Nothing
      */
@@ -47,12 +51,13 @@ export default class Server {
         if (this._started) {
             Log.warn('Server already started!');
             return Promise.resolve();
-        }
-        
+        };
         
         // -- Start the server
-        Log.info('Starting server...');
         this._started = true;
+        Log.info('Starting server...');
+        this._append_middleware(this._middleware);
+        
         
         return new Promise<void>((resolve) => this._server.listen({
             port: this.configuration.port,
@@ -67,20 +72,21 @@ export default class Server {
 
 
     /**
-     * @name stop
-     * Stops / pauses the server
-     *
-     * @returns {Promise<void>} - Nothing
+     * @name _append_middleware
+     * Appends the middleware to every route
      */
-    public stop(): Promise<void> {
-        if (!this._started) {
-            Log.warn('Server already stopped!');
-            return Promise.resolve();
-        }
+    private _append_middleware = (
+        middleware: Middleware
+    ): void => {
+        Log.debug('Appending middleware to all routes...');
 
-        Log.warn('Stopping server...')
-        return this._server.close();
+        // -- Loop through all the routes
+        for (const route of this._routes.values())
+            Object.keys(middleware).forEach(key => route.add_middleware(key, middleware[key]));
+
+        Log.debug('Middleware appended to all routes');
     };
+
 
 
 
@@ -92,7 +98,7 @@ export default class Server {
      *
      * @returns {void} - Nothing
      */
-    public add_route(route: Route<any>): void {
+    public add_route(route: Route<any, Middleware>): void {
 
         // -- Don't add the route if it already exists
         if (this._routes.has(route.path)) {
@@ -108,7 +114,7 @@ export default class Server {
 
 
 
-    public get configuration(): ServerConfiguration { return this._configuration; }
+    public get configuration(): ServerConfiguration<Middleware> { return this._configuration; }
     public get port(): number { return this._configuration.port; }
     public get host(): string { return this._configuration.host; }
     public get started(): boolean { return this._started; }

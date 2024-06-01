@@ -1,16 +1,22 @@
 import { BinderNamespace, Cookie } from 'noise_validator/src/binder/types';
 import { FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
 import { GenericError } from 'noise_validator/src/error';
-import { create_set_cookie_header, Log, MethodNotAvailableError, NoRouteHandlerError, Server } from '..';
+import { create_set_cookie_header, Log, MethodNotAvailableError, NoRouteHandlerError } from '..';
 import { OptionalRouteConfiguration, RouteConfiguration } from './types.d';
 import { RouteHandlerExecutedError, UnkownRouteHandlerError } from './errors';
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 import { v4 } from 'uuid';
+import { Execute } from 'noise_validator/src/middleware';
+
+import { ServerConfiguration } from 'noise_validator/src/server/types';
+import { Server } from 'noise_validator/src/server';
 
 
 
 export default class Route<
-    UrlPath extends string
+    UrlPath extends string,
+    ServerMiddleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject,
+    RouteMiddleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject
 > {
     public readonly _raw_path: UrlPath;
     public readonly _path: string;
@@ -18,28 +24,33 @@ export default class Route<
 
     private _friendly_name: string | undefined;
     private _binder_map: BinderNamespace.Binders = new Map();
-    private _rerver: Server;
-
-    private _configuration: RouteConfiguration;
+    private _server: Server<ServerMiddleware>;
+    private _configuration: RouteConfiguration<ServerMiddleware>;
+    private _router_middleware: RouteMiddleware;
+    private _middleware: MiddlewareNamespace.MiddlewareObject = {};
 
     public constructor(
-        rerver: Server,
+        server: Server<ServerMiddleware>,
         path: UrlPath,
-        configuration?: OptionalRouteConfiguration
+        configuration?: OptionalRouteConfiguration<RouteMiddleware>
     ) {
-        this._rerver = rerver;
+        this._server = server;
         this._configuration = this._build_configuration(configuration || {});
         this._raw_path = path;
         this._path = this._build_path(path);
         this._friendly_name = configuration?.friendly_name || undefined;
-        this._rerver.add_route(this);
+        this._server.add_route(this);
+
+        this._router_middleware = configuration?.middleware ?? {} as RouteMiddleware;
+        Object.keys(this._router_middleware).forEach(key => this.add_middleware(key, this._router_middleware[key]));
     };
 
 
 
-    public static defualt_configuration: RouteConfiguration = {
+    public static defualt_configuration: RouteConfiguration<MiddlewareNamespace.MiddlewareObject> = {
         friendly_name: 'Unnamed Route',
-        api_version: undefined
+        api_version: undefined,
+        middleware: {}
     };
 
 
@@ -53,14 +64,8 @@ export default class Route<
      * 
      * @returns {RouteConfiguration} - The built configuration
      */
-    private _build_configuration = (
-        configuration: RouteConfiguration | {}
-    ): RouteConfiguration => {
-        return {
-            ...Route.defualt_configuration,
-            ...configuration
-        };
-    };
+    private _build_configuration = (configuration: RouteConfiguration<ServerMiddleware> | {}): RouteConfiguration<ServerMiddleware> => 
+        { return { ...Route.defualt_configuration as RouteConfiguration<ServerMiddleware>, ...configuration, }};
 
 
 
@@ -157,6 +162,14 @@ export default class Route<
             error_cookies = new Map();
             error_headers = new Map();
             
+            // -- Execute the middleware
+            const middleware = await Execute.many(this._middleware || {}, { request, reply });
+            if (middleware.overall_success === false) {
+                Log.debug(`Route: ${this._path} has FAILED to process`);
+                this._parse_middleware_response(middleware.middleware, errors, error_cookies, error_headers);
+                continue;
+            };
+
 
             // -- Execute the binder
             let validator_result: BinderNamespace.ValidateDataReturn;
@@ -175,11 +188,13 @@ export default class Route<
                 //    the callback it self will handle the response
                 case true: {
                     Log.debug(`Route: ${this._path} has PASSED middleware validation`);
+
+                    // -- Merge the middleware respones
+                    validator_result.middleware = { ...validator_result.middleware, ...middleware.data };
+                    validator_result.middleware_cookies = new Map([...validator_result.middleware_cookies, ...middleware.cookies]);
+                    validator_result.middleware_headers = new Map([...validator_result.middleware_headers, ...middleware.headers]);
                     try { await binder.callback(validator_result, validator_result.middleware_cookies, validator_result.middleware_headers); }
-                    catch (unknown_error) {
-                        errors.push(UnkownRouteHandlerError.from_unknown(unknown_error));
-                        continue;
-                    };
+                    catch (unknown_error) { errors.push(UnkownRouteHandlerError.from_unknown(unknown_error)); continue; };
 
                     // -- Exit the loop as the response has been sent
                     return;
@@ -190,14 +205,7 @@ export default class Route<
                 //    by the middleware to be sent regardless of the success of the middleware
                 case false: {
                     Log.debug(`Route: ${this._path} has FAILED middleware validation`);
-                    (validator_result.middleware as MiddlewareNamespace.MiddlewareValidationMap).forEach((middleware, key) => {
-                        if (middleware.success) return;
-                        middleware.cookies.forEach((value, key) => error_cookies.set(key, value));
-                        middleware.headers.forEach((value, key) => error_headers.set(key, value));
-                        errors.push(middleware.data);
-                    });
-
-                    // -- Continue to the next binder
+                    this._parse_middleware_response(validator_result.middleware, errors, error_cookies, error_headers);
                     continue;
                 }
             }
@@ -214,6 +222,23 @@ export default class Route<
         if (errors.length < 1) errors.push(new NoRouteHandlerError('No valid handler found for this route'));
         this.send_exception(reply, errors);
     };
+
+
+
+    /**
+     * @name _parse_middleware_response
+     */
+    private _parse_middleware_response = (
+        middleware_result: MiddlewareNamespace.MiddlewareValidationMap,
+        errors: Array<GenericError>,
+        error_cookies: Map<string, Cookie.Shape>,
+        error_headers: Map<string, string>
+    ) => (middleware_result as MiddlewareNamespace.MiddlewareValidationMap).forEach((middleware) => {
+        if (middleware.success) return;
+        middleware.cookies.forEach((value, key) => error_cookies.set(key, value));
+        middleware.headers.forEach((value, key) => error_headers.set(key, value));
+        errors.push(middleware.data);
+    });
 
 
 
@@ -260,7 +285,27 @@ export default class Route<
         this._binder_map.get(method)?.push(binder);
     };
 
+
+
+    /**
+     * @name add_middleware
+     * Adds a middleware to the route, note, adding middleware this way
+     * wont give you type inference, pass it trough a configuration object
+     * trough the binder / route / server instead
+     * 
+     * @param {string} name - The name of the middleware
+     * @param {MiddlewareNamespace.GenericMiddlewareConstructor} middleware - The middleware to add
+     * 
+     * @returns {void} - Nothing
+     */
+    public add_middleware = (
+        name: string,
+        middleware: MiddlewareNamespace.GenericMiddlewareConstructor
+    ): void => {
+        this._middleware[name] = middleware;
+    };
     
+
 
     public get raw_path(): UrlPath { return this._raw_path; }
     public get path(): string { return this._path; }

@@ -4,13 +4,14 @@ import { create_set_cookie_header } from './cookie';
 import { GenericError } from 'noise_validator/src/error';
 import { Route } from 'noise_validator/src/route';
 import { validate_binder_output } from './validators';
+import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 
 
 
 const callback = async (  
     callback: (data: any) => any,
     data: BinderNamespace.GenericCallbackObject,
-    route: Route<any>,
+    route: Route<any, any>,
     schemas: Schemas,
     middleware_cookies: Map<string, Cookie.Shape>,
     middleware_headers: Map<string, string>

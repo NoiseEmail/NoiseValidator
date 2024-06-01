@@ -3,11 +3,12 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { Route } from 'noise_validator/src/route';
 import { validate_binder_request } from '.';
 import { Execute } from 'noise_validator/src/middleware';
+import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 
 
 
 const validate = async <
-    InputRoute extends Route<any>
+    InputRoute extends Route<any, any>
 >(
     route: InputRoute,
     schemas: Schemas,
