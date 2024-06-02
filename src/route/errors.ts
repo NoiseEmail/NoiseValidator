@@ -34,9 +34,18 @@ class UnkownRouteHandlerError extends GenericError {
     }
 };
 
+class MiddlewareExecutionError extends GenericError {
+    public constructor(
+        message: string
+    ) {
+        super(message, 500);
+    }
+}
+
 export {
     MethodNotAvailableError,
     RouteHandlerExecutedError,
+    MiddlewareExecutionError,
     UnkownRouteHandlerError,
     NoRouteHandlerError
 }

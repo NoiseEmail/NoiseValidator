@@ -81,7 +81,7 @@ class MWBefore extends GenericMiddleware<void> {
     public static runtime = MiddlewareTypes.MiddlewareRuntime.BEFORE;
     protected handler = async () => {
         console.log('Before');
-        this.set_header('Before', 'Before', 'on-failure');
+        this.set_header('Before', 'Before', 'on-both');
         throw new Error('Error');
     }
 }
@@ -91,6 +91,7 @@ class MWAfter extends GenericMiddleware<void> {
     protected handler = async () => {
         console.log('After');
         this.set_header('After', 'After', 'on-failure');
+        throw new Error('Error');
     }
 }
 
@@ -123,4 +124,4 @@ await server.start()
 
 
 const data = await fetch('http://localhost:8080/v1/test', {})
-console.log(data);
+console.log(await data.json());
