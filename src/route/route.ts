@@ -353,7 +353,7 @@ export default class Route<
 
         try {
             if (binder_errored || middleware_errored) {
-                console.log('binder_errored', binder_errored);
+
                 // -- Merge the cookies / headers
                 middleware_cookies = new Map([...middleware_cookies, ...error_cookies]);
                 middleware_headers = new Map([...middleware_headers, ...error_headers]);
