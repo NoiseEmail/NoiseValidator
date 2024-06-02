@@ -5,35 +5,39 @@ import { OptionalServerConfiguration, ServerConfiguration } from './types.d';
 import { Route } from 'noise_validator/src/route';
 import { Http2SecureServer } from 'http2';
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
+import { Execute, GenericMiddleware } from 'noise_validator/src/middleware';
+
 
 
 export default class Server<
-    Middleware extends MiddlewareNamespace.MiddlewareObject
+    BeforeMiddleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject,
+    AfterMiddleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject,
 > {
 
-    private _routes: Map<String, Route<any, Middleware>>;
+    private _routes: Map<String, Route<any, BeforeMiddleware>>;
     private _server: FastifyInstance;
-    private _middleware: Middleware;
-    private _configuration: ServerConfiguration<Middleware>;
+    private _middleware: BeforeMiddleware;
+    private _configuration: ServerConfiguration<BeforeMiddleware, AfterMiddleware>;
     private _started: boolean = false;
 
     public constructor(
-        configuration: OptionalServerConfiguration<Middleware> = {}
+        configuration: OptionalServerConfiguration<BeforeMiddleware> = {}
     ) {
         Log.info('Creating rerver...');
         this._routes = new Map();
         this._server = Fastify({ logger: false });
-        this._configuration = Server.build_configuration<Middleware>(configuration);
-        this._middleware = this._configuration.middleware ?? {};
+        this._configuration = Server.build_configuration<BeforeMiddleware, AfterMiddleware>(configuration);
+        this._middleware = GenericMiddleware.extract_runtime_object<BeforeMiddleware>(configuration?.middleware);
     }
 
 
 
 
     public static build_configuration = <
-        MO extends MiddlewareNamespace.MiddlewareObject
-    >(configuration: ServerConfiguration<MO> | {}): ServerConfiguration<MO> => {
-        return { ...DefualtServerConfiguration, ...configuration } as ServerConfiguration<MO>;
+        BMO extends MiddlewareNamespace.MiddlewareObject,
+        AMO extends MiddlewareNamespace.MiddlewareObject
+    >(configuration: ServerConfiguration<BMO, AMO> | {}): ServerConfiguration<BMO, AMO> => {
+        return { ...DefualtServerConfiguration, ...configuration } as ServerConfiguration<BMO, AMO>;
     };
 
 
@@ -76,7 +80,7 @@ export default class Server<
      * Appends the middleware to every route
      */
     private _append_middleware = (
-        middleware: Middleware
+        middleware: BeforeMiddleware | AfterMiddleware
     ): void => {
         Log.debug('Appending middleware to all routes...');
 
@@ -98,7 +102,7 @@ export default class Server<
      *
      * @returns {void} - Nothing
      */
-    public add_route(route: Route<any, Middleware>): void {
+    public add_route(route: Route<any, BeforeMiddleware>): void {
 
         // -- Don't add the route if it already exists
         if (this._routes.has(route.path)) {
@@ -114,7 +118,7 @@ export default class Server<
 
 
 
-    public get configuration(): ServerConfiguration<Middleware> { return this._configuration; }
+    public get configuration(): ServerConfiguration<BeforeMiddleware, AfterMiddleware> { return this._configuration; }
     public get port(): number { return this._configuration.port; }
     public get host(): string { return this._configuration.host; }
     public get started(): boolean { return this._started; }

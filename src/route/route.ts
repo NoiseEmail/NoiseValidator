@@ -1,4 +1,4 @@
-import { BinderNamespace, Cookie } from 'noise_validator/src/binder/types';
+import { BinderNamespace, BinderOutputValidatorResult, Cookie } from 'noise_validator/src/binder/types';
 import { FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
 import { GenericError } from 'noise_validator/src/error';
 import { create_set_cookie_header, Log, MethodNotAvailableError, NoRouteHandlerError } from '..';
@@ -6,7 +6,7 @@ import { OptionalRouteConfiguration, RouteConfiguration } from './types.d';
 import { RouteHandlerExecutedError, UnkownRouteHandlerError } from './errors';
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 import { v4 } from 'uuid';
-import { Execute } from 'noise_validator/src/middleware';
+import { Execute, GenericMiddleware } from 'noise_validator/src/middleware';
 
 import { ServerConfiguration } from 'noise_validator/src/server/types';
 import { Server } from 'noise_validator/src/server';
@@ -16,7 +16,8 @@ import { Server } from 'noise_validator/src/server';
 export default class Route<
     UrlPath extends string,
     ServerMiddleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject,
-    RouteMiddleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject
+    RouteMiddleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject,
+    AfterMiddleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject
 > {
     public readonly _raw_path: UrlPath;
     public readonly _path: string;
@@ -25,9 +26,10 @@ export default class Route<
     private _friendly_name: string | undefined;
     private _binder_map: BinderNamespace.Binders = new Map();
     private _server: Server<ServerMiddleware>;
-    private _configuration: RouteConfiguration<ServerMiddleware>;
+    private _configuration: RouteConfiguration<ServerMiddleware, AfterMiddleware>;
     private _router_middleware: RouteMiddleware;
     private _middleware: MiddlewareNamespace.MiddlewareObject = {};
+    private _after_middleware: MiddlewareNamespace.MiddlewareObject = {};
 
     public constructor(
         server: Server<ServerMiddleware>,
@@ -40,14 +42,17 @@ export default class Route<
         this._path = this._build_path(path);
         this._friendly_name = configuration?.friendly_name || undefined;
         this._server.add_route(this);
-
-        this._router_middleware = configuration?.middleware ?? {} as RouteMiddleware;
+    
+        this._router_middleware = GenericMiddleware.extract_runtime_object<RouteMiddleware>(configuration?.middleware);
         Object.keys(this._router_middleware).forEach(key => this.add_middleware(key, this._router_middleware[key]));
     };
 
 
 
-    public static defualt_configuration: RouteConfiguration<MiddlewareNamespace.MiddlewareObject> = {
+    public static defualt_configuration: RouteConfiguration<
+        MiddlewareNamespace.MiddlewareObject,
+        MiddlewareNamespace.MiddlewareObject
+    > = {
         friendly_name: 'Unnamed Route',
         api_version: undefined,
         middleware: {}
@@ -64,8 +69,8 @@ export default class Route<
      * 
      * @returns {RouteConfiguration} - The built configuration
      */
-    private _build_configuration = (configuration: RouteConfiguration<ServerMiddleware> | {}): RouteConfiguration<ServerMiddleware> => 
-        { return { ...Route.defualt_configuration as RouteConfiguration<ServerMiddleware>, ...configuration, }};
+    private _build_configuration = (configuration: RouteConfiguration<ServerMiddleware, AfterMiddleware> | {}): RouteConfiguration<ServerMiddleware, AfterMiddleware> => 
+        { return { ...Route.defualt_configuration as RouteConfiguration<ServerMiddleware, AfterMiddleware>, ...configuration, }};
 
 
 
@@ -119,15 +124,25 @@ export default class Route<
         errors.shift();
 
         // -- Send the error
-        reply.code(latest.code).send({
-            message: latest.message,
-            id: latest.id,
-            data: latest.data,
-            hint: latest.hint,
-            type: latest.type,
-            errors: errors.map(e => e.serialize()),
-            code: latest.code
-        });
+        try {
+            reply.code(latest.code).send({
+                message: latest.message,
+                id: latest.id,
+                data: latest.data,
+                hint: latest.hint,
+                type: latest.type,
+                errors: errors.map(e => e.serialize()),
+                code: latest.code
+            });
+        }
+
+        catch (unknown_error) {
+            Log.error('!!!!!!! IMPORTANT !!!!!!!');
+            Log.error(unknown_error);
+            Log.error('An unknown error occurred while sending an error to the client');
+            Log.error('This is a critical error, please investigate');
+            Log.error('!!!!!!! IMPORTANT !!!!!!!');
+        };
     };
 
 
@@ -145,29 +160,27 @@ export default class Route<
         Log.debug(`Processing route: ${this._path} with method: ${method}`)
 
         // -- Get the binders for the method
-        const binders = this._binder_map.get(method);
-        if (!binders || binders.length < 1) return this.send_exception(reply, [new MethodNotAvailableError(method)]);
+        const binder = this._binder_map.get(method);
+        if (!binder) return this.send_exception(reply, [new MethodNotAvailableError(method)]);
 
         // -- Loop through the binders
-        let errors: Array<GenericError> = [];
-        let error_cookies = new Map<string, Cookie.Shape>();
-        let error_headers = new Map<string, string>();
-
-        for (let i = 0; i < binders.length; i++) {
-
-            // -- Check if the response has been sent
-            if (reply.sent) throw new RouteHandlerExecutedError('A response has been sent outside of the route handler');
-            const binder = binders[i];
-            errors = [];
-            error_cookies = new Map();
-            error_headers = new Map();
-            
+        const errors: Array<GenericError> = [];
+        const error_cookies = new Map<string, Cookie.Shape>();
+        const error_headers = new Map<string, string>();
+        let middleware_cookies = new Map<string, Cookie.Shape>();
+        let middleware_headers = new Map<string, string>();
+        let dynamic_after_middleware: MiddlewareNamespace.MiddlewareObject = {};
+        let binder_return_data: BinderOutputValidatorResult = { body: {}, headers: {} };
+        let binder_errored = false;
+        let middleware_errored = false;
+        
+        try {
             // -- Execute the middleware
             const middleware = await Execute.many(this._middleware || {}, { request, reply });
             if (middleware.overall_success === false) {
                 Log.debug(`Route: ${this._path} has FAILED to process`);
                 this._parse_middleware_response(middleware.middleware, errors, error_cookies, error_headers);
-                continue;
+                throw new Error('Route / Server Middleware failed');
             };
 
 
@@ -177,11 +190,12 @@ export default class Route<
             catch (unknown_error) {
                 errors.push(GenericError.from_unknown(unknown_error));
                 Log.debug(`Route: ${this._path} has FAILED to process`);
-                continue;
+                throw new Error('Binder failed execution');
             }
 
 
             Log.debug(`Route: ${this._path} has PASSED schema validation`);
+            dynamic_after_middleware = validator_result.filterd_out;
             switch (validator_result.success) {
 
                 // -- If the middleware has passed, execute the callback
@@ -193,11 +207,18 @@ export default class Route<
                     validator_result.middleware = { ...validator_result.middleware, ...middleware.data };
                     validator_result.middleware_cookies = new Map([...validator_result.middleware_cookies, ...middleware.cookies]);
                     validator_result.middleware_headers = new Map([...validator_result.middleware_headers, ...middleware.headers]);
-                    try { await binder.callback(validator_result, validator_result.middleware_cookies, validator_result.middleware_headers); }
-                    catch (unknown_error) { errors.push(UnkownRouteHandlerError.from_unknown(unknown_error)); continue; };
 
-                    // -- Exit the loop as the response has been sent
-                    return;
+                    try { 
+                        binder_return_data = await binder.callback(validator_result); 
+                        middleware_cookies = validator_result.middleware_cookies;
+                        middleware_headers = validator_result.middleware_headers;
+                    }
+                    catch (unknown_error) { 
+                        errors.push(UnkownRouteHandlerError.from_unknown(unknown_error)); 
+                        binder_errored = true;
+                    };
+                    
+                    break;
                 }
 
 
@@ -206,21 +227,145 @@ export default class Route<
                 case false: {
                     Log.debug(`Route: ${this._path} has FAILED middleware validation`);
                     this._parse_middleware_response(validator_result.middleware, errors, error_cookies, error_headers);
-                    continue;
+                    break;
                 }
             }
+        } 
+        
+        // -- Log the error, just for debugging purposes
+        catch(error) { Log.debug(`Route: ${this._path} has FAILED to process`); };
+        
+
+        // -- Process the after middleware
+        const after_middleware_result = await this._process_after_middleware(
+            request, 
+            reply, 
+            dynamic_after_middleware, 
+            errors, 
+            error_cookies, 
+            error_headers, 
+            middleware_cookies, 
+            middleware_headers, 
+        );
+
+        // -- Set the middleware responses
+        middleware_cookies = after_middleware_result.middleware_cookies
+        middleware_headers = after_middleware_result.middleware_headers;
+        middleware_errored = after_middleware_result.middleware_errored;
+
+        // -- Send the response
+        this._send_response(
+            binder_return_data, 
+            middleware_cookies, 
+            middleware_headers, 
+            binder_errored, 
+            middleware_errored, 
+            errors, 
+            error_cookies, 
+            error_headers, 
+            reply
+        );
+    };
+
+
+
+    /**
+     * Handles the after middleware execution and processing
+     */
+    private _process_after_middleware = async (
+        request: FastifyRequest,
+        reply: FastifyReply,
+        dynamic_after_middleware: MiddlewareNamespace.MiddlewareObject,
+        errors: Array<GenericError>,
+        error_cookies: Map<string, Cookie.Shape>,
+        error_headers: Map<string, string>,
+        middleware_cookies: Map<string, Cookie.Shape>,
+        middleware_headers: Map<string, string>,
+    ): Promise<{
+        middleware_cookies: Map<string, Cookie.Shape>,
+        middleware_headers: Map<string, string>,
+        middleware_errored: boolean
+    }> => {
+        let middleware_errored = false;
+
+        try {
+            // -- Same func as the before middleware, just different runtime
+            const after_middleware = await Execute.many({ 
+                ...this._after_middleware, 
+                ...dynamic_after_middleware 
+            }, { 
+                request, 
+                reply 
+            }, 
+                MiddlewareNamespace.MiddlewareRuntime.BEFORE
+            );
+            
+            // -- Attempt to gracefully handle the error
+            if (after_middleware.overall_success === false) {
+                Log.debug(`Route: ${this._path} has FAILED to process AFTER middleware validation`);
+                this._parse_middleware_response(after_middleware.middleware, errors, error_cookies, error_headers);
+                throw new Error('Middleware failed');
+            }
+
+            // -- Merge the middleware respones
+            middleware_cookies = new Map([...middleware_cookies, ...after_middleware.cookies]);
+            middleware_headers = new Map([...middleware_headers, ...after_middleware.headers]);
         }
 
+        catch (unknown_error) {
+            errors.push(GenericError.from_unknown(unknown_error));
+            Log.debug(`Route: ${this._path} has FAILED to process AFTER middleware validation`);
+            middleware_errored = true;
+        };
 
-        // -- Set the cookies and headers
-        if (error_cookies.size > 0) error_headers.set('Set-Cookie', create_set_cookie_header(error_cookies));
-        error_headers.forEach((value, key) => reply.header(key, value));
+        return { middleware_cookies, middleware_headers, middleware_errored };
+    };
 
 
 
-        // -- This area is only reached if no valid handler is found
-        if (errors.length < 1) errors.push(new NoRouteHandlerError('No valid handler found for this route'));
-        this.send_exception(reply, errors);
+    /**
+     * Handles sending the response to the client
+     */
+    private _send_response = (
+        binder_return_data: BinderOutputValidatorResult,
+        middleware_cookies: Map<string, Cookie.Shape>,
+        middleware_headers: Map<string, string>,
+        binder_errored: boolean,
+        middleware_errored: boolean,
+        errors: Array<GenericError>,
+        error_cookies: Map<string, Cookie.Shape>,
+        error_headers: Map<string, string>,
+        reply: FastifyReply
+    ): void => {
+
+        try {
+            if (binder_errored || middleware_errored) {
+
+                // -- Set the cookies and headers
+                if (error_cookies.size > 0) error_headers.set('Set-Cookie', create_set_cookie_header(error_cookies));
+                error_headers.forEach((value, key) => reply.header(key, value));
+    
+                // -- This area is only reached if no valid handler is found
+                if (errors.length < 1) errors.push(new NoRouteHandlerError('No valid handler found for this route'));
+                this.send_exception(reply, errors);
+    
+                return;
+            }
+    
+            // -- Set the cookies and headers
+            reply.headers(binder_return_data.headers);
+            if (middleware_cookies.size > 0) middleware_headers.set('Set-Cookie', create_set_cookie_header(middleware_cookies));
+            middleware_headers.forEach((value, key) => reply.header(key, value));
+    
+            // -- Send the response
+            reply.send(binder_return_data.body);
+        }
+
+        catch (unknown_error) {
+            Log.error('An unknown error occurred while sending the response');
+            Log.error(unknown_error);
+            this.send_exception(reply, [GenericError.from_unknown(unknown_error)]);
+        };
     };
 
 
@@ -281,8 +426,8 @@ export default class Route<
         binder: BinderNamespace.MapObject
     ): void => {
         const method = binder.method;
-        if (!this._binder_map.has(method)) this._binder_map.set(method, []);
-        this._binder_map.get(method)?.push(binder);
+        if (this._binder_map.has(method)) throw new RouteHandlerExecutedError('A handler has already been added for this method');
+        this._binder_map.set(method, binder);
     };
 
 
@@ -302,7 +447,11 @@ export default class Route<
         name: string,
         middleware: MiddlewareNamespace.GenericMiddlewareConstructor
     ): void => {
-        this._middleware[name] = middleware;
+        
+        // -- Check if the middleware is a before or after middleware
+        // @ts-ignore
+        if (middleware.runtime === MiddlewareNamespace.MiddlewareRuntime.BEFORE) this._middleware[name] = middleware;
+        else this._after_middleware[name] = middleware;
     };
     
 

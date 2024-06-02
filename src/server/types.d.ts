@@ -1,7 +1,8 @@
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 
 export type ServerConfiguration<
-    Middleware extends MiddlewareNamespace.MiddlewareObject,
+    MiddlewareBefore extends MiddlewareNamespace.MiddlewareObject,
+    MiddlewareAfter extends MiddlewareNamespace.MiddlewareObject
 > = {
     port: number;
     debug: boolean;
@@ -10,9 +11,13 @@ export type ServerConfiguration<
         key: string, 
         cert: string 
     },
-    middleware: Middleware;
+    middleware: {
+        before?: MiddlewareBefore,
+        after?: MiddlewareAfter
+    } | MiddlewareBefore;
 };
 
 export type OptionalServerConfiguration<
-    Middleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject
-> = Partial<ServerConfiguration<Middleware>>;
+    MiddlewareBefore extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject,
+    MiddlewareAfter extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject
+> = Partial<ServerConfiguration<MiddlewareBefore, MiddlewareAfter>>;

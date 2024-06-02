@@ -129,7 +129,7 @@ export namespace BinderNamespace {
         BodyOutputSchema    extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
         HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>
     > = {
-        middleware: Middleware,
+        middleware: { before?: Middleware, after?: MiddlewareNamespace.MiddlewareObject } | Middleware,
         schemas: {
             input: { body: BodyInputSchema, query: QueryInputSchema, headers: HeadersInputSchema, cookies: CookieInputSchema },
             output: { body: BodyOutputSchema, headers: HeadersOutputSchema }
@@ -147,7 +147,7 @@ export namespace BinderNamespace {
         BodyOutputSchema    extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
         HeadersOutputSchema extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>
     > = {
-        middleware?: Middleware,
+        middleware?:  { before?: Middleware, after?: MiddlewareNamespace.MiddlewareObject } | Middleware,
         schemas?: {
             input?: { body?: BodyInputSchema, query?: QueryInputSchema, headers?: HeadersInputSchema, cookies?: CookieInputSchema },
             output?: { body?: BodyOutputSchema, headers?: HeadersOutputSchema }
@@ -157,7 +157,7 @@ export namespace BinderNamespace {
 
 
     export type GenericOptionalConfiguration = {
-        middleware?: MiddlewareNamespace.MiddlewareObject,
+        middleware?: { before?: MiddlewareNamespace.MiddlewareObject, after?: MiddlewareNamespace.MiddlewareObject } | MiddlewareNamespace.MiddlewareObject,
         schemas?: {
             input?: { 
                 body?: ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>, 
@@ -212,24 +212,23 @@ export namespace BinderNamespace {
      * etc so we need to pass their data, not just throw an error.
      */
     export type ValidateDataReturn = 
-        ( GenericCallbackObject & { success: true, middleware_cookies: Map<string, Cookie.Shape>, middleware_headers: Map<string, string> }) | 
-        { middleware: MiddlewareNamespace.MiddlewareValidationMap, success: false };
+        ((( GenericCallbackObject & { success: true, middleware_cookies: Map<string, Cookie.Shape>, middleware_headers: Map<string, string> }) | 
+        { middleware: MiddlewareNamespace.MiddlewareValidationMap, success: false }) & { filterd_out: MiddlewareNamespace.MiddlewareObject }
+    );
 
 
     
     export type Callback<Data> = (data: Data) => SchemaOutput.GenericTypes | Promise<SchemaOutput.GenericTypes>;
 
-
-
     export type MapObject = {
-        callback: (data: GenericCallbackObject, middleware_cookies: Map<string, Cookie.Shape>, middleware_headers: Map<string, string>) => Promise<void>,
+        callback: (data: GenericCallbackObject) => Promise<BinderOutputValidatorResult>,
         validate: (request: FastifyRequest, reply: FastifyReply) => Promise<ValidateDataReturn>,
         method: HTTPMethods
     };
 
 
 
-    export type Binders = Map<HTTPMethods, Array<MapObject>>;
+    export type Binders = Map<HTTPMethods, MapObject>;
 }
 
 

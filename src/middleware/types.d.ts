@@ -29,6 +29,14 @@ export namespace MiddlewareNamespace {
         protected handler: (input_value: RequestObject) => Promise<ReturnType>
         public execute: () => Promise<{ data: ReturnType, success: true } | { data: GenericError, success: false }>;
         public static get name(): string;
+        public static runtime: MiddlewareRuntime;
+    }
+
+
+    
+    export enum MiddlewareRuntime {
+        'BEFORE' = 'B',
+        'AFTER' = 'A',
     }
 
 

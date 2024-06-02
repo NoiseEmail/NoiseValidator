@@ -7,4 +7,7 @@ export default {
     port: 8080,
     debug: false,
     host: 'localhost',
-} as ServerConfiguration<MiddlewareNamespace.MiddlewareObject>;
+} as ServerConfiguration<
+    MiddlewareNamespace.MiddlewareObject, 
+    MiddlewareNamespace.MiddlewareObject
+>;

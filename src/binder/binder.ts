@@ -7,6 +7,7 @@ import { mergician } from 'mergician';
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 import { Route } from 'noise_validator/src/route';
 import { SchemaNamespace } from 'noise_validator/src/schema/types';
+import { GenericMiddleware } from 'noise_validator/src/middleware';
 
 
 
@@ -50,15 +51,16 @@ export default function Binder<
             body: make_array(configuration.schemas?.output?.body),
             headers: make_array(configuration.schemas?.output?.headers)
         }
-    };
+    };  
 
-
+    // -- Extract the middleware from the configuration
+    const middleware = GenericMiddleware.extract_runtime_object(configuration.middleware);
 
     // -- Merge the default configuration with the user configuration
     configuration = mergician(DefaultBinderConfiguration, configuration);
     route.add_binder({
-        callback: async (data, middleware_cookies, middleware_headers) => callback(binder_callback, data, route, schemas, middleware_cookies, middleware_headers),
-        validate: async (request, reply) => validate(route, schemas, request, reply, configuration),
+        callback: async (data) => callback(binder_callback, data, route, schemas),
+        validate: async (request, reply) => validate(route, schemas, request, reply, middleware),
         method
     });
 }

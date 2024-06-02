@@ -1,7 +1,7 @@
 import { Array, Boolean, Enum, GenericType, GenericTypeExecutionError, InvalidInputError, MissingHandlerError, Number, Optional, Schema, SchemaExecutionError, SchemaMissingFieldError, SchemaTypes, String, Uuid } from './schema';
 import { Binder, BinderFailedToExecuteError, BinderTypes, cookie, create_set_cookie_header, DefaultBinderConfiguration, FailedToValidateInputError, serialize_cookie, validate_binder_request } from './binder';
 import { GenericError } from './error';
-import { GenericMiddleware, MiddlewareGenericError, MissingMiddlewareHandlerError } from './middleware';
+import { GenericMiddleware, MiddlewareGenericError, MissingMiddlewareHandlerError, MiddlewareTypes } from './middleware';
 import { MethodNotAvailableError, NoRouteHandlerError, Route } from './route';
 import { Server } from './server';
 import { build_query_string, clean_url, execute_api_route, handle_error, register_api_route, replace_route_parameters } from './client';
@@ -31,6 +31,7 @@ export {
     GenericMiddleware,
     MiddlewareGenericError,
     MissingMiddlewareHandlerError,
+    MiddlewareTypes,
 
     // -- Logger
     Log,
@@ -74,3 +75,52 @@ export {
     build_query_string,
     clean_url,
 };
+
+
+class MWBefore extends GenericMiddleware<void> {
+    public static runtime = MiddlewareTypes.MiddlewareRuntime.BEFORE;
+    protected handler = async () => {
+        console.log('Before');
+        this.set_header('Before', 'Before', 'on-failure');
+        throw new Error('Error');
+    }
+}
+
+class MWAfter extends GenericMiddleware<void> {
+    public static runtime = MiddlewareTypes.MiddlewareRuntime.AFTER;
+    protected handler = async () => {
+        console.log('After');
+        this.set_header('After', 'After', 'on-failure');
+    }
+}
+
+
+
+
+const server = new Server({
+    middleware: {
+
+    }
+});
+const route = new Route(server, '/test', { api_version: 'v1', middleware: {
+} });
+
+Binder(route, 'GET', {
+    middleware: {
+        before: {
+            BEFORE5: MWBefore
+        },
+        after: {
+            AFTER6: MWAfter
+        }
+    }
+}, async ({ middleware }) => {
+    middleware
+});
+
+
+await server.start()
+
+
+const data = await fetch('http://localhost:8080/v1/test', {})
+console.log(data);

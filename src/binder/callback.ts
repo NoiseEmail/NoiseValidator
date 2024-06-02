@@ -1,5 +1,5 @@
 import { BinderFailedToExecuteError } from '.';
-import { BinderNamespace, Cookie, Schemas } from './types.d';
+import { BinderNamespace, BinderOutputValidatorResult, Cookie, Schemas } from './types.d';
 import { create_set_cookie_header } from './cookie';
 import { GenericError } from 'noise_validator/src/error';
 import { Route } from 'noise_validator/src/route';
@@ -13,19 +13,10 @@ const callback = async (
     data: BinderNamespace.GenericCallbackObject,
     route: Route<any, any>,
     schemas: Schemas,
-    middleware_cookies: Map<string, Cookie.Shape>,
-    middleware_headers: Map<string, string>
-) => {
+): Promise<BinderOutputValidatorResult> => {
     try {
         const result = await callback(data);
-        const output = await validate_binder_output(result, schemas, route.path);
-        
-        data.fastify.reply.headers(output.headers);
-
-        if (middleware_cookies.size > 0) middleware_headers.set('Set-Cookie', create_set_cookie_header(middleware_cookies));
-        middleware_headers.forEach((value, key) => data.fastify.reply.header(key, value));
-        
-        data.fastify.reply.send(output.body);
+        return validate_binder_output(result, schemas, route.path);
     }
 
     catch (unknown_error) { 

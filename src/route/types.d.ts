@@ -1,16 +1,21 @@
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 
 export type RouteConfiguration<
-    Middleware extends MiddlewareNamespace.MiddlewareObject,
+    MiddlewareBefore extends MiddlewareNamespace.MiddlewareObject,
+    MiddlewareAfter extends MiddlewareNamespace.MiddlewareObject
 > = {
     friendly_name: string;
     api_version: string | number | undefined;
-    middleware: Middleware;
+    middleware: {
+        before?: MiddlewareBefore,
+        after?: MiddlewareAfter
+    } | MiddlewareBefore;
 };
 
 export type OptionalRouteConfiguration<
-    Middleware extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject
-> = Partial<RouteConfiguration<Middleware>>;
+    MiddlewareBefore extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject,
+    MiddlewareAfter extends MiddlewareNamespace.MiddlewareObject = MiddlewareNamespace.MiddlewareObject
+> = Partial<RouteConfiguration<MiddlewareBefore, MiddlewareAfter>>;
 
 
 export namespace DynamicURL {
