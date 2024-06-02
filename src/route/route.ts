@@ -151,6 +151,9 @@ export default class Route<
      * @name _process
      * @description Processes any incoming requests and matches them
      * to any binders
+     * 
+     * TODO: Move all of this into a 'RequestProcessor' class so that
+     * data dosent need to be passed around as much
      */
     private _process = async (
         method: HTTPMethods,
