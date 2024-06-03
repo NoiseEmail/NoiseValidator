@@ -19,6 +19,7 @@ type ValidatedDataType =
         on_both_cookies: Map<string, Cookie.Shape>,
         on_both_headers: Map<string, string>,
         binder_set_cookies: Map<string, Cookie.Shape>,
+        data: Record<string, { success: boolean, data: unknown }>,
     };
 
 
@@ -142,7 +143,7 @@ class RequestProcessor {
         // -- Check if the after middleware errored
         if (validater_result.success === false) {
             this._flags.validate_failed = true;
-            this._parse_middleware_response(validater_result.middleware);
+            this._parse_middleware_response(validater_result.data);
             throw new MiddlewareExecutionError('The "execute_validater" did not execute successfully');
         }
 
@@ -198,7 +199,7 @@ class RequestProcessor {
 
         // -- Check if the after middleware errored
         if (after_middleware.overall_success === false) {
-            this._parse_middleware_response(after_middleware.middleware);
+            this._parse_middleware_response(after_middleware.data);
             this._flags.after_middleware_errored = true;
             throw new MiddlewareExecutionError('The "execute_after_middleware" did not execute successfully');
         };
@@ -207,8 +208,9 @@ class RequestProcessor {
 
 
     private _parse_middleware_response = (
-        middleware_result: MiddlewareNamespace.MiddlewareValidationMap,
-    ) => (middleware_result as MiddlewareNamespace.MiddlewareValidationMap).forEach((middleware) => {
+        middleware_result: Record<string, { success: boolean, data: unknown }>
+    ) => Object.keys(middleware_result).forEach((middleware_key) => {
+        const middleware = middleware_result[middleware_key];
         if (middleware.success) return;
         this._errors.push(MiddlewareExecutionError.from_unknown(middleware.data));
     });

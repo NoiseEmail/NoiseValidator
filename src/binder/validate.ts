@@ -28,7 +28,7 @@ const validate = async <
         binder_set_cookies: cookies,
     }
     
-    if (!middleware.overall_success) return { ...middleware, ...middleware_return ,success: false };
+    if (!middleware.overall_success) return { ...middleware, ...middleware_return, success: false };
     const validated = await validate_binder_request(request, schemas, route.path);
 
 
@@ -45,6 +45,7 @@ const validate = async <
         remove_cookie: (name: string) => cookies.delete(name),
 
         ...middleware_return,
+        data: middleware.data,
         success: true,
     };
 };

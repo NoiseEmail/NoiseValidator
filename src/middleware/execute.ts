@@ -116,8 +116,7 @@ const many = async (
     middlewares: { [key: string]: MiddlewareNamespace.GenericMiddlewareConstructor<unknown> },
     fastify: { request: FastifyRequest, reply: FastifyReply },
 ): Promise<{ 
-    data: Record<string, unknown>,
-    middleware: MiddlewareNamespace.MiddlewareValidationMap,
+    data: Record<string, { success: boolean, data: unknown }>,
     overall_success: boolean,
     on_success_cookies: Map<string, Cookie.Shape>,
     on_success_headers: Map<string, string>,
@@ -126,21 +125,20 @@ const many = async (
     on_both_cookies: Map<string, Cookie.Shape>,
     on_both_headers: Map<string, string>
 }> => {
-    const middleware: MiddlewareNamespace.MiddlewareValidationMap = new Map();
 
     // -- Theres three types of cookies / headers, on success, on failure and on both
-    const on_success_cookies: Map<string, Cookie.Shape> = new Map();
-    const on_success_headers: Map<string, string> = new Map();
+    let on_success_cookies: Map<string, Cookie.Shape> = new Map();
+    let on_success_headers: Map<string, string> = new Map();
 
-    const on_failure_cookies: Map<string, Cookie.Shape> = new Map();
-    const on_failure_headers: Map<string, string> = new Map();
+    let on_failure_cookies: Map<string, Cookie.Shape> = new Map();
+    let on_failure_headers: Map<string, string> = new Map();
 
-    const on_both_cookies: Map<string, Cookie.Shape> = new Map();
-    const on_both_headers: Map<string, string> = new Map();
+    let on_both_cookies: Map<string, Cookie.Shape> = new Map();
+    let on_both_headers: Map<string, string> = new Map();
 
 
-    const data: Record<string, unknown> = {};
-    if (!middlewares) return { middleware, overall_success: true, data, on_success_cookies, on_success_headers, on_failure_cookies, on_failure_headers, on_both_cookies, on_both_headers };
+    const data: Record<string, { success: boolean, data: unknown }> = {};
+    if (!middlewares) return { overall_success: true, data, on_success_cookies, on_success_headers, on_failure_cookies, on_failure_headers, on_both_cookies, on_both_headers };
     let overall_success = true;
 
     // -- Execute all the middlewares
@@ -148,14 +146,15 @@ const many = async (
 
         try { 
             const result = await one(middlewares[key], fastify);
-            middleware.set(key, result);
-            data[key] = result.data;
-            on_success_cookies.forEach((value, key) => on_success_cookies.set(key, value));
-            on_success_headers.forEach((value, key) => on_success_headers.set(key, value));
-            on_failure_cookies.forEach((value, key) => on_failure_cookies.set(key, value));
-            on_failure_headers.forEach((value, key) => on_failure_headers.set(key, value));
-            on_both_cookies.forEach((value, key) => on_both_cookies.set(key, value));
-            on_both_headers.forEach((value, key) => on_both_headers.set(key, value));
+            data[key] = { success: result.success, data: result.data };
+
+            on_success_cookies = new Map([...on_success_cookies, ...result.on_success_cookies]);
+            on_success_headers = new Map([...on_success_headers, ...result.on_success_headers]);
+            on_failure_cookies = new Map([...on_failure_cookies, ...result.on_failure_cookies]);
+            on_failure_headers = new Map([...on_failure_headers, ...result.on_failure_headers]);
+            on_both_cookies = new Map([...on_both_cookies, ...result.on_both_cookies]);
+            on_both_headers = new Map([...on_both_headers, ...result.on_both_headers]);
+
             if (!result.success) overall_success = false;
         }
 
@@ -169,7 +168,7 @@ const many = async (
 
     // -- Wait for all the promises to resolve
     await Promise.all(promises);
-    return { middleware, overall_success, data, on_success_cookies, on_success_headers, on_failure_cookies, on_failure_headers, on_both_cookies, on_both_headers };
+    return { overall_success, data, on_success_cookies, on_success_headers, on_failure_cookies, on_failure_headers, on_both_cookies, on_both_headers };
 };
 
 
