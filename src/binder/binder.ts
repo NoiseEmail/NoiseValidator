@@ -54,14 +54,16 @@ export default function Binder<
     };  
 
     // -- Extract the middleware from the configuration
-    const middleware = GenericMiddleware.extract_runtime_object(configuration.middleware);
-
+    const split_middleware = GenericMiddleware.split_runtime_object(configuration.middleware);
+    
     // -- Merge the default configuration with the user configuration
     configuration = mergician(DefaultBinderConfiguration, configuration);
     route.add_binder({
         callback: async (data) => callback(binder_callback, data, route, schemas),
-        validate: async (request, reply) => validate(route, schemas, request, reply, middleware),
-        method
+        validate: async (request, reply, middleware) => validate(route, schemas, request, reply, middleware),
+        method,
+        before_middleware: split_middleware.before,
+        after_middleware: split_middleware.after,
     });
 }
 

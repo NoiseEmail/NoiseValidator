@@ -11,7 +11,6 @@ export default class GenericMiddleware<
     ReturnType extends unknown | Promise<unknown> = unknown,
     RequestObject extends MiddlewareNamespace.AnyMiddlewareRequestObject = MiddlewareNamespace.AnyMiddlewareRequestObject
 > extends MiddlewareNamespace.GenericMiddlewareLike<ReturnType, RequestObject> {
-    public static runtime = MiddlewareNamespace.MiddlewareRuntime.BEFORE;
     public readonly _return_type: ReturnType = {} as ReturnType;
     protected readonly _request_object: RequestObject;
     protected _validated: ReturnType | undefined;
@@ -171,5 +170,35 @@ export default class GenericMiddleware<
         else executable_middlewares = (middleware ?? {}) as MiddlewareNamespace.MiddlewareObject;
 
         return executable_middlewares as ReturnObject;
+    }
+
+
+    public static split_runtime_object = (middleware: ({
+        before?: MiddlewareNamespace.MiddlewareObject,
+        after?: MiddlewareNamespace.MiddlewareObject
+    } | MiddlewareNamespace.MiddlewareObject) | undefined): {
+        before: MiddlewareNamespace.MiddlewareObject,
+        after: MiddlewareNamespace.MiddlewareObject
+    } => {
+        let before: MiddlewareNamespace.MiddlewareObject | null = null;
+        let after: MiddlewareNamespace.MiddlewareObject | null = null;
+
+        // -- Check if the user defined the run time
+        if (middleware?.before !== undefined && !(middleware?.before instanceof GenericMiddleware))
+            before = (middleware?.before ?? {}) as MiddlewareNamespace.MiddlewareObject;
+
+        if (middleware?.after !== undefined && !(middleware?.after instanceof GenericMiddleware))
+            after = (middleware?.after ?? {}) as MiddlewareNamespace.MiddlewareObject;
+
+        // -- Else, default to before
+        if (!before && !after) {
+            before = middleware as MiddlewareNamespace.MiddlewareObject;
+            after = {};
+        }
+
+        if (!before) before = {};
+        if (!after) after = {};
+
+        return { before, after };
     }
 }

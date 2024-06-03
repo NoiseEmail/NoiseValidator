@@ -18,7 +18,7 @@ const validate = async <
 ): Promise<BinderNamespace.ValidateDataReturn> => {
 
     const middleware = await Execute.many(parsed_middleware, { request, reply });
-    if (!middleware.overall_success) return { ...middleware, success: false, filterd_out: middleware.filterd_out };
+    if (!middleware.overall_success) return { ...middleware, success: false };
     const validated = await validate_binder_request(request, schemas, route.path);
 
     // -- Return the validated data
@@ -36,7 +36,6 @@ const validate = async <
         middleware_cookies: middleware.cookies,
         middleware_headers: middleware.headers,
         success: true,
-        filterd_out: middleware.filterd_out,
     };
 };
 

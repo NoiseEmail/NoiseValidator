@@ -212,9 +212,15 @@ export namespace BinderNamespace {
      * etc so we need to pass their data, not just throw an error.
      */
     export type ValidateDataReturn = 
-        ((( GenericCallbackObject & { success: true, middleware_cookies: Map<string, Cookie.Shape>, middleware_headers: Map<string, string> }) | 
-        { middleware: MiddlewareNamespace.MiddlewareValidationMap, success: false }) & { filterd_out: MiddlewareNamespace.MiddlewareObject }
-    );
+        (GenericCallbackObject & { 
+            success: true, 
+            middleware_cookies: Map<string, Cookie.Shape>, 
+            middleware_headers: Map<string, string> 
+        }) | 
+        { 
+            middleware: MiddlewareNamespace.MiddlewareValidationMap, 
+            success: false 
+        };
 
 
     
@@ -222,8 +228,10 @@ export namespace BinderNamespace {
 
     export type MapObject = {
         callback: (data: GenericCallbackObject) => Promise<BinderOutputValidatorResult>,
-        validate: (request: FastifyRequest, reply: FastifyReply) => Promise<ValidateDataReturn>,
-        method: HTTPMethods
+        validate: (request: FastifyRequest, reply: FastifyReply, before_middleware: MiddlewareNamespace.MiddlewareObject) => Promise<ValidateDataReturn>,
+        method: HTTPMethods,
+        before_middleware: MiddlewareNamespace.MiddlewareObject,
+        after_middleware: MiddlewareNamespace.MiddlewareObject
     };
 
 

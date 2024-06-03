@@ -3,9 +3,8 @@ import Log from 'noise_validator/src/logger';
 import { DefualtServerConfiguration } from '.';
 import { OptionalServerConfiguration, ServerConfiguration } from './types.d';
 import { Route } from 'noise_validator/src/route';
-import { Http2SecureServer } from 'http2';
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
-import { Execute, GenericMiddleware } from 'noise_validator/src/middleware';
+import { GenericMiddleware } from 'noise_validator/src/middleware';
 
 
 
@@ -16,7 +15,8 @@ export default class Server<
 
     private _routes: Map<String, Route<any, BeforeMiddleware>>;
     private _server: FastifyInstance;
-    private _middleware: BeforeMiddleware;
+    private _before_middleware: MiddlewareNamespace.MiddlewareObject;
+    private _after_middleware: MiddlewareNamespace.MiddlewareObject;
     private _configuration: ServerConfiguration<BeforeMiddleware, AfterMiddleware>;
     private _started: boolean = false;
 
@@ -27,7 +27,11 @@ export default class Server<
         this._routes = new Map();
         this._server = Fastify({ logger: false });
         this._configuration = Server.build_configuration<BeforeMiddleware, AfterMiddleware>(configuration);
-        this._middleware = GenericMiddleware.extract_runtime_object<BeforeMiddleware>(configuration?.middleware);
+
+        // -- Split the middleware object
+        const split_middleware = GenericMiddleware.split_runtime_object(configuration?.middleware);
+        this._before_middleware = split_middleware.before;
+        this._after_middleware = split_middleware.after;
     }
 
 
@@ -60,7 +64,7 @@ export default class Server<
         // -- Start the server
         this._started = true;
         Log.info('Starting server...');
-        this._append_middleware(this._middleware);
+        this._compile_binders();
         
         
         return new Promise<void>((resolve) => this._server.listen({
@@ -76,21 +80,23 @@ export default class Server<
 
 
     /**
-     * @name _append_middleware
+     * @name _compile_binders
      * Appends the middleware to every route
      */
-    private _append_middleware = (
-        middleware: BeforeMiddleware | AfterMiddleware
-    ): void => {
-        Log.debug('Appending middleware to all routes...');
+    private _compile_binders = (): void => {
+        for (const route of this._routes.values()) {
 
-        // -- Loop through all the routes
-        for (const route of this._routes.values())
-            Object.keys(middleware).forEach(key => route.add_middleware(key, middleware[key]));
+            // -- Add the middleware
+            Object.keys(this._before_middleware || {}).forEach(key => 
+                route.add_middleware(key, this._before_middleware[key], MiddlewareNamespace.MiddlewareRuntime.BEFORE));
 
-        Log.debug('Middleware appended to all routes');
+            Object.keys(this._after_middleware || {}).forEach(key => 
+                route.add_middleware(key, this._after_middleware[key], MiddlewareNamespace.MiddlewareRuntime.AFTER));
+
+            // -- Compile the binder
+            route._compile_binder();
+        }
     };
-
 
 
 

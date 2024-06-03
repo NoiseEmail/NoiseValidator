@@ -90,33 +90,24 @@ const one = async (
 const many = async (
     middlewares: { [key: string]: MiddlewareNamespace.GenericMiddlewareConstructor<unknown> },
     fastify: { request: FastifyRequest, reply: FastifyReply },
-    filter_mode: MiddlewareNamespace.MiddlewareRuntime = MiddlewareNamespace.MiddlewareRuntime.AFTER
 ): Promise<{ 
     data: Record<string, unknown>,
     middleware: MiddlewareNamespace.MiddlewareValidationMap,
     overall_success: boolean,
     cookies: Map<string, Cookie.Shape>,
     headers: Map<string, string>,
-    filterd_out: MiddlewareNamespace.MiddlewareObject
 }> => {
     const middleware: MiddlewareNamespace.MiddlewareValidationMap = new Map();
     const cookie_map: Map<string, Cookie.Shape> = new Map();
     const header_map: Map<string, string> = new Map();
     const data: Record<string, unknown> = {};
-    const filterd_out: MiddlewareNamespace.MiddlewareObject = {};
-    if (!middlewares) return { middleware, overall_success: true, cookies: cookie_map, headers: header_map, data: {}, filterd_out: {} };
+    if (!middlewares) return { middleware, overall_success: true, cookies: cookie_map, headers: header_map, data: {} };
     let overall_success = true;
 
     // -- Execute all the middlewares
     const promises: Array<Promise<void>> = Object.keys(middlewares).map(async (key) => {
 
         try { 
-            // @ts-ignore
-            if (middlewares[key].runtime === filter_mode) {
-                filterd_out[key] = middlewares[key];
-                return;
-            };
-        
             const result = await one(middlewares[key], fastify);
             middleware.set(key, result);
             data[key] = result.data;
@@ -135,7 +126,7 @@ const many = async (
 
     // -- Wait for all the promises to resolve
     await Promise.all(promises);
-    return { middleware, overall_success, cookies: cookie_map, headers: header_map, data, filterd_out };
+    return { middleware, overall_success, cookies: cookie_map, headers: header_map, data };
 };
 
 

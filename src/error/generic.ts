@@ -105,8 +105,6 @@ export class GenericError extends Error {
         if (error instanceof GenericError) return_error = error;
         if (error instanceof Error) return_error = GenericError.from_error(error);
         if (typeof error === 'string') return_error = new GenericError(error, 500);
-
-        return_error.data = { input: error };
         if (hint) return_error.hint = hint;
         return return_error;
     };

@@ -75,3 +75,56 @@ export {
     build_query_string,
     clean_url,
 };
+
+
+class MW1 extends GenericMiddleware {
+    protected handler = async (): Promise<void> => {
+        console.log('Handler 1');
+        this.set_header('test', 'test','on-failure');
+        // throw new Error('Test');
+    }
+}
+
+class MW2 extends GenericMiddleware {
+    protected handler = async (): Promise<void> => {
+        console.log('Handler 2');
+        this.set_header('test2', 'test2','on-failure');
+        // throw new Error('Test OTHER');
+    }
+}
+
+class MW3 extends GenericMiddleware {
+    protected handler = async (): Promise<void> => {
+        console.log('Handler 3');
+    }
+}
+
+
+
+const server = new Server({
+  
+});
+
+const route = new Route(server, '/test', { 
+    api_version: 'v1',
+    middleware: {
+        after: {
+            test: MW1,
+        },
+        before: {
+            test: MW2,
+        }
+    }
+});
+
+
+Binder(route, 'POST', {
+    
+}, async () => {
+    console.log('Route hit');
+    // throw new Error('Test');
+
+    return { success: true };
+});
+
+server.start()
