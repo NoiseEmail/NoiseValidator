@@ -27,6 +27,7 @@ type ValidatedDataType =
 class RequestProcessor {
     private readonly _id: string = v4();
     private _errors: Array<GenericError> = [];
+    private _prevent_reply: boolean = false;
 
     private readonly _fastify_request: FastifyRequest;
     private readonly _fastify_reply: FastifyReply;
@@ -104,6 +105,8 @@ class RequestProcessor {
             this._fastify_reply.headers(Object.fromEntries(this._on_success_headers));
             const cookies = new Map([...this._on_both_cookies, ...this._on_success_cookies, ...this._binder_set_cookies]);
             if (cookies.size > 0) this._fastify_reply.header('Set-Cookie', create_set_cookie_header(cookies));
+
+            if (this._prevent_reply) return;
             return this._fastify_reply.send(callback_result.body);
         }
 
@@ -231,6 +234,9 @@ class RequestProcessor {
      */
     public send_exception = (): void => {
 
+        // -- CHeck if were allowed to send a reply
+        if (this._prevent_reply) return;
+
         // -- Check if the reply was sent
         if (this._flags.reply_sent) throw new RouteHandlerExecutedError('The route handler has already been executed');
         this._flags.reply_sent = true;
@@ -274,6 +280,8 @@ class RequestProcessor {
     public get id(): string { return this._id; }
     public get errors(): Array<GenericError> { return this._errors; }
     public get flags(): Record<string, boolean> { return this._flags; }
+    public get prevent_reply(): boolean { return this._prevent_reply; }
+    public set prevent_reply(value: boolean) { this._prevent_reply = value; }
 }
 
 
