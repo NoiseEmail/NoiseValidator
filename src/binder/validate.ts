@@ -4,6 +4,7 @@ import { Route } from 'noise_validator/src/route';
 import { validate_binder_request } from '.';
 import { Execute, GenericMiddleware } from 'noise_validator/src/middleware';
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
+import { RequestProcessor } from 'noise_validator/src/route';
 
 
 
@@ -14,10 +15,11 @@ const validate = async <
     schemas: Schemas,
     request: FastifyRequest,
     reply: FastifyReply,
-    parsed_middleware: MiddlewareNamespace.MiddlewareObject
+    parsed_middleware: MiddlewareNamespace.MiddlewareObject,
+    request_processor: RequestProcessor
 ): Promise<BinderNamespace.ValidateDataReturn> => {
     const cookies = new Map<string, Cookie.Shape>();
-    const middleware = await Execute.many(parsed_middleware, { request, reply });
+    const middleware = await Execute.many(parsed_middleware, { request, reply }, request_processor);
     const middleware_return = {
         on_both_cookies: middleware.on_both_cookies,
         on_both_headers: middleware.on_both_headers,

@@ -3,6 +3,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { GenericError } from 'noise_validator/src/error';
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 import { MiddlewareValidationError } from './errors';
+import { RequestProcessor } from 'noise_validator/src/route';
 
 
 
@@ -13,13 +14,15 @@ import { MiddlewareValidationError } from './errors';
 const build_middleware_object = (
     cookie_map: Map<string, { cookie: Cookie.Shape, on: MiddlewareNamespace.ExecuteOn }>,
     header_map: Map<string, { value: string, on: MiddlewareNamespace.ExecuteOn }>,
-    fastify: { request: FastifyRequest, reply: FastifyReply }
+    fastify: { request: FastifyRequest, reply: FastifyReply },
+    request_processor: RequestProcessor
 ): MiddlewareNamespace.AnyMiddlewareRequestObject => {
     return {
         headers: fastify.request.headers,
         body: fastify.request.body,
         query: fastify.request.query,
         fastify,
+        request_processor,
 
         set_header: (
             key: string, 
@@ -87,12 +90,13 @@ const build_return_object = (
 
 const one = async (
     middleware: MiddlewareNamespace.GenericMiddlewareConstructor<unknown>,
-    fastify: { request: FastifyRequest, reply: FastifyReply }
+    fastify: { request: FastifyRequest, reply: FastifyReply },
+    request_processor: RequestProcessor
 ): Promise<MiddlewareNamespace.MiddlewareValidationResult> => {
     try {
         const cookie_map: Map<string, { cookie: Cookie.Shape, on: MiddlewareNamespace.ExecuteOn }> = new Map();
         const header_map: Map<string, { value: string, on: MiddlewareNamespace.ExecuteOn }> = new Map();
-        const request_object = build_middleware_object(cookie_map, header_map, fastify);
+        const request_object = build_middleware_object(cookie_map, header_map, fastify, request_processor);
 
         // -- Variables to store the result
         const instance = new middleware(request_object); 
@@ -115,6 +119,7 @@ const one = async (
 const many = async (
     middlewares: { [key: string]: MiddlewareNamespace.GenericMiddlewareConstructor<unknown> },
     fastify: { request: FastifyRequest, reply: FastifyReply },
+    request_processor: RequestProcessor
 ): Promise<{ 
     data: Record<string, { success: boolean, data: unknown }>,
     overall_success: boolean,
@@ -145,7 +150,7 @@ const many = async (
     const promises: Array<Promise<void>> = Object.keys(middlewares).map(async (key) => {
 
         try { 
-            const result = await one(middlewares[key], fastify);
+            const result = await one(middlewares[key], fastify, request_processor);
             data[key] = { success: result.success, data: result.data };
 
             on_success_cookies = new Map([...on_success_cookies, ...result.on_success_cookies]);

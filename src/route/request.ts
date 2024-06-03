@@ -124,7 +124,8 @@ class RequestProcessor {
         const validater_result = await this._binder.validate(
             this._fastify_request, 
             this._fastify_reply, 
-            this._before_middleware
+            this._before_middleware,
+            this
         ).catch(unknown_error => { 
             const error = GenericError.from_unknown(unknown_error);
             this._errors.push(error);
@@ -183,7 +184,7 @@ class RequestProcessor {
         const after_middleware = await Execute.many(this._after_middleware, {
             request: this._fastify_request,
             reply: this._fastify_reply,
-        }).catch(unknown_error => { 
+        }, this).catch(unknown_error => { 
             const error = GenericError.from_unknown(unknown_error);
             this._errors.push(error);
             throw error; 

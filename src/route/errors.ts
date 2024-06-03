@@ -20,9 +20,10 @@ class NoRouteHandlerError extends GenericError {
 
 class RouteHandlerExecutedError extends GenericError {
     public constructor(
-        message: string
+        message: string,
+        code: number = 500
     ) {
-        super(message, 500);
+        super(message, code);
     }
 };
 

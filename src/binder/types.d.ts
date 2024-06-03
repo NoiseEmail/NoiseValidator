@@ -2,6 +2,7 @@ import { DynamicURL } from 'noise_validator/src/route/types';
 import { FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
 import { MiddlewareNamespace } from 'noise_validator/src/middleware/types';
 import { SchemaNamespace } from 'noise_validator/src/schema/types';
+import { RequestProcessor } from 'noise_validator/src/route';
 
 
 
@@ -229,7 +230,7 @@ export namespace BinderNamespace {
 
     export type MapObject = {
         callback: (data: GenericCallbackObject) => Promise<BinderOutputValidatorResult>,
-        validate: (request: FastifyRequest, reply: FastifyReply, before_middleware: MiddlewareNamespace.MiddlewareObject) => Promise<ValidateDataReturn>,
+        validate: (request: FastifyRequest, reply: FastifyReply, before_middleware: MiddlewareNamespace.MiddlewareObject, request_processor: RequestProcessor) => Promise<ValidateDataReturn>,
         method: HTTPMethods,
         before_middleware: MiddlewareNamespace.MiddlewareObject,
         after_middleware: MiddlewareNamespace.MiddlewareObject

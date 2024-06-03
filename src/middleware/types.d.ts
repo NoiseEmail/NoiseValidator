@@ -2,6 +2,7 @@ import { Cookie } from 'noise_validator/src/binder/types';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { GenericError } from 'noise_validator/src/error';
 import { SchemaNamespace } from 'noise_validator/src/schema/types';
+import { RequestProcessor } from 'noise_validator/src/route';
 
 
 
@@ -52,6 +53,8 @@ export namespace MiddlewareNamespace {
         QuerySchema, 
         HeaderSchema
     > = {
+        request_processor: RequestProcessor;
+
         headers: HeaderSchema;
         body: BodySchema;
         query: QuerySchema;

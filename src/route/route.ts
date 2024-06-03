@@ -55,8 +55,8 @@ export default class Route<
             method: 'GET',
             before_middleware: {},
             after_middleware: {},
-            callback: async () => { throw new RouteHandlerExecutedError('No handler has been assigned for this method'); },
-            validate: async () => { throw new RouteHandlerExecutedError('No handler has been assigned for this method'); }
+            callback: async () => { throw new RouteHandlerExecutedError('No handler has been assigned for this method', 404); },
+            validate: async () => { throw new RouteHandlerExecutedError('No handler has been assigned for this method', 404); }
         };
     };
 

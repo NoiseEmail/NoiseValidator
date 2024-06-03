@@ -60,7 +60,7 @@ export default function Binder<
     configuration = mergician(DefaultBinderConfiguration, configuration);
     route.add_binder({
         callback: async (data) => callback(binder_callback, data, route, schemas),
-        validate: async (request, reply, middleware) => validate(route, schemas, request, reply, middleware),
+        validate: async (request, reply, middleware, request_processor) => validate(route, schemas, request, reply, middleware, request_processor),
         method,
         before_middleware: split_middleware.before,
         after_middleware: split_middleware.after,
