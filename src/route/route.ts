@@ -199,6 +199,9 @@ export default class Route<
             after_middleware: { ...this._after_middleware, ...binder.after_middleware },
             before_middleware: { ...this._before_middleware, ...binder.before_middleware }
         });
+
+        this._no_method_error.before_middleware = this._before_middleware;
+        this._no_method_error.after_middleware = this._after_middleware;
     };
 
 
