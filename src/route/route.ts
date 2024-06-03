@@ -156,7 +156,7 @@ export default class Route<
     ): void => {
 
         const path = this._path,
-            methods: Array<HTTPMethods> = ['GET', 'POST', 'PUT', 'DELETE'];
+            methods: Array<HTTPMethods> = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'];
 
         methods.forEach(method => fastify_instance.route({
             method: method,
