@@ -212,14 +212,15 @@ export namespace BinderNamespace {
      * etc so we need to pass their data, not just throw an error.
      */
     export type ValidateDataReturn = 
-        (GenericCallbackObject & { 
-            success: true, 
-            middleware_cookies: Map<string, Cookie.Shape>, 
-            middleware_headers: Map<string, string> 
-        }) | 
-        { 
-            middleware: MiddlewareNamespace.MiddlewareValidationMap, 
-            success: false 
+        ((GenericCallbackObject & { success: true }) | 
+        { middleware: MiddlewareNamespace.MiddlewareValidationMap, success: false }) & {
+            on_success_cookies: Map<string, Cookie.Shape>,
+            on_success_headers: Map<string, string>,
+            on_failure_cookies: Map<string, Cookie.Shape>,
+            on_failure_headers: Map<string, string>,
+            on_both_cookies: Map<string, Cookie.Shape>,
+            on_both_headers: Map<string, string>,
+            binder_set_cookies: Map<string, Cookie.Shape>,
         };
 
 

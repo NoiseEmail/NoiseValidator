@@ -40,19 +40,47 @@ const build_middleware_object = (
 
 
 const build_return_object = (
-    success: boolean,
     cookie_map: Map<string, { cookie: Cookie.Shape, on: MiddlewareNamespace.ExecuteOn }>,
     header_map: Map<string, { value: string, on: MiddlewareNamespace.ExecuteOn }>,
-): {
-    cookies: Map<string, Cookie.Shape>,
-    headers: Map<string, string>
-} => {
-    const headers: Map<string, string> = new Map();
-    const cookies: Map<string, Cookie.Shape> = new Map();
-    const on = success ? 'on-success' : 'on-failure';
-    header_map.forEach((value, key) => { if (value.on === on || value.on === 'on-both') headers.set(key, value.value); });
-    cookie_map.forEach((value, key) => { if (value.on === on || value.on === 'on-both') cookies.set(key, value.cookie); });
-    return { cookies, headers };
+) => {
+
+    // -- In the middlware youll be able to set headers and cookies
+    //    in 3 different ways, on failure, on success and on both
+    const on_success_cookies: Map<string, Cookie.Shape> = new Map();
+    const on_success_headers: Map<string, string> = new Map();
+
+    const on_failure_cookies: Map<string, Cookie.Shape> = new Map();
+    const on_failure_headers: Map<string, string> = new Map();
+
+    const on_both_cookies: Map<string, Cookie.Shape> = new Map();
+    const on_both_headers: Map<string, string> = new Map();
+
+    // -- Loop through all the cookies
+    cookie_map.forEach((value, key) => {
+        switch (value.on) {
+            case 'on-success': on_success_cookies.set(key, value.cookie); break;
+            case 'on-failure': on_failure_cookies.set(key, value.cookie); break;
+            case 'on-both': on_both_cookies.set(key, value.cookie); break;
+        }
+    });
+
+    // -- Loop through all the headers
+    header_map.forEach((value, key) => {
+        switch (value.on) {
+            case 'on-success': on_success_headers.set(key, value.value); break;
+            case 'on-failure': on_failure_headers.set(key, value.value); break;
+            case 'on-both': on_both_headers.set(key, value.value); break;
+        }
+    });
+
+    return {
+        on_success_cookies,
+        on_success_headers,
+        on_failure_cookies,
+        on_failure_headers,
+        on_both_cookies,
+        on_both_headers,
+    };
 };
 
 
@@ -62,9 +90,6 @@ const one = async (
     fastify: { request: FastifyRequest, reply: FastifyReply }
 ): Promise<MiddlewareNamespace.MiddlewareValidationResult> => {
     try {
-
-        // -- In the middlware youll be able to set headers and cookies
-        //    in 3 different ways, on failure, on success and on both
         const cookie_map: Map<string, { cookie: Cookie.Shape, on: MiddlewareNamespace.ExecuteOn }> = new Map();
         const header_map: Map<string, { value: string, on: MiddlewareNamespace.ExecuteOn }> = new Map();
         const request_object = build_middleware_object(cookie_map, header_map, fastify);
@@ -74,7 +99,7 @@ const one = async (
         const data = await instance.execute();
 
         // -- Return the result
-        return { ...build_return_object(data.success, cookie_map, header_map), ...data };
+        return { ...build_return_object(cookie_map, header_map), data, success: true };
     }
 
     catch (unknown_error) {
@@ -94,14 +119,28 @@ const many = async (
     data: Record<string, unknown>,
     middleware: MiddlewareNamespace.MiddlewareValidationMap,
     overall_success: boolean,
-    cookies: Map<string, Cookie.Shape>,
-    headers: Map<string, string>,
+    on_success_cookies: Map<string, Cookie.Shape>,
+    on_success_headers: Map<string, string>,
+    on_failure_cookies: Map<string, Cookie.Shape>,
+    on_failure_headers: Map<string, string>,
+    on_both_cookies: Map<string, Cookie.Shape>,
+    on_both_headers: Map<string, string>
 }> => {
     const middleware: MiddlewareNamespace.MiddlewareValidationMap = new Map();
-    const cookie_map: Map<string, Cookie.Shape> = new Map();
-    const header_map: Map<string, string> = new Map();
+
+    // -- Theres three types of cookies / headers, on success, on failure and on both
+    const on_success_cookies: Map<string, Cookie.Shape> = new Map();
+    const on_success_headers: Map<string, string> = new Map();
+
+    const on_failure_cookies: Map<string, Cookie.Shape> = new Map();
+    const on_failure_headers: Map<string, string> = new Map();
+
+    const on_both_cookies: Map<string, Cookie.Shape> = new Map();
+    const on_both_headers: Map<string, string> = new Map();
+
+
     const data: Record<string, unknown> = {};
-    if (!middlewares) return { middleware, overall_success: true, cookies: cookie_map, headers: header_map, data: {} };
+    if (!middlewares) return { middleware, overall_success: true, data, on_success_cookies, on_success_headers, on_failure_cookies, on_failure_headers, on_both_cookies, on_both_headers };
     let overall_success = true;
 
     // -- Execute all the middlewares
@@ -111,8 +150,12 @@ const many = async (
             const result = await one(middlewares[key], fastify);
             middleware.set(key, result);
             data[key] = result.data;
-            result.cookies.forEach((value, key) => cookie_map.set(key, value));
-            result.headers.forEach((value, key) => header_map.set(key, value));
+            on_success_cookies.forEach((value, key) => on_success_cookies.set(key, value));
+            on_success_headers.forEach((value, key) => on_success_headers.set(key, value));
+            on_failure_cookies.forEach((value, key) => on_failure_cookies.set(key, value));
+            on_failure_headers.forEach((value, key) => on_failure_headers.set(key, value));
+            on_both_cookies.forEach((value, key) => on_both_cookies.set(key, value));
+            on_both_headers.forEach((value, key) => on_both_headers.set(key, value));
             if (!result.success) overall_success = false;
         }
 
@@ -126,7 +169,7 @@ const many = async (
 
     // -- Wait for all the promises to resolve
     await Promise.all(promises);
-    return { middleware, overall_success, cookies: cookie_map, headers: header_map, data };
+    return { middleware, overall_success, data, on_success_cookies, on_success_headers, on_failure_cookies, on_failure_headers, on_both_cookies, on_both_headers };
 };
 
 

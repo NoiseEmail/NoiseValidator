@@ -9,6 +9,20 @@ import { Execute } from 'noise_validator/src/middleware';
 
 
 
+type ValidatedDataType = 
+    (BinderNamespace.GenericCallbackObject & { success: true }) & 
+    {
+        on_success_cookies: Map<string, Cookie.Shape>,
+        on_success_headers: Map<string, string>,
+        on_failure_cookies: Map<string, Cookie.Shape>,
+        on_failure_headers: Map<string, string>,
+        on_both_cookies: Map<string, Cookie.Shape>,
+        on_both_headers: Map<string, string>,
+        binder_set_cookies: Map<string, Cookie.Shape>,
+    };
+
+
+
 class RequestProcessor {
     private readonly _id: string = v4();
     private _errors: Array<GenericError> = [];
@@ -19,8 +33,13 @@ class RequestProcessor {
     private readonly _before_middleware: MiddlewareNamespace.MiddlewareObject;
     private readonly _after_middleware: MiddlewareNamespace.MiddlewareObject;
 
-    private _error_cookies: Map<string, Cookie.Shape> = new Map();
-    private _error_headers: Map<string, string> = new Map();
+    private _on_success_cookies: Map<string, Cookie.Shape> = new Map();
+    private _on_success_headers: Map<string, string> = new Map();
+    private _on_failure_cookies: Map<string, Cookie.Shape> = new Map();
+    private _on_failure_headers: Map<string, string> = new Map();
+    private _on_both_cookies: Map<string, Cookie.Shape> = new Map();
+    private _on_both_headers: Map<string, string> = new Map();
+    private _binder_set_cookies: Map<string, Cookie.Shape> = new Map();
 
     private _flags = {
         reply_sent: false,
@@ -49,10 +68,7 @@ class RequestProcessor {
      * @description Executes the request processor
      */
     public execute = async (): Promise<void> => {
-        let validated_data : BinderNamespace.GenericCallbackObject & { 
-            success: true, 
-            middleware_cookies: Map<string, Cookie.Shape>, 
-            middleware_headers: Map<string, string> } | Error;
+        let validated_data : ValidatedDataType | Error;
         let callback_result: BinderOutputValidatorResult | Error;
 
 
@@ -74,7 +90,7 @@ class RequestProcessor {
 
         // -- Execute the AFTER middleware
         try {
-            const after_middleware_result = await this.execute_after_middleware();
+            await this.execute_after_middleware();
 
             // -- We throw here as we want to ensure that the after middleware gets executed
             if (
@@ -83,11 +99,9 @@ class RequestProcessor {
             ) throw callback_result;
 
             // -- Success
-            this._fastify_reply.headers(Object.fromEntries(after_middleware_result.headers));
-            this._fastify_reply.headers(Object.fromEntries(validated_data.middleware_headers));
-            this._fastify_reply.headers(callback_result.headers);
-
-            const cookies = new Map([...after_middleware_result.cookies, ...validated_data.middleware_cookies]);
+            this._fastify_reply.headers(Object.fromEntries(this._on_both_headers));
+            this._fastify_reply.headers(Object.fromEntries(this._on_success_headers));
+            const cookies = new Map([...this._on_both_cookies, ...this._on_success_cookies, ...this._binder_set_cookies]);
             if (cookies.size > 0) this._fastify_reply.header('Set-Cookie', create_set_cookie_header(cookies));
             return this._fastify_reply.send(callback_result.body);
         }
@@ -103,11 +117,7 @@ class RequestProcessor {
      * Executes the validation process for the input data
      * and BEFORE middleware execution
      */
-    public execute_validater = async (): Promise<BinderNamespace.GenericCallbackObject & { 
-        success: true, 
-        middleware_cookies: Map<string, Cookie.Shape>, 
-        middleware_headers: Map<string, string> 
-    }> => {
+    public execute_validater = async (): Promise<ValidatedDataType> => {
         
         // -- Execute the binder
         const validater_result = await this._binder.validate(
@@ -119,6 +129,15 @@ class RequestProcessor {
             this._errors.push(error);
             throw error; 
         });
+
+        // -- Set the cookies and headers
+        this._on_success_cookies = validater_result.on_success_cookies;
+        this._on_success_headers = validater_result.on_success_headers;
+        this._on_failure_cookies = validater_result.on_failure_cookies;
+        this._on_failure_headers = validater_result.on_failure_headers;
+        this._on_both_cookies = validater_result.on_both_cookies;
+        this._on_both_headers = validater_result.on_both_headers;
+        this._binder_set_cookies = validater_result.binder_set_cookies;
 
         // -- Check if the after middleware errored
         if (validater_result.success === false) {
@@ -158,10 +177,7 @@ class RequestProcessor {
     /**
      * Executes the AFTER middleware
      */
-    public execute_after_middleware = async (): Promise<{
-        cookies: Map<string, Cookie.Shape>,
-        headers: Map<string, string>,
-    }> => {
+    public execute_after_middleware = async (): Promise<void> => {
         // -- Execute the after middleware
         const after_middleware = await Execute.many(this._after_middleware, {
             request: this._fastify_request,
@@ -172,16 +188,19 @@ class RequestProcessor {
             throw error; 
         });
 
+        // -- Set the cookies and headers 
+        this._on_success_cookies = new Map([...this._on_success_cookies, ...after_middleware.on_success_cookies]);
+        this._on_success_headers = new Map([...this._on_success_headers, ...after_middleware.on_success_headers]);
+        this._on_failure_cookies = new Map([...this._on_failure_cookies, ...after_middleware.on_failure_cookies]);
+        this._on_failure_headers = new Map([...this._on_failure_headers, ...after_middleware.on_failure_headers]);
+        this._on_both_cookies = new Map([...this._on_both_cookies, ...after_middleware.on_both_cookies]);
+        this._on_both_headers = new Map([...this._on_both_headers, ...after_middleware.on_both_headers]);
+
         // -- Check if the after middleware errored
         if (after_middleware.overall_success === false) {
             this._parse_middleware_response(after_middleware.middleware);
             this._flags.after_middleware_errored = true;
             throw new MiddlewareExecutionError('The "execute_after_middleware" did not execute successfully');
-        }
-
-        else return {
-            cookies: after_middleware.cookies,
-            headers: after_middleware.headers,
         };
     };
 
@@ -191,8 +210,6 @@ class RequestProcessor {
         middleware_result: MiddlewareNamespace.MiddlewareValidationMap,
     ) => (middleware_result as MiddlewareNamespace.MiddlewareValidationMap).forEach((middleware) => {
         if (middleware.success) return;
-        middleware.cookies.forEach((value, key) => this._error_cookies.set(key, value));
-        middleware.headers.forEach((value, key) => this._error_headers.set(key, value));
         this._errors.push(MiddlewareExecutionError.from_unknown(middleware.data));
     });
 
@@ -221,8 +238,10 @@ class RequestProcessor {
         this._errors.pop();        
 
         // -- Set the error headers and cookies
-        this._fastify_reply.headers(Object.fromEntries(this._error_headers));
-        if (this._error_cookies.size > 0) this._fastify_reply.header('Set-Cookie', create_set_cookie_header(this._error_cookies));
+        this._fastify_reply.headers(Object.fromEntries(this._on_both_headers));
+        this._fastify_reply.headers(Object.fromEntries(this._on_failure_headers));
+        const cookies = new Map([...this._on_both_cookies, ...this._on_failure_cookies]);
+        if (cookies.size > 0) this._fastify_reply.header('Set-Cookie', create_set_cookie_header(cookies));
 
         // -- Send the error
         try {

@@ -133,8 +133,14 @@ export namespace MiddlewareNamespace {
 
 
     export type MiddlewareValidationResult = {
-        cookies: Map<string, Cookie.Shape>,
-        headers: Map<string, string>,
+        on_success_cookies: Map<string, Cookie.Shape>,
+        on_success_headers: Map<string, string>,
+
+        on_failure_cookies: Map<string, Cookie.Shape>,
+        on_failure_headers: Map<string, string>,
+
+        on_both_cookies: Map<string, Cookie.Shape>,
+        on_both_headers: Map<string, string>,
     } & (
         { success: true, data: unknown } |
         { success: false, data: GenericError }

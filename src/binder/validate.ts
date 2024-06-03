@@ -16,10 +16,21 @@ const validate = async <
     reply: FastifyReply,
     parsed_middleware: MiddlewareNamespace.MiddlewareObject
 ): Promise<BinderNamespace.ValidateDataReturn> => {
-
+    const cookies = new Map<string, Cookie.Shape>();
     const middleware = await Execute.many(parsed_middleware, { request, reply });
-    if (!middleware.overall_success) return { ...middleware, success: false };
+    const middleware_return = {
+        on_both_cookies: middleware.on_both_cookies,
+        on_both_headers: middleware.on_both_headers,
+        on_failure_cookies: middleware.on_failure_cookies,
+        on_failure_headers: middleware.on_failure_headers,
+        on_success_cookies: middleware.on_success_cookies,
+        on_success_headers: middleware.on_success_headers,
+        binder_set_cookies: cookies,
+    }
+    
+    if (!middleware.overall_success) return { ...middleware, ...middleware_return ,success: false };
     const validated = await validate_binder_request(request, schemas, route.path);
+
 
     // -- Return the validated data
     return {
@@ -30,11 +41,10 @@ const validate = async <
         cookies: validated.cookies,
         url: validated.url,
         fastify: { request, reply },
-        set_cookie: (name: string, cookie: Cookie.Shape) => middleware.cookies.set(name, cookie),
-        remove_cookie: (name: string) => middleware.cookies.delete(name),
+        set_cookie: (name: string, cookie: Cookie.Shape) => cookies.set(name, cookie),
+        remove_cookie: (name: string) => cookies.delete(name),
 
-        middleware_cookies: middleware.cookies,
-        middleware_headers: middleware.headers,
+        ...middleware_return,
         success: true,
     };
 };
