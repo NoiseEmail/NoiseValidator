@@ -46,6 +46,7 @@ export default class GenericMiddleware<
     protected get headers() { return this._request_object.headers; }
     protected get request() { return this._request_object.fastify.request; }
     protected get reply() { return this._request_object.fastify.reply; }
+    protected get request_processor() { return this._request_object.request_processor; }
     
 
 
