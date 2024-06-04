@@ -12,7 +12,6 @@ export default class Schema<
     ReturnableData = SchemaNamespace.ParsedSchema<NestedSchema>
 > {
     public readonly _return_type: ReturnableData = {} as ReturnableData;    
-    public readonly _type: 'body' | 'query' | 'headers' | 'cookies' = 'body';
     public readonly _id: string = uuidv4();
     public readonly _schema: NestedSchema;
 
@@ -157,7 +156,6 @@ export default class Schema<
                 data; // -- If not an object, just use the data
 
 
-
             // -- Ensure that the passed in data is not a function
             //    this should never happen, but just in case
             if (new_data instanceof Function) {
@@ -223,6 +221,7 @@ export default class Schema<
     ): Promise<ReturnableData> {
 
         try {
+
             // -- Try to walk the schema
             const result = await Schema._walk<ReturnableData>(this, this._schema, data);
             if (result instanceof Error) throw result;

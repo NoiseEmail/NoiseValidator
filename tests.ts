@@ -13,7 +13,7 @@ class MiddlewareExecutionError extends nv.GenericError {
 
 
 const server = new nv.Server();
-const route = new nv.Route(server, '/test');
+const route = new nv.Route(server, '/contacts/email/check/:code');
 
 class MW extends nv.GenericMiddleware {
     protected handler = async () => {
@@ -22,15 +22,24 @@ class MW extends nv.GenericMiddleware {
     }
 }
 
+const testschema = new nv.Schema({
+    a: nv.String
+});
 
 nv.Binder(route, 'GET', {
     middleware: {
         test: MW,
+    },
+    schemas: {
+        input: {
+            query: [testschema]
+        }
     }
 }, async ({
-    middleware
+    middleware,
+    url
 }) => {
-    console.log(middleware.test);
+    console.log(url);
 });
 
 
@@ -40,10 +49,20 @@ server.start();
 
 
 
-const test = nv.register_api_route('localhost:8080', '/test', 'GET', {});
-const res = await test({
+const test = nv.register_api_route('localhost:8080', 'contacts/email/check/:code', 'GET', {
+    input: {
+        query: [testschema]
+    }
+});
 
+const res = await test({
+    route: {
+        code: '1'
+    },
+    query: {
+        a: 'test'
+    }
 })
 
-console.log(res.success);
+// console.log(res.success, res.error.message);
 

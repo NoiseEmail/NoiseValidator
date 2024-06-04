@@ -13,6 +13,17 @@ import { SchemaNamespace } from 'noise_validator/src/schema/types';
 
 
 
+const flatten_object = (object: Record<string, unknown>): Record<string, unknown> => {
+    const result: Record<string, unknown> = {};
+    for (const key in object) {
+        if (typeof object[key] === 'object') continue;
+        else result[key] = object[key];
+    }
+    return result;
+};
+
+
+
 /**
  * @name validate_binder_request
  * 
@@ -40,8 +51,8 @@ const validate_binder_request = async <
 ): Promise<ValidatedType> => {
     try {
         const body = validate_inputs(fastify_request?.body, schemas?.input?.body);
-        const query = validate_inputs(fastify_request?.query, schemas?.input?.query);
-        const headers = validate_inputs(fastify_request?.headers, schemas?.input?.headers);
+        const query = validate_inputs(flatten_object((fastify_request?.query || {}) as Record<string, unknown>), schemas?.input?.query);
+        const headers = validate_inputs(flatten_object(fastify_request?.headers || {}), schemas?.input?.headers);
         const cookie_string = fastify_request?.headers?.cookie ?? '';
         const cookie_object = CookieParser.parse(cookie_string);
         const cookies = validate_inputs(cookie_object, schemas?.input?.cookies);
