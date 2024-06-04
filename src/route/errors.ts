@@ -1,8 +1,11 @@
 import { GenericError } from 'noise_validator/src/error';
 
 
+class GenericRouteError extends GenericError {
+};
 
-class MethodNotAvailableError extends GenericError {
+
+class MethodNotAvailableError extends GenericRouteError {
     public constructor(
         method: string
     ) {
@@ -10,7 +13,7 @@ class MethodNotAvailableError extends GenericError {
     }
 };
 
-class NoRouteHandlerError extends GenericError {
+class NoRouteHandlerError extends GenericRouteError {
     public constructor(
         message: string
     ) {
@@ -18,7 +21,7 @@ class NoRouteHandlerError extends GenericError {
     }
 };
 
-class RouteHandlerExecutedError extends GenericError {
+class RouteHandlerExecutedError extends GenericRouteError {
     public constructor(
         message: string,
         code: number = 500
@@ -27,7 +30,7 @@ class RouteHandlerExecutedError extends GenericError {
     }
 };
 
-class UnkownRouteHandlerError extends GenericError {
+class UnkownRouteHandlerError extends GenericRouteError {
     public constructor(
         message: string
     ) {
@@ -35,7 +38,7 @@ class UnkownRouteHandlerError extends GenericError {
     }
 };
 
-class MiddlewareExecutionError extends GenericError {
+class MiddlewareExecutionError extends GenericRouteError {
     public constructor(
         message: string
     ) {
@@ -44,6 +47,7 @@ class MiddlewareExecutionError extends GenericError {
 }
 
 export {
+    GenericRouteError,
     MethodNotAvailableError,
     RouteHandlerExecutedError,
     MiddlewareExecutionError,

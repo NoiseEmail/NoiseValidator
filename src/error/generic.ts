@@ -102,10 +102,12 @@ export class GenericError extends Error {
         hint?: string
     ): GenericError => {
         let return_error = else_error;
+        
         if (error instanceof GenericError) return_error = error;
-        if (error instanceof Error) return_error = GenericError.from_error(error);
-        if (typeof error === 'string') return_error = new GenericError(error, 500);
+        else if (error instanceof Error) return_error = GenericError.from_error(error);
+        else if (typeof error === 'string') return_error = new GenericError(error, 500);
         if (hint) return_error.hint = hint;
+
         return return_error;
     };
 }
