@@ -1,7 +1,7 @@
 import { ArrayModifier, BinderNamespace, SchemaOutput } from 'noise_validator/src/binder/types';
 import { SchemaNamespace } from 'noise_validator/src/schema/types';
 import { HTTPMethods } from 'fastify';
-import { BinderInputObject } from './types.d';
+import { BinderInputObject, GenericAPIDataParamaters, ExecutedAPIResponse, APIRequestObject } from './types.d';
 import { GenericError } from 'noise_validator/src/error';
 
 
@@ -30,7 +30,7 @@ const register_api_route = <
     BodyOutputSchema        extends ArrayModifier.ArrayOrSingle<SchemaNamespace.NestedSchemaLike>,
     HeadersOutputSchema     extends ArrayModifier.ArrayOrSingle<SchemaNamespace.FlatSchmeaLike>,
 
-    BinderCallbackReturn    extends SchemaOutput.Types<BodyOutputSchema, HeadersOutputSchema>,
+    BinderCallbackReturn    extends SchemaOutput.Types<BodyOutputSchema, HeadersOutputSchema> & ExecutedAPIResponse,
 >(  
     api_root: string,
     route: DynamicURLInputSchema,
@@ -65,40 +65,30 @@ const register_api_route = <
 const execute_api_route = async (
     route: string,
     method: HTTPMethods,
-    data: {
-        body: { [x: string]: unknown },
-        query: { [x: string]: unknown },
-        headers: { [x: string]: unknown },
-        route: { [x: string]: unknown },
-        cookies: { [x: string]: unknown }
+    data: GenericAPIDataParamaters
+): Promise<ExecutedAPIResponse> => {
+    const request_object: APIRequestObject = {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            'Cookie': build_cookie_string(data.cookies),
+            ...(data.headers || {})
+        },
+    };
+
+    // -- Build the request URL
+    const request_url: string = replace_route_parameters(route, data.route);
+    const query_string = build_query_string(data.query, request_url);
+
+    // -- Check if we can set the body
+    if (data.body !== undefined && method !== 'GET') {
+        request_object.headers['Content-Type'] = 'application/json';
+        request_object.body = JSON.stringify(data.body);;
     }
-): Promise<{
-    body: { [x: string]: unknown },
-    headers: { [x: string]: unknown },
-}> => {
+
+    // -- Send the request
     try {
-        // -- Serialize the request body
-        let request_body;
-        if (data.body !== undefined) 
-            request_body = JSON.stringify(data.body);
-        
-        // -- Prepare the request URL
-        let request_url: string = route;
-        if (data.route !== undefined) request_url = replace_route_parameters(route, data.route);
-
-        // -- Prepare the query string
-        const query_string = build_query_string(data.query, request_url);
-
-        // -- Build the API route
-        const api_request = new Request(route, {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                ...(data.headers || {}),
-                'Cookie': build_cookie_string(data.cookies),
-            },
-            body: request_body,
-        }); 
+        const api_request = new Request(query_string, request_object); 
 
         // -- Handle the response
         const response = await fetch(api_request);
@@ -108,17 +98,17 @@ const execute_api_route = async (
         // -- Convert the headers to an object
         const headers: { [x: string]: string } = {};
         response.headers.forEach((value, key) => headers[key] = value);
-
-        // -- Log headers
-        return {
-            body: response_data,
-            headers: headers
-        };
+        
+        return { body: response_data, headers: headers, success: true, status: response.status };
     }
+    
 
+    
+    // -- Easier to handle errors like this, due to the 'success' key
+    //    as Now you wont have to do a 'instanceof' check etc.
     catch (unknown_error) {
         const error = await handle_error(unknown_error);
-        throw error;
+        return { error, success: false, status: error.code };
     }
 };
 
@@ -137,31 +127,18 @@ const handle_error = async (
 ): Promise<GenericError> => {
 
     // -- Handle known errors
-    if (unknown_error instanceof Response) {
-
-        // -- Try deserializing the error
-        try { 
-            const error_data = await unknown_error.json();
-            const error = new GenericError(
-                error_data.error.message, 
-                unknown_error.status
-            );
-
-            error.data = error_data.error;
-            return error;
-        }
-
-        catch (error) {
-            return new GenericError(
-                `Failed to create request: ${unknown_error.statusText}`, 
-                unknown_error.status
-            );
-        }
+    if (unknown_error instanceof Response) 
+    try { return GenericError.deserialize(await unknown_error.json()); }
+    catch (error) {
+        return GenericError.from_unknown(
+            error,
+            new GenericError('Failed to create request', 500),
+            'handle_error: ' + unknown_error.statusText
+        )
     }
 
-
     // -- Handle unknown errors
-    return GenericError.from_unknown(
+    else return GenericError.from_unknown(
         unknown_error, 
         new GenericError('Failed to create request', 500)
     );
@@ -187,33 +164,22 @@ const build_query_string = (
 ): string => {
     if (query === undefined) return '';
     let query_string = ``;
-
     for (let i = 0; i < Object.keys(query).length; i++) {
         if (i === 0) query_string += `?`;
         else query_string += `&`;
-
         const key = Object.keys(query)[i];
         const value = query[key];
-
         query_string += `${key}=${String(value)}`;
     }
-
     return `${request_url}${query_string}`;
 };
 
 
 
 const clean_url = (url: string): string => {
-    
-    // -- Remove double slashes
     url = url.replace(/\/\//g, '/');
-
-    // -- Remove trailing slash 
     if (url.endsWith('/')) url = url.slice(0, -1);
-
-    // -- Remove starting slash
     if (url.startsWith('/')) url = url.slice(1);
-
     return url;
 };
 

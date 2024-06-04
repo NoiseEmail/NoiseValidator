@@ -1,5 +1,9 @@
 import { ArrayModifier, ObjectModifier } from 'noise_validator/src/binder/types';
 import { SchemaNamespace } from 'noise_validator/src/schema/types';
+import { GenericError } from 'noise_validator/src/error';
+import { HTTPMethods } from 'fastify/types/utils';
+
+
 
 export namespace DynamicURL {
 
@@ -68,3 +72,42 @@ export type BinderInputObject<
     (IsEmpty<Headers> extends true ? {} : { headers: HeadersType }) &
     (IsEmpty<Cookies> extends true ? {} : { cookies: CookiesType }) &
     (IsEmpty<UrlType> extends true ? {} : { route: UrlType });
+
+
+
+export type GenericAPIDataParamaters = {
+    body: { [x: string]: unknown },
+    query: { [x: string]: unknown },
+    headers: { [x: string]: unknown },
+    route: { [x: string]: unknown },
+    cookies: { [x: string]: unknown }
+};
+
+
+
+export type APIRequestObject = {
+    method: HTTPMethods,
+    headers: { [x: string]: string },
+    body?: string
+};
+
+
+
+export type ExecutedAPISuccessResponse = {
+    body: { [x: string]: unknown },
+    headers: { [x: string]: unknown },
+    success: true,
+    status: number
+};
+
+
+
+export type ExecutedAPIFailureResponse = {
+    error: GenericError,
+    success: false,
+    status: number
+};
+
+
+
+export type ExecutedAPIResponse = ExecutedAPISuccessResponse | ExecutedAPIFailureResponse;

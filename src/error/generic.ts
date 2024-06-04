@@ -38,6 +38,13 @@ export class GenericError extends Error {
     };  
 
 
+
+    public static deserialize = (serialized: SerializedGenericError): GenericError => {
+        return new DeserializedGenericError(serialized);
+    }
+        
+
+
     public get errors(): Array<GenericError> {
         const existing_ids = new Set<string>();
         return Array.from(this._other_errors.values()).filter((error) => {
@@ -110,4 +117,27 @@ export class GenericError extends Error {
 
         return return_error;
     };
+};
+
+
+
+export class DeserializedGenericError extends GenericError {
+    protected readonly _id: string;
+    protected readonly _message: string;
+    protected readonly _code: number;
+    protected readonly _type: string;
+    protected _data: object;
+    protected _hint: string;
+
+    public constructor(serialized: SerializedGenericError) {
+        super(serialized.message, serialized.code, serialized.type);
+        this._id = serialized.id;
+        this._message = serialized.message;
+        this._code = serialized.code;
+        this._data = serialized.data;
+        this._hint = serialized.hint || '';
+        this._type = serialized.type;
+        serialized.errors.forEach((error) => 
+            this.add_error(new DeserializedGenericError(error)));
+    }
 }
