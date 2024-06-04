@@ -101,7 +101,7 @@ export default class Route<
         raw_path: UrlPath
     ): string => {
         const version = this._configuration.api_version;
-        let path = version !== '' || version !==  undefined ? `/${version}/${raw_path}` : `/${raw_path}`;
+        let path = (version) ? `/${version}/${raw_path}` : `/${raw_path}`;
 
         // -- Remove any double slashes
         path = path.replace(/\/\//g, '/');

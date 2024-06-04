@@ -103,7 +103,7 @@ const one = async (
         const data = await instance.execute();
 
         // -- Return the result
-        return { ...build_return_object(cookie_map, header_map), data, success: true };
+        return { ...build_return_object(cookie_map, header_map), ...data };
     }
 
     catch (unknown_error) {
