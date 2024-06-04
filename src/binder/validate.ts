@@ -33,10 +33,15 @@ const validate = async <
     if (!middleware.overall_success) return { ...middleware, ...middleware_return, success: false };
     const validated = await validate_binder_request(request, schemas, route.path);
 
+    // -- Extract the data from the middleware
+    const middleware_data = Object.keys(middleware.data).reduce((acc: Record<string, unknown>, key) => { 
+        acc[key] = middleware.data[key].data;
+        return acc;
+    }, {});
 
     // -- Return the validated data
     return {
-        middleware: middleware.data,
+        middleware: middleware_data,
         body: validated.body,
         query: validated.query,
         headers: validated.headers,

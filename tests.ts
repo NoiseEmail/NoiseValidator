@@ -18,7 +18,7 @@ const route = new nv.Route(server, '/test');
 class MW extends nv.GenericMiddleware {
     protected handler = async () => {
         console.log('Middleware executed');
-        throw new MiddlewareExecutionError('Middleware error');
+        return { 'a': 'test' }
     }
 }
 
@@ -28,9 +28,9 @@ nv.Binder(route, 'GET', {
         test: MW,
     }
 }, async ({
-
+    middleware
 }) => {
-    console.log('Route executed');
+    console.log(middleware.test);
 });
 
 
