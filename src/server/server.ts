@@ -25,8 +25,8 @@ export default class Server<
     ) {
         Log.info('Creating rerver...');
         this._routes = new Map();
-        this._server = Fastify({ logger: false });
         this._configuration = Server.build_configuration<BeforeMiddleware, AfterMiddleware>(configuration);
+        this._server = Fastify({ logger: false, bodyLimit: this._configuration.body_limit });
 
         // -- Split the middleware object
         const split_middleware = GenericMiddleware.split_runtime_object(configuration?.middleware);

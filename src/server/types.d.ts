@@ -6,6 +6,7 @@ export type ServerConfiguration<
 > = {
     port: number;
     debug: boolean;
+    body_limit: number;
     host: string;
     https: { 
         key: string, 
