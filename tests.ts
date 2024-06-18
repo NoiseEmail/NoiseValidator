@@ -1,8 +1,13 @@
 import * as nv from './src';
+const testschema3 = new nv.Schema({
+    z: nv.String,
+});
+
 
 
 const testschema = new nv.Schema({
     a: nv.String,
+    b: testschema3,
     c: {
         balls: nv.String
     }
@@ -52,7 +57,7 @@ nv.Binder(route, 'GET', {
     url,
     body
 }) => {
-    console.log(body.b.c.balls);
+    console.log(body.b.b.z);
 });
 
 
