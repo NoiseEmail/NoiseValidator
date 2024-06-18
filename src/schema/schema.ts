@@ -80,12 +80,16 @@ export default class Schema<
 
     public static async _validate_value(
         instance: Schema<SchemaNamespace.NestedSchema | SchemaNamespace.FlatSchema, unknown>,
-        validator: SchemaNamespace.NestedSchema | SchemaNamespace.GenericTypeConstructor<unknown, unknown>,
+        validator: SchemaNamespace.NestedSchema | SchemaNamespace.GenericTypeConstructor<unknown, unknown> | SchemaNamespace.SchemaLike,
         new_data: unknown,
         new_path: string[]
     ): Promise<unknown> {
 
-        switch (typeof validator) {
+        const type: 'function' | 'object' | 'class' = 
+            validator instanceof Schema ? 'class' : 
+            typeof validator === 'object' ? 'object' : 'function';
+
+        switch (type) {
             // -- Function, execute it
             case 'function': {
                 const walk_result = await Schema._execute_validator(
@@ -111,11 +115,34 @@ export default class Schema<
 
 
 
+            // -- Nested schema
+            case 'class': {
+
+                const schema = validator as SchemaNamespace.SchemaLike;
+                let result: unknown;
+
+                try { result = await schema.validate(new_data); }
+                catch (unknown_error) {
+                    const error = GenericError.from_unknown(unknown_error);
+                    error.hint = 'Error occurred while validating the schema';
+                    error.data = { 
+                        path: new_path, 
+                        expected: validator.constructor.name 
+                    };
+                    instance.push_error(error);
+                    throw error;
+                }
+
+                return result;
+            }
+
+
+
             // -- Object, walk it
             case 'object': {
-                const walk_result = await Schema._walk_object(
+                const walk_result = await Schema._walk_object(                    
                     instance, 
-                    validator,
+                    validator as SchemaNamespace.NestedSchema,
                     new_data,
                     new_path
                 );

@@ -24,7 +24,7 @@ export namespace SchemaNamespace {
 
 
     export type NestedSchema = {
-        [key: string]: GenericTypeConstructor<any> | NestedSchema;
+        [key: string]: GenericTypeConstructor<any> | NestedSchema | SchemaLike | NestedSchemaLike;
     }
 
     export type FlatSchema = {
@@ -97,7 +97,10 @@ export namespace SchemaNamespace {
             // -- Run it trough the ExtractParamaterReturnType to get the return type
             Schema[K] extends GenericTypeConstructor<any>
                 ? ExtractParamaterReturnType<Schema[K]>
-            
+
+            : Schema[K] extends SchemaLike
+                ? ReturnType<Schema[K]>
+
             : Schema[K] extends NestedSchema
                 ? ParsedSchema<Schema[K]>
             
