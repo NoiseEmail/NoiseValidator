@@ -1,7 +1,7 @@
 import Log from 'noise_validator/src/logger';
 import { GenericError } from 'noise_validator/src/error';
 import { LogObject } from 'noise_validator/src/logger/types';
-import { SchemaExecutionError, SchemaMissingFieldError } from './errors';
+import { InvalidInputError, SchemaExecutionError, SchemaMissingFieldError } from './errors';
 import { SchemaNamespace } from './types.d';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -60,7 +60,8 @@ export default class Schema<
 
         // -- If the result is an error, return it
         else if (validator_result.success === false) {
-            const thrown_error = GenericError.from_unknown(validator_result.data);
+            let thrown_error = GenericError.from_unknown(validator_result.data);
+            thrown_error = new InvalidInputError(`${new_path.join(', ')}: ${thrown_error.message}`)
             thrown_error.hint = 'Error occurred while validating the schema';
             thrown_error.data = { 
                 path: new_path,

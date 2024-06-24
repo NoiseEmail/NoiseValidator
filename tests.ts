@@ -1,86 +1,35 @@
-import * as nv from './src';
-const testschema3 = new nv.Schema({
-    z: nv.String,
-});
+// import * as nv from './src';
 
 
 
-const testschema = new nv.Schema({
-    a: nv.String,
-    b: testschema3,
-    c: {
-        balls: nv.String
-    }
-});
-
-
-const testschema2 = new nv.Schema({
-    a: nv.Optional(testschema3, {z:'balls'}),
-    b: nv.Array(nv.Boolean)
-});
-
-
-
-console.log(await testschema2.validate({ a: '', b: { a: 'sdfsd', c:{o:'ck'} }}))
-
-// class MiddlewareExecutionError extends nv.GenericError {
-//     public constructor(
-//         message: string
-//     ) {
-//         super(message, 500);
-//     }
-// }
-
-
-
-const server = new nv.Server();
-const route = new nv.Route(server, '/contacts/email/check/:code');
-
-// class MW extends nv.GenericMiddleware {
-//     protected handler = async () => {
-//         console.log('Middleware executed');
-//         return { 'a': 'test' }
-//     }
-// }
-
-
-
-nv.Binder(route, 'GET', {
-
-    schemas: {
-        input: {
-            body: [testschema2]
-        }
-    }
-}, async ({
-    middleware,
-    url,
-    body
-}) => {
-    console.log(body.a);
-});
-
-
-
-
-// server.start();
-
-
-
-// const test = nv.register_api_route('localhost:8080', 'contacts/email/check/:code', 'GET', {
-//     input: {
-//         query: [testschema]
-//     }
+// const testschema3 = new nv.Schema({
+//     data: nv.Number,
 // });
 
-// const res = await test({
-//     route: {
-//         code: '1'
+// const server = new nv.Server({
+//     port: 8080,
+// });
+
+// const route = new nv.Route(server, '/contacts/email/check');
+
+// nv.Binder(route, 'POST', {
+//     schemas: { input: { body: testschema3 } }
+// }, async () => {
+//     console.log(1)
+// });
+
+// const test2 = nv.register_api_route('localhost:8080', '/contacts/email/check', 'POST', {
+//     input: { body: testschema3 }
+// });
+
+// await server.start()
+
+
+// const data = await test2({
+//     body: {
+//         data: 'a'
 //     },
-//     query: {
-//         a: 'test'
-//     }
 // })
 
-// // console.log(res.success, res.error.message);
+// console.log(data.error.message)
 

@@ -133,7 +133,11 @@ const create_optional = <
     constructor(
         input_value: unknown,
     ) {
-        super(input_value, constructor, default_value);
+        super(
+            input_value, 
+            constructor as SchemaNamespace.SchemaLike, 
+            default_value
+        );
     }
 });
 
