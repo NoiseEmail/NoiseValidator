@@ -1,6 +1,7 @@
 import GenericType from '../generic';
 import { GenericError } from 'noise_validator/src/error';
 import { SchemaNamespace } from '../types.d';
+import Schema from '../schema';
 
 
 
@@ -21,12 +22,16 @@ class OptionalTypeClass<
     OriginalInputShape
 > { 
     _default_value: ExtractReturnType<DefaultValue, OriginalReturnType> | undefined;
-    _original_constructor: SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>;
+    _original_constructor: 
+        SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape> |
+        SchemaNamespace.SchemaLike;
     _input_value: OriginalInputShape;
 
     constructor(
         input_value: unknown,
-        original_constructor: SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>,
+        original_constructor: 
+            SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape> |
+            SchemaNamespace.SchemaLike,
         default_value?: DefaultValue
     ) {
         super(input_value);
@@ -34,6 +39,26 @@ class OptionalTypeClass<
         this._input_value = input_value as OriginalInputShape;
         this._original_constructor = original_constructor;
     }
+
+
+
+    public async _validate_data(data: unknown): Promise<OriginalReturnType> {
+        switch (this._original_constructor instanceof Schema) {
+            case true: {
+                const schema = this._original_constructor as SchemaNamespace.SchemaLike<OriginalReturnType>;
+                const validated_data = await schema.validate(data);
+                return validated_data;
+            }
+
+            case false: {
+                const constructor = this._original_constructor as SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>;
+                const instance = new constructor(data);
+                const result = await instance.execute();
+                if (result.success === true) return result.data;
+                else throw result.data;
+            }
+        }
+    };  
 
     
 
@@ -54,11 +79,19 @@ class OptionalTypeClass<
             };
 
 
-            // -- Attempt to execute the original constructor 
-            const instance = new this._original_constructor(this._input_value)
-            const result = await instance.execute();
-            if (result.success === true) return result.data;
-            throw result.data;
+            // -- Validate the data
+            try {
+                const validated_data = await this._validate_data(this.value);
+                return validated_data;
+            }
+
+            // -- Add a hint if it fails
+            catch (unkown_error) {
+                const error = GenericError.from_unknown(unkown_error);
+                error.hint = 'Error occurred while validating the schema';
+                error.data = { expected: this.constructor.name, value: this.value };
+                throw error;
+            }
         }
 
         catch (unknown_error) {
@@ -79,15 +112,21 @@ class OptionalTypeClass<
 const create_optional = <
     OriginalReturnType,
     OriginalInputShape,
-    DefaultValue extends OriginalReturnType | undefined,
+    DefaultValue extends (
+        OriginalReturnType extends SchemaNamespace.SchemaLike ? 
+            SchemaNamespace.ReturnType<OriginalReturnType> : 
+            OriginalReturnType
+        ) | undefined, 
 >(
     constructor: SchemaNamespace.GenericTypeConstructor<
         OriginalReturnType, 
         OriginalInputShape
-    >,
+    > | OriginalReturnType,
     default_value: DefaultValue = undefined as DefaultValue
 ) => (class extends OptionalTypeClass<
-    OriginalReturnType,
+    OriginalReturnType extends SchemaNamespace.SchemaLike ? 
+        SchemaNamespace.ReturnType<OriginalReturnType> : 
+        OriginalReturnType,
     OriginalInputShape,
     DefaultValue
 > {

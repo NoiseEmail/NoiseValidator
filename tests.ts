@@ -15,7 +15,7 @@ const testschema = new nv.Schema({
 
 
 const testschema2 = new nv.Schema({
-    a: nv.String,
+    a: nv.Optional(testschema3, {z:'balls'}),
     b: nv.Array(nv.Boolean)
 });
 
@@ -57,7 +57,7 @@ nv.Binder(route, 'GET', {
     url,
     body
 }) => {
-    console.log(body.b[0]);
+    console.log(body.a);
 });
 
 
