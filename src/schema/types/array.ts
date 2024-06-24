@@ -1,6 +1,7 @@
 import GenericType from '../generic';
 import { GenericError } from 'noise_validator/src/error';
 import { SchemaNamespace } from '../types.d';
+import Schema from '../schema';
 
 
 
@@ -13,16 +14,40 @@ class OptionalClass<
 > { 
 
     _input_value: unknown;
-    _original_constructor: SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>;
+    _original_constructor: 
+        SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape> |
+        SchemaNamespace.SchemaLike;
 
     constructor(
         input_value: unknown,
-        original_constructor: SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>,
+        original_constructor: 
+            SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape> |
+            SchemaNamespace.SchemaLike
     ) {
         super(input_value);
         this._input_value = input_value;
         this._original_constructor = original_constructor;
     }
+
+
+
+    public async _validate_data(data: unknown): Promise<OriginalReturnType> {
+        switch (this._original_constructor instanceof Schema) {
+            case true: {
+                const schema = this._original_constructor as SchemaNamespace.SchemaLike<OriginalReturnType>;
+                const validated_data = await schema.validate(data);
+                return validated_data;
+            }
+
+            case false: {
+                const constructor = this._original_constructor as SchemaNamespace.GenericTypeConstructor<OriginalReturnType, OriginalInputShape>;
+                const instance = new constructor(data);
+                const result = await instance.execute();
+                if (result.success === true) return result.data;
+                else throw result.data;
+            }
+        }
+    };  
 
 
     
@@ -34,10 +59,20 @@ class OptionalClass<
 
             const results: Array<OriginalReturnType> = [];
             for (const value of this.value) {
-                const instance = new this._original_constructor(value);
-                const result = await instance.execute();
-                if (result.success === true) results.push(result.data);
-                else throw result.data;
+
+                // -- Validate the data
+                try {
+                    const validated_data = await this._validate_data(value);
+                    results.push(validated_data);
+                }
+
+                // -- Add a hint if it fails
+                catch (unkown_error) {
+                    const error = GenericError.from_unknown(unkown_error);
+                    error.hint = 'Error occurred while validating the schema';
+                    error.data = { expected: this.constructor.name, value: value };
+                    throw error;
+                }
             }
 
             // -- Return the results
@@ -68,10 +103,19 @@ const create_array = <
     constructor: SchemaNamespace.GenericTypeConstructor<
         OriginalReturnType, 
         OriginalInputShape
-    >,
-) => (class extends OptionalClass<OriginalReturnType, OriginalInputShape> {
+    > | OriginalReturnType,
+) => (class extends OptionalClass<
+    OriginalReturnType extends SchemaNamespace.SchemaLike ? 
+        SchemaNamespace.ReturnType<OriginalReturnType> : 
+        OriginalReturnType, 
+
+    OriginalInputShape
+> {
     constructor(input_value: unknown) {
-        super(input_value, constructor);
+        super(
+            input_value, 
+            constructor as SchemaNamespace.SchemaLike
+        );
     }
 });
 
