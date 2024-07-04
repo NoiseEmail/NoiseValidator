@@ -161,7 +161,7 @@ You have the flexibility to define middleware that runs before and after the mai
 
 - After Middleware: Middleware defined in the after section executes after the main request handler. This can be used for tasks such as logging responses, modifying responses, or cleaning up resources.
 
-## Example Usage
+## Schemas, Binders and Middlewares
 Below are examples showing how to define schemas and routes using NoiseValidator.
 
 ### Schema Definition
@@ -250,7 +250,7 @@ Binder(account_settings_account_details, 'GET', {
 });
 ```
 
-### Frontend Integration
+## Frontend Integration
 
 Integrate NoiseValidator with your frontend to create a seamless API interface:
 
