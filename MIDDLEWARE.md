@@ -139,7 +139,7 @@ this.request_processor; //: Access the request processor.
 import { GenericMiddleware, MiddlewareNamespace, GenericError, SomeInputSchema } from 'noise-validator';
 
 const SomeInputSchema = new Schema({
-    'x-header-name: String,
+    'x-header-name': String,
 });
 
 class CustomHeaderMiddleware extends GenericMiddleware<void> {
