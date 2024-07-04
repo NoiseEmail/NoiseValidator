@@ -30,7 +30,7 @@ git clone https://github.com/NoiseEmail/NoiseValidator.git
 
 ```json
 "dependencies": {
-    "noise-validator": "file:./NoiseValidator"
+    "noise_validator": "file:./NoiseValidator"
 }
 ```
 
@@ -100,7 +100,7 @@ import {
     Route,
     MethodNotAvailableError,
     NoRouteHandlerError
-} from 'noise-validator';
+} from 'noise_validator';
 ```
 ## Creating the server
 
@@ -221,7 +221,7 @@ const RegistrationResponse = new Schema({
 Define routes and middleware for handling requests and responses:
 
 ```typescript
-import { Binder } from 'noise-validator';
+import { Binder } from 'noise_validator';
 import { JWTMiddleware } from '@middleware';
 import * as Enums from '../enums';
 import * as Models from '../models';
