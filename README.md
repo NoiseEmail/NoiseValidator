@@ -111,7 +111,6 @@ Define your schemas to ensure data validation:
 
 ```typescript
 import { Schema, Number, String, Enum, Optional } from 'noise_validator/src/schema';
-import * as Enums from '../enums';
 
 const Registration = new Schema({
     nickname: String.config({
@@ -136,28 +135,32 @@ const Registration = new Schema({
         min: 1,
         max: 31
     }),
-    first_name: String.config({
+    first_name: Optional(String.config({
         min_length: 1,
         max_length: 25,
         regex: /^[a-zA-Z]*$/
-    }),
-    last_name: String.config({
+    })),
+    last_name: Optional(String.config({
         min_length: 1,
         max_length: 25,
         regex: /^[a-zA-Z]*$/
-    }),
+    })),
 });
 
 const RegistrationResponse = new Schema({
     id: Number,
+    details: Registration
+    flags: Array(String)
 });
 ```
 
 ### Route and Middleware
+
 Define routes and middleware for handling requests and responses:
 
 ```typescript
-import { Binder, JWTMiddleware, SecureActionMiddleware } from 'noise-validator';
+import { Binder } from 'noise-validator';
+import { JWTMiddleware } from '@middleware';
 import * as Enums from '../enums';
 import * as Models from '../models';
 import { Repositories } from '../repositories';
@@ -173,7 +176,11 @@ Binder(v1.account_settings_account_details, 'GET', {
             ]
         })
     },
-    schemas: { output: { body: AccountSettings.AccountSecurityDetails } }
+    schemas: {
+        output: {
+            body: AccountSettings.AccountSecurityDetails
+        }
+    }
 }, async ({ middleware, body }) => {
     const user_authentication = middleware.jwt.user.user_authentication as Models.UserAuthentication;
     return {
@@ -189,9 +196,10 @@ Binder(v1.account_settings_account_details, 'GET', {
 Integrate NoiseValidator with your frontend to create a seamless API interface:
 
 ```typescript
-import { API_ROOT } from '$lib/constants';
 import { register_api_route } from 'noise_validator/src/client';
 import { Account } from 'schemas';
+
+const API_ROOT = 'https://192.168.0.11:5365';
 
 const register_user = register_api_route(API_ROOT, '/account/register', 'POST', {
     input: { body: Account.Registration },
