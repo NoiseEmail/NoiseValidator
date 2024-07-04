@@ -102,6 +102,64 @@ import {
     NoRouteHandlerError
 } from 'noise-validator';
 ```
+## Creating the server
+
+### Step 1: First, import the Server class from noise_validator and configure your server settings.
+
+```typescript
+import { Server } from 'noise_validator';
+
+const server = new Server({
+    debug: true,
+    port: 3500,
+    host: 'localhost',
+    body_limit: 1048576 * 2, // 2MB max body size
+});
+
+export { server };
+```
+
+### Step 2: Middleware Configuration
+
+You have the flexibility to define middleware that runs before and after the main request handler (binder) for every request. Middleware can be specified to run at specific times based on your requirements, this pattern can also be applied to routes and binders.
+
+- Example Configuration: Before / After middleware 
+    ```typescript
+    import CustomHeaderMiddleware from './middlewares/CustomHeaderMiddleware';
+    import CustomFooterMiddleware from './middlewares/CustomFooterMiddleware';
+    
+    const server = new Server({
+        ...,
+        middleware: {
+            before: {
+                customHeader: CustomHeaderMiddleware
+            },
+            after: {
+                customFooter: CustomFooterMiddleware
+            }
+        }
+    });
+    ```
+    
+- Example Configuration: Middleware (Defaults to Before)
+    ```typescript
+    import CustomHeaderMiddleware from './middlewares/CustomHeaderMiddleware';
+    import CustomFooterMiddleware from './middlewares/CustomFooterMiddleware';
+    
+    const server = new Server({
+        ...,
+        middleware: {
+            customHeader: CustomHeaderMiddleware,
+            customFooter: CustomFooterMiddleware
+        }
+    });
+    ```
+
+### Middleware Execution
+
+- Before Middleware: Middleware defined in the before section executes before the main request handler (binder). This can be used for tasks such as input validation, logging, or setting custom headers.
+
+- After Middleware: Middleware defined in the after section executes after the main request handler. This can be used for tasks such as logging responses, modifying responses, or cleaning up resources.
 
 ## Example Usage
 Below are examples showing how to define schemas and routes using NoiseValidator.
@@ -154,7 +212,7 @@ const RegistrationResponse = new Schema({
 });
 ```
 
-### Route and Middleware
+### Binder and Middleware
 
 Define routes and middleware for handling requests and responses:
 
@@ -164,8 +222,9 @@ import { JWTMiddleware } from '@middleware';
 import * as Enums from '../enums';
 import * as Models from '../models';
 import { Repositories } from '../repositories';
+import { account_settings_account_details } './routes';
 
-Binder(v1.account_settings_account_details, 'GET', {
+Binder(account_settings_account_details, 'GET', {
     middleware: {
         jwt: JWTMiddleware({
             method: 'fetch',
