@@ -161,6 +161,10 @@ You have the flexibility to define middleware that runs before and after the mai
 
 - After Middleware: Middleware defined in the after section executes after the main request handler. This can be used for tasks such as logging responses, modifying responses, or cleaning up resources.
 
+### Creating Middleware
+
+Please read trough [this](https://github.com/NoiseEmail/NoiseValidator/blob/main/MIDDLEWARE.md) guide to learn how to create custom middleware.
+
 ## Schemas, Binders and Middlewares
 Below are examples showing how to define schemas and routes using NoiseValidator.
 
