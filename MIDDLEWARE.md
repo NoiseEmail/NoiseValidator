@@ -102,7 +102,50 @@ If the x-custom-header is missing, you will get a 400 error response:
 }
 ```
 
+## Accessing Helper Functions in Middleware
 
+- In your custom middleware class, you can use various helper functions provided by NoiseValidator to interact with the request and response. These functions are accessible using this and include:
 
+```typescript
+/**
+ * This type represents the different ways that things can be executed
+ * in a middleware, as you might want to execute something regardless of
+ * whether the middleware was successful or not.
+ * 
+ * - `on-success` - Only execute if the middleware was successful
+ * - `on-failure` - Only execute if the middleware failed
+ * - `on-both`    - Execute regardless of the outcome
+ */
+type ExecuteOn = 'on-success' | 'on-failure' | 'on-both';
 
+this.set_header(key: string, value: string, on: MiddlewareNamespace.ExecuteOn = 'on-success'); //: Set a response header ONLY IF everything after the request dosent crash.
+this.remove_header(key: string); //: Remove a response header.
 
+this.set_cookie(name: string, cookie: Cookie.Shape, on: MiddlewareNamespace.ExecuteOn = 'on-success'); //: Set a cookie ONLY IF everything after the request dosent crash.
+this.remove_cookie(name: string); //: Remove a cookie.
+
+this.body; //: Access the RAW request body.
+this.query; //: Access the RAW query parameters.
+this.headers; //: Access the RAW request headers.
+this.request; //: Access the Fastify request object.
+this.reply; //: Access the Fastify reply object.
+
+this.request_processor; //: Access the request processor.
+```
+
+- You also have access to `this.validate_input()` which takes input of a schema and a data type to validate `'body' | 'query' | 'headers' | 'cookies'`.
+
+```typescript
+import { GenericMiddleware, MiddlewareNamespace, GenericError, SomeInputSchema } from 'noise-validator';
+
+const SomeInputSchema = new Schema({
+    'x-header-name: String,
+});
+
+class CustomHeaderMiddleware extends GenericMiddleware<void> {
+    protected async handler(): Promise<void> {
+        // -- Will throw an error upon failure
+        const validated_headers = await this.validate_input('headers', SomeInputSchema);
+    }
+}
+```
