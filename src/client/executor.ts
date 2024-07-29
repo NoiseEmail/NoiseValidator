@@ -1,7 +1,7 @@
 import { ArrayModifier, BinderNamespace, SchemaOutput } from 'noise_validator/src/binder/types';
 import { SchemaNamespace } from 'noise_validator/src/schema/types';
 import { HTTPMethods } from 'fastify';
-import { BinderInputObject, GenericAPIDataParamaters, ExecutedAPIResponse, APIRequestObject, InterceptCallback } from './types.d';
+import { BinderInputObject, GenericAPIDataParamaters, ExecutedAPIResponse, APIRequestObject, InterceptAfterCallback, InterceptBeforeCallback } from './types.d';
 import { GenericError } from 'noise_validator/src/error';
 
 
@@ -35,7 +35,8 @@ const register_api_route = <
     api_root: string,
     route: DynamicURLInputSchema,
     method: HTTPMethods,
-    configuration: BinderNamespace.OptionalConfiguration<any, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, BodyOutputSchema, HeadersOutputSchema>['schemas'] & { intercept?: InterceptCallback }
+    configuration: BinderNamespace.OptionalConfiguration<any, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, BodyOutputSchema, HeadersOutputSchema>['schemas'] & 
+        { intercept_after?: InterceptAfterCallback, intercept_before?: InterceptBeforeCallback }
 ): ((input: BinderInputObject<BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, DynamicURLInputSchema>) => Promise<BinderCallbackReturn>) => {
     const clean_path = clean_url(route);
     const clean_root = api_root.endsWith('/') ? api_root.slice(0, -1) : api_root;
@@ -43,7 +44,15 @@ const register_api_route = <
         
         // -- Prepare the input data
         const empty_input = { body: {}, query: {}, headers: {}, route: {}, cookies: {} };
-        const input = { ...empty_input, ...raw_input }
+        let input = { ...empty_input, ...raw_input }
+
+        try { if (configuration.intercept_before) {
+            const response = await configuration.intercept_before(input);
+            // @ts-ignore
+            if (response !== null && response !== undefined) input = response;
+        }}
+        catch (error) { console.log('ERROR: intercept_before function', error) }
+
 
         // -- Execute the API route
         let api_response = await execute_api_route(clean_root + '/' + clean_path, method, {
@@ -53,12 +62,13 @@ const register_api_route = <
             route: input.route,
             cookies: input.cookies
         });
+        
 
-        try { if (configuration.intercept) {
-            const response = await configuration.intercept(api_response);
+        try { if (configuration.intercept_after) {
+            const response = await configuration.intercept_after(api_response);
             if (response !== null && response !== undefined) api_response = response;
         }}
-        catch (error) { console.log('ERROR: Intercept function', error) }
+        catch (error) { console.log('ERROR: intercept_after function', error) }
 
         // -- Return the output data
         return (api_response as { [key: string]: unknown }) as BinderCallbackReturn;

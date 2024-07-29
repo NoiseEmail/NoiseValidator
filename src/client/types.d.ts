@@ -118,8 +118,14 @@ export type ExecutedAPIResponse = (
 };
 
 
-export type InterceptCallback = (
+export type InterceptAfterCallback = (
     response: ExecutedAPIResponse,
 ) => 
     Promise<ExecutedAPIResponse | null | void | undefined> | 
     ExecutedAPIResponse | null | void | undefined;
+
+export type InterceptBeforeCallback = (
+    input: GenericAPIDataParamaters,
+) => 
+    Promise<GenericAPIDataParamaters | null | void | undefined> | 
+    GenericAPIDataParamaters | null | void | undefined;
