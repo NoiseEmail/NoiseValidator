@@ -110,4 +110,16 @@ export type ExecutedAPIFailureResponse = {
 
 
 
-export type ExecutedAPIResponse = ExecutedAPISuccessResponse | ExecutedAPIFailureResponse;
+export type ExecutedAPIResponse = (
+    ExecutedAPISuccessResponse | 
+    ExecutedAPIFailureResponse
+) & {
+    raw?: Response
+};
+
+
+export type InterceptCallback = (
+    response: ExecutedAPIResponse,
+) => 
+    Promise<ExecutedAPIResponse | null | void | undefined> | 
+    ExecutedAPIResponse | null | void | undefined;

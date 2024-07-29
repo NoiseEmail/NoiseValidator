@@ -1,7 +1,7 @@
 import { ArrayModifier, BinderNamespace, SchemaOutput } from 'noise_validator/src/binder/types';
 import { SchemaNamespace } from 'noise_validator/src/schema/types';
 import { HTTPMethods } from 'fastify';
-import { BinderInputObject, GenericAPIDataParamaters, ExecutedAPIResponse, APIRequestObject } from './types.d';
+import { BinderInputObject, GenericAPIDataParamaters, ExecutedAPIResponse, APIRequestObject, InterceptCallback } from './types.d';
 import { GenericError } from 'noise_validator/src/error';
 
 
@@ -35,7 +35,7 @@ const register_api_route = <
     api_root: string,
     route: DynamicURLInputSchema,
     method: HTTPMethods,
-    configuration: BinderNamespace.OptionalConfiguration<any, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, BodyOutputSchema, HeadersOutputSchema>['schemas']
+    configuration: BinderNamespace.OptionalConfiguration<any, BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, BodyOutputSchema, HeadersOutputSchema>['schemas'] & { intercept?: InterceptCallback }
 ): ((input: BinderInputObject<BodyInputSchema, QueryInputSchema, HeadersInputSchema, CookieInputSchema, DynamicURLInputSchema>) => Promise<BinderCallbackReturn>) => {
     const clean_path = clean_url(route);
     const clean_root = api_root.endsWith('/') ? api_root.slice(0, -1) : api_root;
@@ -46,13 +46,19 @@ const register_api_route = <
         const input = { ...empty_input, ...raw_input }
 
         // -- Execute the API route
-        const api_response = await execute_api_route(clean_root + '/' + clean_path, method, {
+        let api_response = await execute_api_route(clean_root + '/' + clean_path, method, {
             body: input.body,
             query: input.query,
             headers: input.headers,
             route: input.route,
             cookies: input.cookies
         });
+
+        try { if (configuration.intercept) {
+            const response = await configuration.intercept(api_response);
+            if (response !== null && response !== undefined) api_response = response;
+        }}
+        catch (error) { console.log('ERROR: Intercept function', error) }
 
         // -- Return the output data
         return (api_response as { [key: string]: unknown }) as BinderCallbackReturn;
@@ -99,7 +105,7 @@ const execute_api_route = async (
         const headers: { [x: string]: string } = {};
         response.headers.forEach((value, key) => headers[key] = value);
         
-        return { body: response_data, headers: headers, success: true, status: response.status };
+        return { body: response_data, headers: headers, success: true, status: response.status, raw: response };
     }
     
 

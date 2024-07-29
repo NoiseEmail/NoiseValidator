@@ -19,7 +19,8 @@
 // });
 
 // const test2 = nv.register_api_route('localhost:8080', '/contacts/email/check', 'POST', {
-//     input: { body: testschema3 }
+//     input: { body: testschema3 },
+//     intercept: (r) => { }
 // });
 
 // await server.start()
@@ -27,9 +28,9 @@
 
 // const data = await test2({
 //     body: {
-//         data: 'a'
+//         data: 1
 //     },
+
 // })
 
 // console.log(data.error.message)
-
