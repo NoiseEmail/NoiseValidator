@@ -6,6 +6,7 @@ import GenericType from './generic';
 import Number from './types/number';
 import Optional from './types/optional';
 import Schema from './schema';
+import Or from './types/or';
 import String from './types/string';
 import Uuid from './types/uuid';
 import { GenericTypeExecutionError, InvalidInputError, MissingHandlerError, SchemaExecutionError, SchemaMissingFieldError } from './errors';
@@ -28,6 +29,7 @@ export {
     Enum,
     Array,
     Optional,
+    Or,
 
     SchemaTypes
 }

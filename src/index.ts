@@ -1,4 +1,4 @@
-import { Array, Boolean, Enum, GenericType, GenericTypeExecutionError, InvalidInputError, MissingHandlerError, Number, Optional, Schema, SchemaExecutionError, SchemaMissingFieldError, SchemaTypes, String, Uuid } from './schema';
+import { Array, Or, Boolean, Enum, GenericType, GenericTypeExecutionError, InvalidInputError, MissingHandlerError, Number, Optional, Schema, SchemaExecutionError, SchemaMissingFieldError, SchemaTypes, String, Uuid } from './schema';
 import { Binder, BinderFailedToExecuteError, BinderTypes, cookie, create_set_cookie_header, DefaultBinderConfiguration, FailedToValidateInputError, serialize_cookie, validate_binder_request } from './binder';
 import { GenericError } from './error';
 import { GenericMiddleware, MiddlewareGenericError, MissingMiddlewareHandlerError, MiddlewareTypes } from './middleware';
@@ -23,6 +23,7 @@ export {
     Number,
     Uuid,
     Enum,
+    Or,
     Optional,
     Array,
     SchemaTypes,
